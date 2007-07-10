@@ -73,7 +73,7 @@ FORMAT = ihex
 TARGET = main
 
 GETTIME 			= 1
-GETTIME_PATH 	= Time/
+GETTIME_PATH 	= ../FuncLib/Other/Time/
 GETTIME_EXEC	= gettime.exe 
 GETTIME.H 		= gettime.h 
 
@@ -82,29 +82,30 @@ GETTIME.H 		= gettime.h
 #     this an empty or blank macro!
 OBJDIR = .
 
-EXTRASRCDIRS = 
+PERIPHERALS_DIR = ../FuncLib/Peripherals
+EXTERNALS_DIR = ../FuncLib/External
+APPLICATIONS_DIR = ../FuncLib/Applications
+MISC_DIR = ../FuncLib/Other
+UTIL_DIR = ../FuncLib/Util
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
-      SPI/spi.c \
-      ADS1213/ads1213.c \
-      DS1305/ds1305.c \
-      RTC/RTCPrint.c \
-      SD_MMC/sd.c \
-      MAX7300/max7300.c \
-      I2C/i2c.c \
-      hardUart/hardUart.c \
-      UI/UI.c \
-      UI_KP/UI_KP.c \
-      UI_LCD/UI_LCD.c \
-      GainSensor/GainSensor.c \
-      pwm/pwm.c \
-      Util/MSB2LSB.c \
-      mmculib/uint8toa.c \
-      Menu/Menu.c \
-      
-      
-      
+		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
+		$(EXTERNALS_DIR)/DS1305/ds1305.c \
+		$(EXTERNALS_DIR)/SD_MMC/sd.c \
+		$(EXTERNALS_DIR)/MAX7300/max7300.c \
+		$(PERIPHERALS_DIR)/SPI/spi.c \
+		$(PERIPHERALS_DIR)/I2C/i2c.c \
+		$(PERIPHERALS_DIR)/hardUart/hardUart.c \
+		$(PERIPHERALS_DIR)/pwm/pwm.c \
+  		$(MISC_DIR)/mmculib/uint8toa.c \
+		$(APPLICATIONS_DIR)/RTC/RTCPrint.c \
+		$(APPLICATIONS_DIR)/Menu/Menu.c \
+		$(UTIL_DIR)/MSB2LSB/MSB2LSB.c \
+		UI/UI.c \
+		UI_KP/UI_KP.c \
+		UI_LCD/UI_LCD.c \
+		GainSensor/GainSensor.c
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -138,8 +139,9 @@ DEBUG = dwarf-2
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = "V:\MSTdev\WinAVR\20070122\avr\include" "Z:\dev"
-
+EXTRAINCDIRS = "V:\MSTdev\WinAVR\20070122\avr\include" \
+					$(PERIPHERALS_DIR) $(EXTERNALS_DIR) $(APPLICATIONS_DIR) \
+					$(MISC_DIR) $(UTIL_DIR)
 
 # Compiler flag to set the C Standard level.
 #     c89   = "ANSI" C

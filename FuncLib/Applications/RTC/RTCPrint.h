@@ -2,8 +2,7 @@
 #define	_RTCPRINT_ROUTINES
 
 
-#include "RTC/gettime.h"
-
+#include "gettime.h"
 
 #define	SECONDS 	(0)
 #define	MINUTES 	(1)
