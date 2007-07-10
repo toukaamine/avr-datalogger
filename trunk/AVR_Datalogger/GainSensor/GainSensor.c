@@ -5,7 +5,7 @@
 #include "I2C/i2c.h"
 #include "GainSensor.h"
 #include "MAX7300/max7300.h"
-#include "Util/MSB2LSB.h"
+#include "MSB2LSB/MSB2LSB.h"
 #include "ADS1213/ads1213.h"
 
 void GS_Init(void)
