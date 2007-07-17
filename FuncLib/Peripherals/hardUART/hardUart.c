@@ -74,10 +74,13 @@ void uartDisable(void)
  */
 void uartTx(uint8_t outbyte)
 {
+	/*Wait until output shift register is empty*/	
+	while( (UCSRA & (1<<UDRE)) == 0 );
+		
 	/*Send byte to output buffer*/
 	UDR	= outbyte;
-	/*Wait until output shift register is empty*/
-	while( (UCSRA & (1<<TXC)) == 0 );
+
+
 }
 
 /* uartTxString:
@@ -90,7 +93,6 @@ void uartTxString(uint8_t* outString)
 	while( *outString )
 	{
 		uartTx(*outString++);
-      _delay_us(100);    
    }
 	
 }
@@ -108,7 +110,6 @@ void uartTxString_P(const char* outString_P)
       _delay_us(100);      
    }
 }
-
 
 
 /* To echo the receiver buffer, write this code in the main.c file */

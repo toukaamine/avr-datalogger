@@ -101,19 +101,40 @@ ISR(SIG_UART_RECV)
 
 /* Counts number of SC_Compare_rate us. */
 /* Perhaps use a faster FPU speed ? */
-/* With a presacler of 8, 125 == 1 msec so this is a 1msec counter */
+/* For 1MHZ With a presacler of 8, 125 == 1 msec so this is a 1msec counter */
+/* For 8MHZ               "     32, 250 = 1 msec */
 ISR(TIMER2_COMP_vect)
 {
    cli();
    
-   static uint16_t counter;
-   counter = counter + 1;
+   static uint8_t counter_ms;
+   static uint16_t counter_100ms;
+
+/* Example */
+/* Happens every 10 seconds, max seconds = 25.5secs  
+ * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
+	const uint8_t ControlEvent = 10*SC_SECONDS;
+	
    
-   if( counter == SC_MILLISECOND)
+   counter_ms++;
+   
+   if( counter_ms == 100*SC_MILLISECOND)
    {
+		counter_ms = 0;
+		counter_100ms++;
+		
+		/* Functions which occur every xx*100msecs happen here */
+		if( counter_100ms == ControlEvent)
+		{
+		
+			/* Do Control Event */
+			
+		}
+		
       
    } 
    
+   /* Functions occuring between 1 to 99msecs occur here */
    
    
    sei();
