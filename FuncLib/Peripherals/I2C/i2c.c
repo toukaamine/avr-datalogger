@@ -17,11 +17,13 @@
 
 /* Include all the Status codes for the TWI module*/
 #include <util/twi.h>
+#include <util/delay.h>
 
 #include	"i2c.h"
 #include "hardUart/hardUart.h"
 
-#define I2C_DEBUG 0
+
+#define I2C_DEBUG 1
 
 
 
@@ -55,7 +57,7 @@ void i2cInit(uint8_t bitrate, uint8_t prescale)
  */
 void i2cDisable(void)
 {
-	TWCR = (TWCR & ~(1<<TWEN));
+	TWCR &=  ~(1<<TWEN);
 }
 
 #if I2C_DEBUG == 1
@@ -116,8 +118,8 @@ void i2cStop(void)
 {
 	TWCR |= (1<<TWINT) | (1<<TWSTO) | (1<<TWEN);
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
-//	while( (TWCR & (1<<TWINT)) == 0);
-
+	//while( (TWCR & (1<<TWINT)) == 0);
+   _delay_ms(100);
 
 	
 }
