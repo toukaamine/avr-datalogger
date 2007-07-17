@@ -8,6 +8,10 @@
 #include "MSB2LSB/MSB2LSB.h"
 #include "ADS1213/ads1213.h"
 
+static const uint8_t  GS_GAIN[] = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_11, GS_GAIN_5,
+                      GS_GAIN_05, GS_GAIN_025, GS_GAIN_02, GS_GAIN_01, GS_GAIN_005, 0}; 
+
+
 void GS_Init(void)
 {
    /* Set all pins to outputs except for NC pins which are set to inputs*/
@@ -45,7 +49,7 @@ void GS_Channel(uint8_t channel)
 /* Function used to set the gain:
  * Usage: GS_Gain( (1<<GS_GAINA) | (1<<GS_GAINE) )
  */
-void GS_Gain(uint8_t gain)
+void GS_GainSel(uint8_t gain)
 {
    GS_SetRegister(GS_GAIN_PORT, gain & (GS_GAIN_MASK) );
 }
@@ -127,7 +131,7 @@ void SensorSetGain(uint8_t channel, uint8_t gain)
 int32_t SensorData(uint8_t channel)
 {
 
-   GS_Gain( (SensorType & (1 << channel)) );
+   GS_GainSel( (SensorType & (1 << channel)) );
    GS_Channel( channel + 1 );
    return ADS1213_GetResult();
    

@@ -55,13 +55,12 @@
 #define SENSOR_SATURATION_LIMIT ((2^16) - 1)
 
 
-const uint8_t  GS_GAIN[] = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_11, GS_GAIN_5,
-                      GS_GAIN_05, GS_GAIN_025, GS_GAIN_02, GS_GAIN_01, GS_GAIN_005, 0};   
+  
 
 
 void GS_Init(void);
 void GS_Channel(uint8_t channel);
-void GS_Gain(uint8_t gain);
+void GS_GainSel(uint8_t gain);
 
 
 

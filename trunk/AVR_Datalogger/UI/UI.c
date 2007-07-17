@@ -25,6 +25,7 @@ void UI_Activate(void)
 	i2cTransmit( 0xFF & ~(1 << MAX7300_TM_P24)  );
 	i2cStop();   
    
+
    
 	/* Set Config to turn on and Enable Transition detect */
 	i2cAddress(UI_MAX7300_ADDRESS, TW_WRITE);
