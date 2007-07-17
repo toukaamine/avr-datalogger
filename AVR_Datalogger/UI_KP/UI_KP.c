@@ -3,7 +3,7 @@
 #include "UI/UI.h"
 #include "i2c/i2c.h"
 #include "UI_KP.h"
-
+#include "hardUart/hardUart.h"
 
 static const prog_uint8_t KP_Button[] = {KP_2, KP_8, KP_5, KP_HASH, 
                                   KP_4, KP_6, KP_A, KP_B, 
@@ -44,7 +44,6 @@ uint8_t UI_KP_GetPress(void)
    
 	ColResult = (UI_ReadRegister(MAX7300_PORTINT) >> 1) & (0x0F);
    
-   
    /* Set rows to inputs with no PULLUP and columns to outputs*/
 	i2cAddress(UI_MAX7300_ADDRESS, TW_WRITE);     
  	i2cTransmit(MAX7300_DDRB1);
@@ -63,25 +62,15 @@ uint8_t UI_KP_GetPress(void)
 	UI_SetRegister(UI_COL_PORT, 0x0F);
    
    /* Get the row result */
-	RowResult = UI_ReadRegister(UI_ROW_PORT) & (0x0F);  
+	RowResult = ~(UI_ReadRegister(UI_ROW_PORT)) & (0x0F);  
+
    KPResult = (ColResult << 4) | RowResult;
    
+  
    /* Reset the buttons to original state */
    UI_KP_Init();
-   UI_Activate();
    
-   
-   for( i = 0; i < KP_ButtonCount; i++)
-   {
-      button = pgm_read_byte(KP_Button[i]);
-      
-      if( KPResult == button)
-      {
-         return button;
-      }
-   }
-   
-   return KP_INVALID;
+   return KPResult;
    
 }
 

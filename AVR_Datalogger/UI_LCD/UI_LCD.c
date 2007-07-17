@@ -6,23 +6,49 @@
 #include "i2c/i2c.h"
 #include "pwm/pwm.h"
 #include "UI_LCD.h"
+#include "MSB2LSB/MSB2LSB.h"
 
 /* Need to provide protection so that data lines are never high when
  * the LCD is in shutdown */
 
 static uint8_t UI_LCD_PowerStatus = LCD_OFF;
+static uint8_t UI_LCD_RSStatus = UI_LCD_INSTRUCTION;
 /* Use a wrapper for the UI_MAX7300 interface to ensure LCD_Power is enabled
  * if any write commands are used */
 void UI_LCD_SetRegister(uint8_t reg, uint8_t data)
 {
    if( UI_LCD_PowerStatus == LCD_ON )
    {
-      UI_SetRegister(reg, data);      
+
+      
+      if( reg == UI_LCD_PORT )
+      {
+         data = MSB2LSB(data) >> 4;         
+         data &= ~(1 << UI_LCD_PRS);
+         data |= (1 << UI_LCD_PPOWER) | (UI_LCD_RSStatus << UI_LCD_PRS); 
+      }
+      
+      UI_SetRegister(reg, data);   
    }
 }
 
 
 /* Internal Functions */
+
+
+void UI_LCD_SetInstruction(void)
+{
+   UI_LCD_RSStatus = UI_LCD_INSTRUCTION;
+}
+   
+
+
+
+void UI_LCD_SetData(void)
+{
+   UI_LCD_RSStatus = UI_LCD_DATA;  
+}
+
 
 /* Setup all of the UI_MAX7300 LCD Pins as an Output */
 void UI_LCD_HWInit(void)
@@ -73,7 +99,7 @@ void UI_LCD_Write(uint8_t code)
 void UI_LCD_Strobe(void)
 {  
 	UI_LCD_SetRegister(UI_LCD_E, 0x01); 
-   _delay_us(1);   
+   _delay_ms(2);   
 	UI_LCD_SetRegister(UI_LCD_E, 0x00);    
 }
 
@@ -86,17 +112,19 @@ void UI_LCD_Init(void)
 
    /* Init to use 4 bit mode */
    UI_LCD_SetRegister(UI_LCD_PORT, (LCD_FUNCTION_DEFAULT >> 4) & (0x0F) );
-   _delay_us(40);   
+   UI_LCD_Strobe();
+   _delay_ms(10);         
    UI_LCD_Write( LCD_FUNCTION_DEFAULT );
-   _delay_us(40);   
+   _delay_ms(4);   
    UI_LCD_Write( LCD_DISPLAY_DEFAULT );
    _delay_ms(2);   
    UI_LCD_Write( LCD_MODE_DEFAULT );   
  
-   UI_LCD_Home();
+  
    UI_LCD_Clear();
-   
-   
+   _delay_ms(2);    
+   UI_LCD_Home();
+   _delay_ms(2);    
 }
 
 
@@ -185,7 +213,7 @@ void UI_LCD_Activate(void)
    UI_LCD_PowerStatus = LCD_ON;
 
    /* Set UI_LCD pins to to output LOW except for LCD Power which is high*/
-	UI_LCD_SetRegister(UI_LCD_POWER, 0x01);    
+	UI_SetRegister(UI_LCD_POWER, 0x01);    
    
    
    /* Need to wait 40ms after applying power */
@@ -200,7 +228,8 @@ void UI_LCD_Shutdown(void)
 {
 
    /* Set UI_LCD pins to to output LOW */
-	UI_LCD_SetRegister(UI_LCD_PORT, 0x00);   
+	UI_SetRegister(UI_LCD_PORT, 0x00);   
+   UI_SetRegister(UI_LCD_POWER, 0x00); 
    UI_LCD_PowerStatus = LCD_OFF;
 }
    
