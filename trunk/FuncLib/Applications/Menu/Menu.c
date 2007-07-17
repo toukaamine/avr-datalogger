@@ -48,7 +48,7 @@ static const MENU_TEXT  MT_QUIET[] = "QUIET";
 #if MENU_DEBUG == 1
 const menu_list MenuState[] = {
 #else
-const menu_list MenuState[] PROGMEM = {
+const menu_list MenuState[] = {
 #endif
 
    {ST_MAIN,   ST_MESSAGES,   0},
@@ -74,7 +74,7 @@ const menu_list MenuState[] PROGMEM = {
 #if MENU_DEBUG == 1
 const menu_data MenuData[] = {
 #else
-const menu_data MenuData[] PROGMEM = {
+const menu_data MenuData[] = {
 #endif
    {ST_MAIN, 0, 0},
    {ST_MESSAGES, MT_MESSAGES, 0},
@@ -151,7 +151,11 @@ void MenuUpdate(void)
 {
    uint8_t i;   
    uint8_t sequenceIndex = 0;
+   uint8_t sequenceParent;
    char* outputString;
+   RowPosition = 0;
+
+   UI_LCD_Pos( 0 , 0);
 
 
    /* Only switch Menu input IF we are in a menu item which has NO associated

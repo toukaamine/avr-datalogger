@@ -90,7 +90,7 @@ void uartTxString(uint8_t* outString)
 	while( *outString )
 	{
 		uartTx(*outString++);
-      _delay_ms(2);    
+      _delay_us(100);    
    }
 	
 }
@@ -105,6 +105,7 @@ void uartTxString_P(const char* outString_P)
    while( (c = pgm_read_byte(outString_P++)) )
    {
       uartTx(c);
+      _delay_us(100);      
    }
 }
 

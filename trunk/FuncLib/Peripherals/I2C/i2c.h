@@ -43,7 +43,7 @@
 /* i2cSetBitRate:
  * Sets up the i2c bitrate generator
  *
- * SCL Frequncy = F_CPU / (16 + 2*(bitrate) - 4^(prescale) ) 
+ * SCL Frequncy = F_CPU / (16 + 2*(bitrate) * 4^(prescale) ) 
  *
  * For SCL[f] = 100kHz,
  * bitrate = 64, prescale = 3
