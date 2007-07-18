@@ -115,16 +115,16 @@ void message(void* data)
    {      
       switch( *input )
       {
-         case '6':
+         case KP_6:
             PRINT_FUNC(PSTR("You typed 6!\n\r"));
          break;
          
-         case 't':
+         case KP_A:
             PRINT_FUNC(PSTR("Yo WTF is up? \n\r"));
          break;
          
          /* Menu Function exit routine */
-         case 'b':
+         case KP_BACK:
             
             MenuSetInput(KP_BACK);
             stateMachine(currentState);
@@ -155,6 +155,8 @@ void MenuUpdate(void)
    char* outputString;
    RowPosition = 0;
 
+   UI_LCD_Clear();
+
    UI_LCD_Pos( 0 , 0);
 
 
@@ -169,11 +171,13 @@ void MenuUpdate(void)
       
    /* Ensures that the screen limits are not exceeded */
    for( i = 0, sequenceIndex = 0;  (MenuState[i].parent != 0) ; i++)
-   {          
+   {  
+      /* Find the current state's sub children. */        
       if( MenuState[i].parent == currentState )
       {  
          outputString = MenuDescriptor(MenuState[i].child);
          sequenceIndex = MenuState[i].sequence;
+         
          
          if( selectedItem > upperLimit )
          {
@@ -190,6 +194,20 @@ void MenuUpdate(void)
          /* If this is the selected item then prefix an asterix */
          if( (sequenceIndex <= upperLimit) && (sequenceIndex >= lowerLimit) )
          {
+            if(MenuState[i].sequence > WINDOW_SIZE)
+            {
+               UI_LCD_Pos(0, 19);
+               UI_LCD_Char('^');               
+            }
+            
+            if( SubItems(currentState) - MenuState[i].sequence  > WINDOW_SIZE)
+            {
+               UI_LCD_Pos(3, 19);
+               UI_LCD_Char('v');
+            }
+            
+            UI_LCD_Pos(RowPosition, 0); 
+            
             if(MenuState[i].sequence == selectedItem)
             {
 #if MENU_DEBUG == 1  
@@ -216,7 +234,7 @@ void MenuUpdate(void)
             }
 #else
             UI_LCD_String((uint8_t*)outputString);
-            UI_LCD_Pos( RowPosition++, 0);            
+            UI_LCD_Pos( ++RowPosition, 0);            
 #endif            
          }
       }  

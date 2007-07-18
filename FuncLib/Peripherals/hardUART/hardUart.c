@@ -106,8 +106,7 @@ void uartTxString_P(const char* outString_P)
 
    while( (c = pgm_read_byte(outString_P++)) )
    {
-      uartTx(c);
-      _delay_us(100);      
+      uartTx(c);    
    }
 }
 

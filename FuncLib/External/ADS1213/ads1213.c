@@ -22,6 +22,7 @@ void ADS1213_Init(void)
    
    ADS1213_CS_Pulse(); 
    
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);      
    SPI_TxByte( (1 << ADS1213_MB1) 
                | (1 << ADS1213_MB0)
                | (1 << ADS1213_A2) );  
@@ -87,7 +88,7 @@ uint32_t ADS1213_GetResult(void)
    Data.byte[0] = SPI_RxByte();   
    
    
-   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
    
    return Data.result;   
   
@@ -95,10 +96,10 @@ uint32_t ADS1213_GetResult(void)
 
 void ADS1213_CS_Pulse(void)
 {
-   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);
-   _delay_loop_1(22);     
    ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);
-   _delay_loop_1(22); 
+   _delay_us(22);     
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);
+   _delay_us(22); 
 }
 
 /* Turns the Vreference and VBias Off as well as puts the unit

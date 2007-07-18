@@ -119,8 +119,6 @@ void i2cStop(void)
 	TWCR |= (1<<TWINT) | (1<<TWSTO) | (1<<TWEN);
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
 	//while( (TWCR & (1<<TWINT)) == 0);
-   _delay_ms(100);
-
 	
 }
 

@@ -6,7 +6,15 @@
  
  
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include "spi.h"
+
+volatile uint8_t spiTransferComplete = TRANSFER_COMPLETE;
+
+ISR(SPI_STC_vect)
+{
+   spiTransferComplete = TRANSFER_COMPLETE;
+}
 
 /** Sets the micro up as a
  * SPI Master
@@ -17,15 +25,22 @@
  */
 void SPI_Init(void)
 {
+   
+   /* Setup ports */
+   SPI_PORT |= (1 << SCK);
+   SPI_DDR |= ( (1 << SCK) | (1 << nSS) | (1 << MOSI) );
+   SPI_DDR &=  ~(1 << MISO);   
+   
    /* Initiate as Master and Use CPHA = 1*/
-   SPCR |= ((1 << SPE) | (1 << MSTR) | (1 << CPHA));
+   SPCR |= ((1 << SPE) | (1 << MSTR) | (1 << CPHA) );
     
    /* set CLK speed to fclk/128 */
    SPCR |= ((1 << SPR0) | (1 << SPR1));
    
-   /* Setup ports */
-   SPI_DDR |= ( (1 << SCK) | (1 << nSS) | (1 << MOSI) );
-   SPI_DDR &=  ~(1 << MISO);
+   /*
+   SPSR;
+   SPCR |= (1 << SPIE);    */
+   
 }
 
 
@@ -33,8 +48,12 @@ void SPI_Init(void)
 
 uint8_t SPI_TxByte(uint8_t data)
 {
+   //while( !spiTransferComplete );
    SPDR = data;
-   while( ! (SPSR & (1 << SPIF)) );
+   //spiTransferComplete = TRANSFER_INCOMPLETE;
+   while( ! ( SPSR & (1 << SPIF)));
+   
+   
    return SPDR;
 }
 
