@@ -62,7 +62,7 @@ MCU = atmega32
 #         F_CPU = 16000000
 #         F_CPU = 18432000
 #         F_CPU = 20000000
-F_CPU =1000000
+F_CPU = 8000000
 
 
 # Output format. (can be srec, ihex, binary)
@@ -105,7 +105,8 @@ SRC = $(TARGET).c \
 		UI/UI.c \
 		UI_KP/UI_KP.c \
 		UI_LCD/UI_LCD.c \
-		GainSensor/GainSensor.c
+		GainSensor/GainSensor.c \
+		SampleCtrl/SampleCtrl.c
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -315,12 +316,12 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 
 # Uncomment the following if you do /not/ wish a verification to be
 # performed after programming the device.
-#AVRDUDE_NO_VERIFY = -V
+AVRDUDE_NO_VERIFY = -V
 
 # Increase verbosity level.  Please use this when submitting bug
 # reports about avrdude. See <http://savannah.nongnu.org/projects/avrdude> 
 # to submit bug reports.
-#AVRDUDE_VERBOSE = -v -v
+AVRDUDE_VERBOSE = -v -v
 
 AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)

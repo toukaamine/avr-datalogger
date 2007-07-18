@@ -15,7 +15,7 @@
 #include "UI/UI.h"
 #include "Menu/Menu.h"
 #include "GainSensor/GainSensor.h"
-
+#include "ADS1213/ads1213.h"
 
 
 #define UART_PORT PORTD
@@ -35,7 +35,10 @@ extern uint8_t currentState;
 /* Waking up from Power Down requires 6Clock Cycles */ 
 uint16_t sampleSetting;
 
+int32_t latestSample;
 
+
+void printSample(void);
 
 /* To do, MMC add #conditional includes
  * MAX7300 routines.
@@ -44,7 +47,8 @@ uint16_t sampleSetting;
 int main(void)
 {
    
-   uartInit(0, 1);
+   /* Good for 250kbit */
+   uartInit(3, 1);
 
 
    sei();
@@ -57,18 +61,36 @@ int main(void)
    UI_Activate();
    UI_KP_Init();
    UI_LCD_HWInit();
+   UI_LCD_Shutdown();
+   _delay_ms(50);
+       
    UI_LCD_Activate();  
    UI_LCD_Init();
       
-   /* Reprint Menu */
 
-   DDRD |= (1<<PD5);
 
+   /* Enable Keypad Presses */
    UI_LCD_SetData();
    MCUCR |= (0x03 << ISC00);
    GICR |= (1 << INT0);
+   
+   /* Sample Control */
+   SC_Init();
+   SC_EnableTimer();
+   
+   /* Menu Setup */
+   MenuSetInput(0);   
+   /* Reprint Menu */   
+   MenuUpdate();
+   
+   SPI_Init();
+   ADS1213_Init();
+
+   
+   
    while(1)
    {
+      ADS1213_Shutdown();   
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -82,19 +104,35 @@ int main(void)
 ISR(SIG_UART_RECV)
 {
 
-   UI_LCD_Char(UDR);
-   
-   UI_LCD_Pos( 0 , 0);
-   UI_LCD_String_P( PSTR("Line 0") );
- 
-   UI_LCD_Pos( 1 , 0);
-   UI_LCD_String_P( PSTR("Line 1") );
+   uint8_t rcvdByte = UDR;
 
-   UI_LCD_Pos( 2 , 0);
-   UI_LCD_String_P( PSTR("Line 2") );
+   UI_LCD_Char(rcvdByte);
+
+
+   if( rcvdByte == 'G' )
+   {
+      
+      printSample();
+      
+   }
    
-   UI_LCD_Pos( 3 , 0);
-   UI_LCD_String_P( PSTR("Line 3") );         
+}
+
+
+void printSample(void)
+{
+ 
+   ADS1213_Startup();
+   latestSample = ADS1213_GetResult(); 
+   
+   /* Now convert the sample to floats and voltage */
+   
+   // For now just print the raw binary 
+   
+   uartTx( (latestSample >> 24) & 0xFF);
+   uartTx( (latestSample >> 16) & 0xFF);
+   uartTx( (latestSample >> 8)  & 0xFF);
+   uartTx( (latestSample)       & 0xFF);         
    
 }
 
@@ -108,12 +146,11 @@ ISR(TIMER2_COMP_vect)
    cli();
    
    static uint8_t counter_ms;
-   static uint16_t counter_100ms;
 
 /* Example */
 /* Happens every 10 seconds, max seconds = 25.5secs  
  * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
-	const uint8_t ControlEvent = 10*SC_SECONDS;
+	static SoftTimer_8 ControlEvent = {5*SC_SECONDS, 0};
 	
    
    counter_ms++;
@@ -121,14 +158,14 @@ ISR(TIMER2_COMP_vect)
    if( counter_ms == 100*SC_MILLISECOND)
    {
 		counter_ms = 0;
-		counter_100ms++;
+      ControlEvent.timerCounter++;
 		
 		/* Functions which occur every xx*100msecs happen here */
-		if( counter_100ms == ControlEvent)
+		if( ControlEvent.timerCounter == ControlEvent.timeCompare)
 		{
-		
 			/* Do Control Event */
-			
+			LCD_BL_PORT ^= (1 << LCD_BL_PIN);
+			ControlEvent.timerCounter = 0;
 		}
 		
       
@@ -196,7 +233,6 @@ ISR(INT0_vect)
    MenuSetInput(IntResult);   
    MenuUpdate();
    
-   uartTxString_P( PSTR("SAY MY NAME"));
       
    /* Set the M-bit in the UI Register */
    UI_Activate();
