@@ -52,10 +52,12 @@ typedef union ADS1213_data
 } ADS1213Data_t;
  
 
-
+#define ADS1213_RxByte ADS1213_TxByte(0xFF)
 
 /* CPHA = 1 is required  for this ADC,
  * CPHA = 1 required for the DS1305 as well*/
+
+uint8_t ADS1213_TxByte(uint8_t data);
 
 void ADS1213_Init(void);
 uint32_t ADS1213_GetResult(void);
