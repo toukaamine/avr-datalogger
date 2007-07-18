@@ -134,7 +134,7 @@ void ADS1213_Shutdown(void)
 
 void ADS1213_Startup(void)
 {
-   ADS1213_CS_Pulse(); 
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
    
    ADS1213_TxByte((1 << ADS1213_MB0) | (1 << ADS1213_A2));
     
@@ -145,7 +145,7 @@ void ADS1213_Startup(void)
    ADS1213_TxByte( 0 );
    
    /* Release CS */
-   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);      
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
 }
 
 
