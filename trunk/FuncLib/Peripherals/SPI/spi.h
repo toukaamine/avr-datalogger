@@ -17,6 +17,8 @@
 #define MOSI      (PB5)
 #define nSS       (PB4)
 
+#define TRANSFER_COMPLETE     (1)
+#define TRANSFER_INCOMPLETE   (0)
 
 void SPI_Init(void);
 uint8_t SPI_TxByte(uint8_t data);

@@ -61,8 +61,8 @@
 
 #endif
 
-#define KP_UP  KP_8
-#define KP_DOWN KP_2
+#define KP_UP  KP_2
+#define KP_DOWN KP_8
 #define KP_ENTER KP_6
 #define KP_BACK  KP_4
 

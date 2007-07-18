@@ -57,6 +57,7 @@ typedef union ADS1213_data
 /* CPHA = 1 is required  for this ADC,
  * CPHA = 1 required for the DS1305 as well*/
 
+void ADS1213_Init(void);
 uint32_t ADS1213_GetResult(void);
 void ADS1213_CS_Pulse(void);
 void ADS1213_Shutdown(void);
