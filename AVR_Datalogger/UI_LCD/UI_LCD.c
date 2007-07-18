@@ -80,6 +80,11 @@ void UI_LCD_HWInit(void)
    /* Set UI_LCD pins to to output LOW */
 	UI_LCD_SetRegister(UI_LCD_PORT, 0x00);   
 
+
+
+   LCD_BL_DDR |= (1 << LCD_BL_PIN);
+   LCD_BL_PORT &= ~(1 << LCD_BL_PIN);
+
 }
 
 
@@ -93,13 +98,18 @@ void UI_LCD_Write(uint8_t code)
    UI_LCD_Strobe();
 }
 
-
+void  UI_LCD_Char(uint8_t data)
+{
+   UI_LCD_SetData();
+   UI_LCD_Write(data);
+   
+}
 
 
 void UI_LCD_Strobe(void)
 {  
 	UI_LCD_SetRegister(UI_LCD_E, 0x01); 
-   _delay_ms(2);   
+   _delay_us(1);   
 	UI_LCD_SetRegister(UI_LCD_E, 0x00);    
 }
 
@@ -142,6 +152,7 @@ void UI_LCD_Clear(void)
 {
    UI_LCD_SetInstruction();   
    UI_LCD_Write( (1 << LCD_CLR ) );
+   _delay_ms(2);   
 }
 
 
@@ -240,36 +251,14 @@ void UI_LCD_Shutdown(void)
 void UI_LCD_BL_On(void)
 {
    
-   uint8_t  dutyCycle;
-   
-   pwmTimer1Initialise(255, 1);
-   
-   for( dutyCycle = 0; dutyCycle < 255; dutyCycle++ )
-   {
-      pwmTimer1AEnable(dutyCycle);
-      _delay_ms(20);      
-   } 
-   
-
-   pwmTimer1ADisable();
-   PORTD |= (1 << PD5);
+   LCD_BL_PORT |= (1 << LCD_BL_PIN);
 
 }
 
 void UI_LCD_BL_Off(void)
 {
    
-   uint8_t  dutyCycle;   
-   
-   pwmTimer1Initialise(255, 1);
-   for( dutyCycle = 255; dutyCycle != 0; dutyCycle-- )
-   {
-      pwmTimer1AEnable(dutyCycle);
-      _delay_ms(20);      
-   } 
-   
-   pwmTimer1ADisable();   
-   PORTD &= ~(1 << PD5);   
+   LCD_BL_PORT &= ~(1 << LCD_BL_PIN);
 }
 
 

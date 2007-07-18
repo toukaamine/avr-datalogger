@@ -17,9 +17,25 @@
 /* Sets up the required timers etc */
 void SC_Init(void);
 
-typedef struct _softTimer
+typedef struct _softTimer8
 {
-	uint32_t timeOut;
-	(void*) 	timerFunction(void);
+	uint8_t timeCompare;
+	uint8_t timerCounter;
 	
-} SoftTimer;
+} SoftTimer_8;
+
+
+typedef struct _softTimer16
+{
+	uint16_t timeCompare;
+	uint16_t timerCounter;
+	
+} SoftTimer_16;
+
+
+typedef struct _softTimer32
+{
+	uint32_t timeCompare;
+	uint32_t timerCounter;
+	
+} SoftTimer_32;

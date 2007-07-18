@@ -50,7 +50,7 @@
 
 #define LCD_FUNCTION_DEFAULT	((1<<LCD_FUNCTION) | (1<<LCD_FUNCTION_2LINES))
 #define LCD_MODE_DEFAULT		((1<<LCD_ENTRY_MODE) | (1<<LCD_ENTRY_INC))
-#define LCD_DISPLAY_DEFAULT   ((1<<LCD_DISPLAY) | (1<<LCD_ON_DISPLAY) | (1<<LCD_ON_BLINK) | (1<<LCD_ON_CURSOR))
+#define LCD_DISPLAY_DEFAULT   ((1<<LCD_DISPLAY) | (1<<LCD_ON_DISPLAY))
 
 
 #define LCD_LINE0_DDRAMADDR   (0x00)
@@ -59,9 +59,11 @@
 #define LCD_LINE3_DDRAMADDR   (0x54)
 
 
+#define LCD_BL_PORT  PORTD
+#define LCD_BL_PIN   PD5
+#define LCD_BL_DDR   DDRD
 
-
-#define UI_LCD_Char(data) UI_LCD_Write(data)
+//#define 
 
 #define LCD_ON 1
 #define LCD_OFF 0
@@ -71,6 +73,9 @@ void UI_LCD_Init(void);
 void UI_LCD_Write(uint8_t code);
 void UI_LCD_SetInstruction(void);
 void UI_LCD_SetData(void);
+
+void UI_LCD_Char(uint8_t data);
+
 
 void UI_LCD_String(uint8_t* string);
 void UI_LCD_String_P(const char* string_P);
