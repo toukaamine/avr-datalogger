@@ -15,7 +15,8 @@
 #define ADS1213_CS_PIN     (PA0)
 #define ADS1213_CS_PORT    (PORTA)  
 
-
+#define ADS1213_ENOB		22
+#define ADS1213_MAXOUTPUT (2^22 - 1)
 
 /* Instruction Register Bits */
 #define ADS1213_RW         (7)
