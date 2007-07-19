@@ -119,7 +119,8 @@ uint32_t ADS1213_GetResult(void)
    /* Release the chip */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
    
-   return temporary;   
+   /* Truncate data to 22 bits */
+   return temporary & 0x003FFFFF;   
   
 }
 
