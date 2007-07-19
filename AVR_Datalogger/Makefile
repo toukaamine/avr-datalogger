@@ -321,7 +321,7 @@ AVRDUDE_NO_VERIFY = -V
 # Increase verbosity level.  Please use this when submitting bug
 # reports about avrdude. See <http://savannah.nongnu.org/projects/avrdude> 
 # to submit bug reports.
-AVRDUDE_VERBOSE = -v -v
+#AVRDUDE_VERBOSE = -v -v
 
 AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)

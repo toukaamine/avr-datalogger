@@ -49,25 +49,24 @@ int main(void)
    
    /* Good for 250kbit */
    uartInit(3, 1);
-
+    
 
    sei();
    UCSRB |= (1 << RXCIE);
    
 	i2cInit(1 , 0);
 
-   //GS_Init();
+   GS_Init();
       
    UI_Activate();
    UI_KP_Init();
    UI_LCD_HWInit();
    UI_LCD_Shutdown();
-   _delay_ms(50);
        
    UI_LCD_Activate();  
    UI_LCD_Init();
       
-
+   MenuSetDisplay(MENU_LCD);
 
    /* Enable Keypad Presses */
    UI_LCD_SetData();
@@ -85,12 +84,10 @@ int main(void)
    
    SPI_Init();
    ADS1213_Init();
-
-   
    
    while(1)
    {
-      ADS1213_Shutdown();   
+         
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -104,15 +101,75 @@ int main(void)
 ISR(SIG_UART_RECV)
 {
 
-   uint8_t rcvdByte = UDR;
+   static uint8_t rcvdByte = 0;
+   static uint8_t lastInput = 0;
+   static uint8_t uartMenu = 0;
+   rcvdByte = UDR;
+   
+   //UI_LCD_Char(rcvdByte);
+   
 
-   UI_LCD_Char(rcvdByte);
-
-
+   /* Update the menu if we are in UART mode */
+   if( uartMenu )
+   {
+      MenuSetInput(rcvdByte);   
+      MenuUpdate();  
+   }
+   
    if( rcvdByte == 'G' )
    {
       
       printSample();
+      
+   }
+   
+   if( rcvdByte == 'W' )
+   {
+      ADS1213_Startup();  
+   }
+   
+   if( rcvdByte == 'S')
+   {
+      ADS1213_Shutdown();  
+   }
+   
+   if( rcvdByte == 'l')
+   {
+      MenuSetDisplay(MENU_LCD);
+      uartMenu = 0;
+      MenuUpdate(); 
+   }   
+
+   if( rcvdByte == 'u')
+   {
+      MenuSetDisplay(MENU_UART);
+      uartMenu = 1;
+      MenuUpdate();
+   }   
+      
+   
+   
+   if( rcvdByte == 'R' )
+   {
+      asm volatile("jmp 0"::);
+   }
+   
+   if( rcvdByte == 'r' )
+   {
+      
+      uint8_t ADS1213Byte;
+      
+      /* Read 1 byte, that is byte 3 of CMR */
+      
+      ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+      
+      ADS1213_TxByte( (1 << ADS1213_RW) | (1 << ADS1213_A2) );  
+      
+      ADS1213Byte = ADS1213_RxByte();
+      
+      ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
+      
+      uartTx(ADS1213Byte);
       
    }
    
@@ -121,18 +178,20 @@ ISR(SIG_UART_RECV)
 
 void printSample(void)
 {
+   ADS1213Data_t number;
  
-   ADS1213_Startup();
+   latestSample = 0;
    latestSample = ADS1213_GetResult(); 
+   
+   number.FPresult = (float)latestSample;
    
    /* Now convert the sample to floats and voltage */
    
-   // For now just print the raw binary 
-   
-   uartTx( (latestSample >> 24) & 0xFF);
-   uartTx( (latestSample >> 16) & 0xFF);
-   uartTx( (latestSample >> 8)  & 0xFF);
-   uartTx( (latestSample)       & 0xFF);         
+   // Print as float.
+   uartTx( (number.result >> 24) & 0xFF);   
+   uartTx( (number.result >> 16) & 0xFF);
+   uartTx( (number.result >> 8)  & 0xFF);
+   uartTx( (number.result)       & 0xFF);         
    
 }
 
@@ -164,7 +223,7 @@ ISR(TIMER2_COMP_vect)
 		if( ControlEvent.timerCounter == ControlEvent.timeCompare)
 		{
 			/* Do Control Event */
-			LCD_BL_PORT ^= (1 << LCD_BL_PIN);
+			//LCD_BL_PORT ^= (1 << LCD_BL_PIN);
 			ControlEvent.timerCounter = 0;
 		}
 		
@@ -227,6 +286,11 @@ ISR(INT0_vect)
    }
 
    IntResult = UI_KP_GetPress();
+   
+   if( IntResult == KP_D )
+   {
+      LCD_BL_PORT ^= (1 << LCD_BL_PIN);  
+   }
    
    uartTx(IntResult);
    
