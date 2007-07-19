@@ -1,7 +1,7 @@
 
 
 #include "Menu.h"
-
+#include "hardUart/hardUart.h"
 
 #if MENU_DEBUG == 1
 #include <stdio.h>
@@ -22,7 +22,38 @@ static uint8_t selectedItem = 0;
 static uint8_t upperLimit = WINDOW_SIZE;
 static uint8_t lowerLimit = 0;
 static uint8_t RowPosition = 0;
-static uint8_t ColPosition = 0;
+
+
+void MenuSetDisplay(uint8_t display);
+void (*MenuPrint)(uint8_t* string);
+/* For a string residing in FLASH */
+void (*MenuPrint_P)(const char* string);
+void (*MenuNewLine)(void);
+void (*MenuReset)(void);
+
+
+
+
+void MenuSetDisplay(uint8_t display)
+{
+   if(display == MENU_LCD)
+   {
+      MenuPrint = UI_LCD_String;
+      MenuPrint_P = UI_LCD_String_P;
+      MenuNewLine = LCD_NewLine;
+      MenuReset = LCD_Reset;
+   }
+   /* Route output to UART */
+   else
+   {
+      MenuPrint = MenuUartTxString;
+      MenuPrint_P = MenuUartTxString_P;
+      MenuNewLine = MenuUart_NewLine;
+      MenuReset = MenuUart_Reset;      
+   }
+}
+
+
 
 
 /* Menu Texts */
@@ -94,6 +125,54 @@ const menu_data MenuData[] = {
    {0, 0, 0}
 };
 
+
+void LCD_NewLine(void)
+{
+   UI_LCD_Pos(++RowPosition, 0);
+}
+
+void LCD_Reset(void)
+{
+   UI_LCD_Clear();
+   UI_LCD_Pos(0, 0);
+   RowPosition = 0;
+}
+
+/* Uart Functions also route to the LCD */
+void MenuUart_NewLine(void)
+{
+   uartTxString_P( PSTR("\n\r") );
+   LCD_NewLine();
+}
+
+
+void MenuUartTxString(uint8_t* string)
+{
+   uartTxString(string);
+   UI_LCD_String(string);
+}
+
+void MenuUartTxString_P(const char* string)
+{
+   uartTxString_P(string);
+   UI_LCD_String_P(string);
+}
+
+void MenuUart_Reset(void)
+{
+   uint8_t i;
+ 
+   for( i = 0; i < 30; i++)
+   {
+      MenuUart_NewLine();
+   }
+   
+   LCD_Reset();
+   
+}
+
+
+
 /* Example of a menu function. Each menu function needs a way of 'getting'
  * back to the main menu system. It is done like so.
  */
@@ -106,7 +185,8 @@ void message(void* data)
    char haha = 0;
    
     
-   PRINT_FUNC( PSTR("Hello!\n"));  
+   MenuPrint_P( PSTR("Hello!"));
+   MenuNewLine();  
    input = data;
 
    
@@ -116,14 +196,18 @@ void message(void* data)
       switch( *input )
       {
          case KP_6:
-            PRINT_FUNC(PSTR("You typed 6!\n\r"));
+            MenuPrint_P(PSTR("You typed 6!"));
+            MenuNewLine();
+            
          break;
          
-         case KP_A:
-            PRINT_FUNC(PSTR("Yo WTF is up? \n\r"));
+         case 'a':
+            MenuPrint_P(PSTR("Yo WTF is up?"));
+            MenuNewLine();
          break;
          
          /* Menu Function exit routine */
+         case KB_BACK:
          case KP_BACK:
             
             MenuSetInput(KP_BACK);
@@ -153,12 +237,8 @@ void MenuUpdate(void)
    uint8_t sequenceIndex = 0;
    uint8_t sequenceParent;
    char* outputString;
-   RowPosition = 0;
-
-   UI_LCD_Clear();
-
-   UI_LCD_Pos( 0 , 0);
-
+   
+   MenuReset();
 
    /* Only switch Menu input IF we are in a menu item which has NO associated
     * function */
@@ -197,13 +277,13 @@ void MenuUpdate(void)
             if(MenuState[i].sequence > WINDOW_SIZE)
             {
                UI_LCD_Pos(0, 19);
-               UI_LCD_Char('^');               
+               MenuPrint_P( PSTR("^") );               
             }
             
             if( SubItems(currentState) - MenuState[i].sequence  > WINDOW_SIZE)
             {
                UI_LCD_Pos(3, 19);
-               UI_LCD_Char('v');
+               MenuPrint_P( PSTR("v") );
             }
             
             UI_LCD_Pos(RowPosition, 0); 
@@ -218,11 +298,11 @@ void MenuUpdate(void)
                printf(" ");   
             }
 #else
-               UI_LCD_Char('*');    
+               MenuPrint_P( PSTR("*") );    
             }
             else
             {
-               UI_LCD_Char(' ');   
+               MenuPrint_P( PSTR(" ") );   
             }
 #endif
                        
@@ -233,8 +313,8 @@ void MenuUpdate(void)
                PRINT_FUNC("%s\n", (uint8_t*)outputString );
             }
 #else
-            UI_LCD_String((uint8_t*)outputString);
-            UI_LCD_Pos( ++RowPosition, 0);            
+            MenuPrint((uint8_t*)outputString);
+            MenuNewLine();            
 #endif            
          }
       }  
@@ -262,10 +342,11 @@ void stateMachine(uint8_t state)
    
    maxStateItems = SubItems(state);
    
-
+   
 
    switch( MenuInput )
    {
+      case KB_UP:
       case KP_UP:
          if( selectedItem != 0 )
          {
@@ -273,6 +354,7 @@ void stateMachine(uint8_t state)
          }
       break;
          
+      case KB_DOWN:   
       case KP_DOWN:
          selectedItem++;          
          if( selectedItem > maxStateItems )
@@ -281,6 +363,7 @@ void stateMachine(uint8_t state)
          }
       break;
       
+      case KB_ENTER:
       case KP_ENTER:
          /* Go into child sub menu */
          currentState = GetMenuState(currentState, selectedItem);
@@ -290,6 +373,7 @@ void stateMachine(uint8_t state)
          
       break;
       
+      case KB_BACK:
       case KP_BACK: 
          parentIndex = GetParent(currentState);
          
@@ -301,8 +385,10 @@ void stateMachine(uint8_t state)
             currentState = MenuState[ parentIndex ].parent;
             selectedItem = MenuState[ parentIndex ].sequence; 
          }
-         
-      break;        
+      break;     
+      
+      default:
+      break;   
    }
 
    /* Revert back to initial state */

@@ -22,7 +22,8 @@
 #define INVALID_SEQUENCE 255
 
 #define MAIN_MENU    ST_MAIN
-
+#define MENU_LCD  0
+#define MENU_UART 1
 
 
 
@@ -61,6 +62,11 @@
 
 #endif
 
+#define KB_UP '8'
+#define KB_DOWN '2'
+#define KB_ENTER '6'
+#define KB_BACK  '4'
+
 #define KP_UP  KP_2
 #define KP_DOWN KP_8
 #define KP_ENTER KP_6
@@ -91,6 +97,18 @@ typedef struct
 
 } menu_data;
 
+
+void LCD_NewLine(void);
+void LCD_Reset(void);
+
+/* Menu Uart Functions */
+void MenuUart_NewLine(void);
+void MenuUartTxString(uint8_t* string);
+void MenuUartTxString_P(const char* string);
+void MenuUart_Reset(void);
+
+
+void MenuSetDisplay(uint8_t display);
 
 void MenuSetInput(uint8_t NewInput);
 
