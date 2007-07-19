@@ -44,15 +44,17 @@
 
 /* The 23th bit holds the busy signal 
  * ie the 6th bit of Byte[2]*/
-#define ADS1213_BUSY       (0xFFFFFFFF)
+#define ADS1213_BUSY       (0x1FFFFFFF)
 typedef union ADS1213_data 
 {
    uint8_t  byte[3];
-   uint32_t result;  
+   uint32_t result;
+   float    FPresult;  
 } ADS1213Data_t;
- 
 
-#define ADS1213_RxByte ADS1213_TxByte(0xFF)
+
+
+#define ADS1213_RxByte() ADS1213_TxByte(0xFF)
 
 /* CPHA = 1 is required  for this ADC,
  * CPHA = 1 required for the DS1305 as well*/

@@ -10,13 +10,17 @@
 #include "SPI/spi.h"
 #include "ads1213.h"
 
+
+#include "hardUart/hardUart.h"
+
 /* Internal function */
 uint8_t ADS1213_TxByte(uint8_t data)
 {
 	uint8_t inputByte;
+	_delay_ms(1);	
 	inputByte = SPI_TxByte(data);
 	_delay_ms(1);
-	
+		
 	return inputByte;
 }
 
@@ -40,6 +44,8 @@ void ADS1213_Init(void)
    	 
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
    ADS1213_TxByte( (1 << ADS1213_SDL) | (1<<ADS1213_REFO) );
+
+   
    
    /* Perform a self calibration */
    ADS1213_TxByte( (1 << ADS1213_MD0) );
@@ -63,16 +69,20 @@ uint32_t ADS1213_GetResult(void)
 {
    uint8_t BusyFlag;
    uint8_t DRDY_Status;
-   uint8_t retry;
+   uint16_t retry;
+   
+   
+   uint32_t temporary;
    
    ADS1213Data_t Data;
+   Data.result = 0;
 
    /* Read nDRDY and only return the contents of DOR
     * if nDRDY is LOW */
    
    BusyFlag = 1;
     
-   for( retry = 0; retry < 8; retry++)
+   for( retry = 0; retry < 32; retry++)
    {    
       ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);  
             
@@ -82,8 +92,13 @@ uint32_t ADS1213_GetResult(void)
       if( !(DRDY_Status & (1<<ADS1213_DRDY)) )
       { 
          BusyFlag = 0;
+         ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
+         _delay_ms(2);
          break;
       }
+   
+      ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
+      _delay_ms(2);
    }
 
    if(BusyFlag)
@@ -99,10 +114,12 @@ uint32_t ADS1213_GetResult(void)
    Data.byte[1] = SPI_RxByte();
    Data.byte[0] = SPI_RxByte();   
    
+   temporary = Data.result;
+   
    /* Release the chip */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
    
-   return Data.result;   
+   return temporary;   
   
 }
 
@@ -140,6 +157,8 @@ void ADS1213_Startup(void)
     
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
    ADS1213_TxByte( (1 << ADS1213_SDL) | (1 << ADS1213_REFO) );
+
+   //ADS1213_TxByte( 1 << ADS1213_SDL );
    
    /* Return to Normal mode */
    ADS1213_TxByte( 0 );
