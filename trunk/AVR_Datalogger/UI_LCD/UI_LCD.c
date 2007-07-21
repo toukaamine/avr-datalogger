@@ -68,8 +68,7 @@ void UI_LCD_HWInit(void)
         
 
    /* Apply LCD Power */
-	UI_LCD_SetRegister(UI_LCD_POWER, 0x01);
-   
+   UI_LCD_Activate(); 
  
 
 	/* Set all UI_LCD pins to outputs */

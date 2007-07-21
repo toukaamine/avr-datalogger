@@ -28,8 +28,6 @@ void UI_KP_Init(void)
 
    /* Set UI_Rows to to output LOW */
    UI_SetRegister(UI_ROW_PORT, 0x00);
-    
-   
    
 }
 

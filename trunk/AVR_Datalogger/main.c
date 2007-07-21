@@ -51,17 +51,19 @@ int main(void)
    uartInit(3, 1);
     
 
-   sei();
+
    UCSRB |= (1 << RXCIE);
    
 	i2cInit(1 , 0);
 
    GS_Init();
-      
-   UI_Activate();
-   UI_KP_Init();
+   
+   UI_Activate();    
+   UI_KP_Init();  
+   
    UI_LCD_HWInit();
    UI_LCD_Shutdown();
+   _delay_ms(10);
        
    UI_LCD_Activate();  
    UI_LCD_Init();
@@ -84,10 +86,12 @@ int main(void)
    
    SPI_Init();
    ADS1213_Init();
+
+   sei();
    
    while(1)
    {
-         
+      UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));   
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -104,6 +108,9 @@ ISR(SIG_UART_RECV)
    static uint8_t rcvdByte = 0;
    static uint8_t lastInput = 0;
    static uint8_t uartMenu = 0;
+   static uint8_t channel = 0;
+   static uint8_t gain = 0;
+   
    rcvdByte = UDR;
    
    //UI_LCD_Char(rcvdByte);
@@ -146,8 +153,62 @@ ISR(SIG_UART_RECV)
       uartMenu = 1;
       MenuUpdate();
    }   
-      
    
+   /* Dec Channel */
+   if( recvByte == '1' )
+   {      
+      if( channel == 0 )
+      {
+         channel = 1;  
+      }      
+      channel = channel - 1;    
+      GS_Channel(channel);
+      uartTx(channel);
+   }   
+      
+   if( recvByte == '4' )
+   {      
+      if( channel == 32 )
+      {
+         channel = 31;  
+      }      
+      channel = channel + 1;    
+      GS_Channel(channel);
+      uartTx(channel);      
+   } 
+   
+   /* Gain Selects */
+   if( recvByte == '5' )
+   {      
+      if( gain == 9 )
+      {
+         gain = 8;  
+      }      
+      gain = gain + 1;
+      GS_GainSel( pgm_read_byte( &GS_GAIN[gain]  );
+      uartTx(gain);      
+   }
+   
+   
+   if( recvByte == '2' )
+   {      
+      if( gain == 1 )
+      {
+         gain = 1;  
+      }      
+      gain = gain - 1;
+      GS_GainSel( pgm_read_byte( &GS_GAIN[gain]  );
+      uartTx(gain);      
+   }              
+                       
+      
+      
+   if( rcvdByte == 'q')
+   {
+      
+      uartTx( UI_ReadRegister(MAX7300_CONFIG) );
+      UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));
+   }      
    
    if( rcvdByte == 'R' )
    {
@@ -280,8 +341,6 @@ ISR(INT0_vect)
       
       /* Interrupt must have been from a Button press then */
       default:       
-         IntResult = UI_KP_GetPress();
-         MenuSetInput(IntResult);
          break;
    }
 
@@ -292,12 +351,14 @@ ISR(INT0_vect)
       LCD_BL_PORT ^= (1 << LCD_BL_PIN);  
    }
    
+   
+   
    uartTx(IntResult);
-   
-   MenuSetInput(IntResult);   
-   MenuUpdate();
-   
-      
+   if( IntResult != KP_INVALID)
+   {
+      MenuSetInput(IntResult);   
+      MenuUpdate();
+   }
    /* Set the M-bit in the UI Register */
    UI_Activate();
    sei();

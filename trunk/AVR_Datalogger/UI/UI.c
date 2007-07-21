@@ -17,16 +17,13 @@ void UI_Init(void)
 
 /* Turns the UI MAX7300 on and turns on interrupts */
 void UI_Activate(void)
-{
+{       
    
-	/* Enable Transition detection on RTC inputs and Keypad Columns */   
+   /* Enable Transition detection on RTC inputs and Keypad Columns */   
    UI_SetRegister(MAX7300_TRANSITION_MASK, 0xFF & ~(1 << MAX7300_TM_P24) );
-   
-   
-	/* Set Config to turn on and Enable Transition detect */
-	UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE) );
-
-
+	   
+   /* Set Config to turn on and Enable Transition detect */
+   UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));
 
 }
 
