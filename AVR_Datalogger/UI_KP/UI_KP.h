@@ -46,7 +46,7 @@
 
 
 #define KP_ButtonCount  (16)
-#define KP_INVALID   (0x00)
+#define KP_INVALID   (0xFF)
 
 
 
