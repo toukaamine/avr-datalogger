@@ -19,19 +19,15 @@ void UI_Init(void)
 void UI_Activate(void)
 {
    
-	/* Enable Transition detection on RTC inputs and Keypad Columns */
-	i2cAddress(UI_MAX7300_ADDRESS, TW_WRITE);
-	i2cTransmit(MAX7300_TRANSITION_MASK);
-	i2cTransmit( 0xFF & ~(1 << MAX7300_TM_P24)  );
-	i2cStop();   
+	/* Enable Transition detection on RTC inputs and Keypad Columns */   
+   UI_SetRegister(MAX7300_TRANSITION_MASK, 0xFF & ~(1 << MAX7300_TM_P24) );
    
-
    
 	/* Set Config to turn on and Enable Transition detect */
-	i2cAddress(UI_MAX7300_ADDRESS, TW_WRITE);
-	i2cTransmit(MAX7300_CONFIG);
-	i2cTransmit( (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE) );
-	i2cStop();    
+	UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE) );
+
+
+
 }
 
 

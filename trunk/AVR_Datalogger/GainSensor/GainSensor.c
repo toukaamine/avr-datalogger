@@ -12,7 +12,7 @@
 
 /* TODO: Ensure that AVR Signed is done using two's comp */
 
-static const uint8_t  GS_GAIN[] = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_11, GS_GAIN_5,
+const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_11, GS_GAIN_5,
                       GS_GAIN_05, GS_GAIN_025, GS_GAIN_02, GS_GAIN_01, GS_GAIN_005, 0}; 
 
 
@@ -31,11 +31,15 @@ void GS_Init(void)
 {
    /* Set all pins to outputs except for NC pins which are set to inputs*/
 	i2cAddress(GS_MAX7300_ADDRESS, TW_WRITE);     
+
  	i2cTransmit(MAX7300_DDRA1);
-	i2cTransmit(0xAA); 
-	i2cTransmit(0x65);
-	i2cTransmit(0xAA);
+	i2cTransmit(0x55); 
+	i2cTransmit(0x59);
+	i2cTransmit(0x55);
 	i2cStop();   
+	
+	GS_SetRegister( MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) );
+	
 
 }
 
@@ -43,19 +47,19 @@ void GS_Init(void)
 void GS_Channel(uint8_t channel)
 {
    
-   uint8_t block;
-   uint8_t portData;
+   static uint8_t block;
+   static uint8_t portData;
    
    /* Channel Manipulation needed to reflect connection of the hardware */
    channel = channel - 1;
    block = 0x07 - (channel / 4);
-   block = MSB2LSB(block);
+   block = MSB2LSB(block) >> 5;
    
    /* Change only the sensor channel and not the gain bits */
    portData = GS_ReadRegister(GS_SENSOR_PORT);
    
    portData &= ~(GS_SENSOR_MASK);
-   portData |= (((block << 3) + (channel & 0x03)) & (GS_SENSOR_MASK));
+   portData |= (((block << 2) + (channel & 0x03)) & (GS_SENSOR_MASK));
    
    GS_SetRegister(GS_SENSOR_PORT, portData );
 }
@@ -66,6 +70,9 @@ void GS_Channel(uint8_t channel)
  */
 void GS_GainSel(uint8_t gain)
 {
+   /* There is no need to AND this with the CH Sel bits because we are
+    * writing to the GAIN Port */
+   
    GS_SetRegister(GS_GAIN_PORT, gain & (GS_GAIN_MASK) );
 }
 
@@ -181,12 +188,13 @@ uint32_t SensorData(uint8_t channel)
 void SensorAutoScale(uint8_t channel)
 {
    uint8_t i;
+   uint8_t gain;
    int32_t ADCResult;
    
-   for(i = 0; GS_GAIN[i]; i++)
+   for(i = 0; (gain = pgm_read_byte( &GS_GAIN[i] )); i++)
    {
 		/* Start from the highest gain and work down */
-      SensorSetGain(channel, GS_GAIN[i]);
+      SensorSetGain(channel, gain );
       ADCResult = (int32_t)SensorData(channel);
       
       /* Within the saturation limit of 15 bits (could use 16?) */
@@ -194,7 +202,7 @@ void SensorAutoScale(uint8_t channel)
       {
 			if( i != 0 )
 			{
-				SensorSetGain(channel, GS_GAIN[i-1]);
+				SensorSetGain(channel, pgm_read_byte(GS_GAIN[i-1]) );
 			}
 			
          return;
