@@ -15,7 +15,7 @@
 #include "UI/UI.h"
 #include "Menu/Menu.h"
 #include "GainSensor/GainSensor.h"
-
+#include "ADS1213/ads1213.h"
 
 
 #define UART_PORT PORTD
@@ -35,7 +35,10 @@ extern uint8_t currentState;
 /* Waking up from Power Down requires 6Clock Cycles */ 
 uint16_t sampleSetting;
 
+int32_t latestSample;
 
+
+void printSample(void);
 
 /* To do, MMC add #conditional includes
  * MAX7300 routines.
@@ -44,38 +47,47 @@ uint16_t sampleSetting;
 int main(void)
 {
    
-   uartInit(0, 1);
-
+   /* Good for 250kbit */
+   uartInit(3, 1);
+    
 
    sei();
    UCSRB |= (1 << RXCIE);
    
 	i2cInit(1 , 0);
 
-   //GS_Init();
+   GS_Init();
       
    UI_Activate();
    UI_KP_Init();
-
-   UI_LCD_Shutdown();
-   _delay_ms(10);   
-   
    UI_LCD_HWInit();
-   
-   
-   
+   UI_LCD_Shutdown();
+       
    UI_LCD_Activate();  
    UI_LCD_Init();
       
-   /* Reprint Menu */
+   MenuSetDisplay(MENU_LCD);
 
-   DDRD |= (1<<PD5);
-
+   /* Enable Keypad Presses */
    UI_LCD_SetData();
    MCUCR |= (0x03 << ISC00);
    GICR |= (1 << INT0);
+   
+   /* Sample Control */
+   SC_Init();
+   SC_EnableTimer();
+   
+   /* Menu Setup */
+   MenuSetInput(0);   
+   /* Reprint Menu */   
+   MenuUpdate();
+   
+   SPI_Init();
+   ADS1213_Init();
+   
    while(1)
    {
+         
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -89,38 +101,136 @@ int main(void)
 ISR(SIG_UART_RECV)
 {
 
-   UI_LCD_Char(UDR);
+   static uint8_t rcvdByte = 0;
+   static uint8_t lastInput = 0;
+   static uint8_t uartMenu = 0;
+   rcvdByte = UDR;
    
-   UI_LCD_Pos( 0 , 0);
-   UI_LCD_String_P( PSTR("Line 0") );
- 
-   UI_LCD_Pos( 1 , 0);
-   UI_LCD_String_P( PSTR("Line 1") );
+   //UI_LCD_Char(rcvdByte);
+   
 
-   UI_LCD_Pos( 2 , 0);
-   UI_LCD_String_P( PSTR("Line 2") );
+   /* Update the menu if we are in UART mode */
+   if( uartMenu )
+   {
+      MenuSetInput(rcvdByte);   
+      MenuUpdate();  
+   }
    
-   UI_LCD_Pos( 3 , 0);
-   UI_LCD_String_P( PSTR("Line 3") );         
+   if( rcvdByte == 'G' )
+   {
+      
+      printSample();
+      
+   }
+   
+   if( rcvdByte == 'W' )
+   {
+      ADS1213_Startup();  
+   }
+   
+   if( rcvdByte == 'S')
+   {
+      ADS1213_Shutdown();  
+   }
+   
+   if( rcvdByte == 'l')
+   {
+      MenuSetDisplay(MENU_LCD);
+      uartMenu = 0;
+      MenuUpdate(); 
+   }   
+
+   if( rcvdByte == 'u')
+   {
+      MenuSetDisplay(MENU_UART);
+      uartMenu = 1;
+      MenuUpdate();
+   }   
+      
+   
+   
+   if( rcvdByte == 'R' )
+   {
+      asm volatile("jmp 0"::);
+   }
+   
+   if( rcvdByte == 'r' )
+   {
+      
+      uint8_t ADS1213Byte;
+      
+      /* Read 1 byte, that is byte 3 of CMR */
+      
+      ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+      
+      ADS1213_TxByte( (1 << ADS1213_RW) | (1 << ADS1213_A2) );  
+      
+      ADS1213Byte = ADS1213_RxByte();
+      
+      ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
+      
+      uartTx(ADS1213Byte);
+      
+   }
+   
+}
+
+
+void printSample(void)
+{
+   ADS1213Data_t number;
+ 
+   latestSample = 0;
+   latestSample = ADS1213_GetResult(); 
+   
+   number.FPresult = (float)latestSample;
+   
+   /* Now convert the sample to floats and voltage */
+   
+   // Print as float.
+   uartTx( (number.result >> 24) & 0xFF);   
+   uartTx( (number.result >> 16) & 0xFF);
+   uartTx( (number.result >> 8)  & 0xFF);
+   uartTx( (number.result)       & 0xFF);         
    
 }
 
 
 /* Counts number of SC_Compare_rate us. */
 /* Perhaps use a faster FPU speed ? */
-/* With a presacler of 8, 125 == 1 msec so this is a 1msec counter */
+/* For 1MHZ With a presacler of 8, 125 == 1 msec so this is a 1msec counter */
+/* For 8MHZ               "     32, 250 = 1 msec */
 ISR(TIMER2_COMP_vect)
 {
    cli();
    
-   static uint16_t counter;
-   counter = counter + 1;
+   static uint8_t counter_ms;
+
+/* Example */
+/* Happens every 10 seconds, max seconds = 25.5secs  
+ * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
+	static SoftTimer_8 ControlEvent = {5*SC_SECONDS, 0};
+	
    
-   if( counter == SC_MILLISECOND)
+   counter_ms++;
+   
+   if( counter_ms == 100*SC_MILLISECOND)
    {
+		counter_ms = 0;
+      ControlEvent.timerCounter++;
+		
+		/* Functions which occur every xx*100msecs happen here */
+		if( ControlEvent.timerCounter == ControlEvent.timeCompare)
+		{
+			/* Do Control Event */
+			//LCD_BL_PORT ^= (1 << LCD_BL_PIN);
+			ControlEvent.timerCounter = 0;
+		}
+		
       
    } 
    
+   /* Functions occuring between 1 to 99msecs occur here */
    
    
    sei();
@@ -177,12 +287,16 @@ ISR(INT0_vect)
 
    IntResult = UI_KP_GetPress();
    
+   if( IntResult == KP_D )
+   {
+      LCD_BL_PORT ^= (1 << LCD_BL_PIN);  
+   }
+   
    uartTx(IntResult);
    
    MenuSetInput(IntResult);   
    MenuUpdate();
    
-   uartTxString_P( PSTR("SAY MY NAME"));
       
    /* Set the M-bit in the UI Register */
    UI_Activate();
