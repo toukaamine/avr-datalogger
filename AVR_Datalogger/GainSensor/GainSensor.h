@@ -26,6 +26,8 @@
 
 /* Switch combinations which produce the given gain */
 #define GS_GAIN_76   ((1 << GS_GAIN_A) | (1 << GS_GAIN_F))
+
+/* Approximatley 32.2 31.5 -> 33*/
 #define GS_GAIN_30   ((1 << GS_GAIN_B) | (1 << GS_GAIN_C) | (1 << GS_GAIN_F))
 #define GS_GAIN_22   ((1 << GS_GAIN_B) | (1 << GS_GAIN_F))
 #define GS_GAIN_11   ((1 << GS_GAIN_C) | (1 << GS_GAIN_F))
@@ -89,6 +91,8 @@ typedef struct _float128
 	
 } Float128_t;
 
+
+extern const uint8_t  GS_GAIN[] PROGMEM;
 
 void GS_Init(void);
 void GS_Channel(uint8_t channel);

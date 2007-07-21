@@ -7,6 +7,7 @@
 #include "pwm/pwm.h"
 #include "UI_LCD.h"
 #include "MSB2LSB/MSB2LSB.h"
+#include "hardUart/hardUart.h"
 
 /* Need to provide protection so that data lines are never high when
  * the LCD is in shutdown */
@@ -29,6 +30,10 @@ void UI_LCD_SetRegister(uint8_t reg, uint8_t data)
       }
       
       UI_SetRegister(reg, data);   
+   }
+   else
+   {
+      uartTxString("OI LCD NOT ON!");  
    }
 }
 
