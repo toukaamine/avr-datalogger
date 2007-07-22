@@ -21,6 +21,7 @@ typedef struct _softTimer8
 {
 	uint8_t timeCompare;
 	uint8_t timerCounter;
+	uint8_t timerEnable;
 	
 } SoftTimer_8;
 
@@ -29,7 +30,7 @@ typedef struct _softTimer16
 {
 	uint16_t timeCompare;
 	uint16_t timerCounter;
-	
+	uint8_t timerEnable;	
 } SoftTimer_16;
 
 
@@ -37,5 +38,5 @@ typedef struct _softTimer32
 {
 	uint32_t timeCompare;
 	uint32_t timerCounter;
-	
+	uint8_t timerEnable;	
 } SoftTimer_32;
