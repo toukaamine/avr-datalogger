@@ -15,14 +15,10 @@ uint8_t MAX7300_ReadRegister(uint8_t address, uint8_t reg)
 
 	i2cAddress(address, TW_WRITE);     
  	i2cTransmit(reg);
-	i2cStop();
-	
-	_delay_ms(1);
-	
+
 	
 	i2cAddress(address, TW_READ);
-   readByte = i2cRead(ACK_BIT);
-	i2cStop();     
+   readByte = i2cRead(ACK_BIT);    
  	return readByte;   
 }
 

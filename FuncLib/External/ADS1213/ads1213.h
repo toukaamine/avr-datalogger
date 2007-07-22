@@ -29,6 +29,7 @@
 
 /* Command Register Bits */
 /* Byte 3 */
+#define ADS1213_BIAS       (7)
 #define ADS1213_REFO       (6)
 #define ADS1213_DF         (5)
 #define ADS1213_UNIPOLAR   (4)
@@ -69,8 +70,7 @@ uint32_t ADS1213_GetResult(void);
 void ADS1213_CS_Pulse(void);
 void ADS1213_Shutdown(void);
 void ADS1213_Startup(void);
-
-
+void ADS1213_Reset(void);
 
 
 #endif
