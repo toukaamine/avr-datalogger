@@ -30,6 +30,8 @@
 /* Command Register Bits */
 /* Byte 3 */
 #define ADS1213_REFO       (6)
+#define ADS1213_DF         (5)
+#define ADS1213_UNIPOLAR   (4)
 #define ADS1213_SDL        (1)
 #define ADS1213_DRDY       (0)
 
@@ -48,7 +50,7 @@
 #define ADS1213_BUSY       (0x1FFFFFFF)
 typedef union ADS1213_data 
 {
-   uint8_t  byte[3];
+   uint8_t  byte[4];
    uint32_t result;
    float    FPresult;  
 } ADS1213Data_t;
