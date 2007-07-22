@@ -1,7 +1,7 @@
 [Project]
 FileName=Datalogger ENEL427.dev
 Name=Datalogger ENEL427
-UnitCount=46
+UnitCount=43
 Type=1
 Ver=1
 ObjFiles=
@@ -518,11 +518,10 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit43]
-FileName=V:\MSTdev\WinAVR\20070122\avr\include\util\delay.h
-CompileCpp=0
-Folder=Util
-Compile=1
-Link=1
+FileName=doc\Doxyfile
+Folder=Datalogger ENEL427
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=

@@ -1,7 +1,7 @@
 
 
 
-#include "MAX7300/MAX7300.h"
+#include "MAX7300/max7300.h"
 #include "I2C/i2c.h"
 #include "UI.h"
 
