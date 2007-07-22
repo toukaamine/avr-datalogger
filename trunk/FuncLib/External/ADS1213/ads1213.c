@@ -17,9 +17,9 @@
 uint8_t ADS1213_TxByte(uint8_t data)
 {
 	uint8_t inputByte;
-	_delay_ms(1);	
+	_delay_ms(3);	
 	inputByte = SPI_TxByte(data);
-	_delay_ms(1);
+	_delay_ms(3);
 		
 	return inputByte;
 }
@@ -35,29 +35,55 @@ void ADS1213_Init(void)
    
    //ADS1213_CS_Pulse(); 
    
+
+	SPCR &= ~(1 << SPE);
+	
+	/* Perform a reset */
+	SPI_PORT |= (1 << SCK);
+	_delay_us(600);
+	SPI_PORT &= ~(1 << SCK);
+	_delay_us(10);	
+	SPI_PORT |= (1 << SCK);
+	_delay_us(100);	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_us(10);	
+	SPI_PORT |= (1 << SCK);
+	_delay_us(600);	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_us(10);		
+	SPI_PORT |= (1 << SCK);
+	_delay_ms(1);   	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_ms(1000);   
+
    ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);     
 	
-	 
+	SPCR |= (1 << SPE);
+    
    ADS1213_TxByte( (1 << ADS1213_MB1) 
                | (1 << ADS1213_MB0)
                | (1 << ADS1213_A2) );  
    	 
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
-   ADS1213_TxByte( (1 << ADS1213_SDL) | (1<<ADS1213_REFO) );
+   ADS1213_TxByte( (1 << ADS1213_SDL) 
+                   | (1<<ADS1213_REFO) 
+                   | (1<<ADS1213_DF)
+                   | (1<<ADS1213_UNIPOLAR));
 
    
    
    /* Perform a self calibration */
-   ADS1213_TxByte( (1 << ADS1213_MD0) );
+   ADS1213_TxByte( 0 );
    
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte( (1 << ADS1213_SF2) | 1 );
+   ADS1213_TxByte( (1 << ADS1213_SF2) + 0 );
 
-   ADS1213_TxByte( 244 );
+   ADS1213_TxByte( 20 );
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
-   
+
+
 }
 
 
@@ -85,6 +111,8 @@ uint32_t ADS1213_GetResult(void)
    for( retry = 0; retry < 32; retry++)
    {    
       ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);  
+      
+      /* Read CMD Register's DRDY */
             
       ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_A2));     
       DRDY_Status = ADS1213_RxByte();
@@ -106,13 +134,19 @@ uint32_t ADS1213_GetResult(void)
       return ADS1213_BUSY;  
    }
    
-   
-   ADS1213_CS_Pulse();
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+  _delay_ms(3);
    /* Ask to read three bytes from DOR(1) */
    ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_MB1));
-   Data.byte[2] = SPI_RxByte();
-   Data.byte[1] = SPI_RxByte();
-   Data.byte[0] = SPI_RxByte();   
+   Data.byte[2] = ADS1213_RxByte();
+   Data.byte[1] = ADS1213_RxByte();
+   Data.byte[0] = ADS1213_RxByte();   
+   
+   Data.byte[4] = 0;
+   
+   uartTx(Data.byte[2]);
+   uartTx(Data.byte[1]);
+   uartTx(Data.byte[0]);      
    
    temporary = Data.result;
    

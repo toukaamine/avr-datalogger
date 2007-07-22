@@ -33,7 +33,7 @@
 void i2cSetBitRate(uint8_t bitrate, uint8_t prescale)
 {
 	TWBR = bitrate;
-	TWSR = (TWBR & (~TWI_PRESCALE_MASK)) | (prescale << TWPS0);
+	TWSR = (TWSR & (~TWI_PRESCALE_MASK)) | (prescale << TWPS0);
 }
 
 
@@ -101,10 +101,10 @@ void i2cError(uint8_t expected_status)
 /* TWI Operations take place when TWINT is cleared (set to 1) */
 void i2cStart(void)
 {
-	TWCR |= (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
+	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
 	while( (TWCR & (1<<TWINT)) == 0);
-	
+
 }
 
 
@@ -116,9 +116,9 @@ void i2cStart(void)
 /* TWI Operations take place when TWINT is cleared (set to 1) */
 void i2cStop(void)
 {
-	TWCR |= (1<<TWINT) | (1<<TWSTO) | (1<<TWEN);
+	TWCR = (1<<TWINT) | (1<<TWSTO) | (1<<TWEN);
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
-	//while( (TWCR & (1<<TWINT)) == 0);
+	//while( !(TWCR & (1<<TWINT)) );
 	
 }
 
@@ -134,7 +134,7 @@ void i2cTransmit(uint8_t outbyte)
 	/* If the ACK was successfully received, then transmit the databyte */
 	TWDR = outbyte;
 	/* Ensure the start bit is zero, and enable the transmission & acknowledge */
-	TWCR = (TWCR & (~I2C_TRANSMIT_MASK)) | (1<<TWINT) | (1<<TWEA);
+	TWCR = (TWCR & (~I2C_TRANSMIT_MASK)) | (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
 	while( (TWCR & (1<<TWINT)) == 0);
@@ -188,7 +188,7 @@ void i2cAddress(uint8_t address, uint8_t rw_bit)
 	TWDR = (address) + rw_bit;
 	
 	/* Ensure the start bit is zero, and enable the transmission */
-	TWCR = (TWCR & (~I2C_TRANSMIT_MASK)) | (1<<TWINT);
+	TWCR = (TWCR & (~I2C_TRANSMIT_MASK)) | (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
 	while( (TWCR & (1<<TWINT)) == 0);
@@ -232,7 +232,7 @@ uint8_t i2cRead(uint8_t acknowledge_bit)
 {
 	
 	/* Setup the acknowledge bit and initiate the read */
-	TWCR = (TWCR & (~I2C_RECEIVE_MASK)) | (acknowledge_bit<<TWEA) | (1<<TWINT);
+	TWCR = (TWCR & (~I2C_RECEIVE_MASK)) | (acknowledge_bit<<TWEA) | (1<<TWINT) | (1<<TWEN);
 
 	/* Wait until the TW Interrupt flag is set (TWI Ready) */
 	while( (TWCR & (1<<TWINT)) == 0);

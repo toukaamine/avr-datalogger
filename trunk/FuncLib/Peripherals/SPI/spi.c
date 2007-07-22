@@ -27,8 +27,8 @@ void SPI_Init(void)
 {
    
    /* Setup ports */
-   SPI_PORT |= (1 << SCK);
    SPI_DDR |= ( (1 << SCK) | (1 << nSS) | (1 << MOSI) );
+   SPI_PORT &= (1 << SCK);
    SPI_DDR &=  ~(1 << MISO);   
    
    /* Initiate as Master and Use CPHA = 1*/

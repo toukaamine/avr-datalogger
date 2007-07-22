@@ -1,4 +1,6 @@
 
+#include <Util/delay.h>
+
 #include "max7300.h"
 #include "UI/UI.h"
 #include "I2C/i2c.h"
@@ -8,13 +10,20 @@
 /* Returns the state of the data in 'reg'*/
 uint8_t MAX7300_ReadRegister(uint8_t address, uint8_t reg)
 {
+   uint8_t readByte;
+
 
 	i2cAddress(address, TW_WRITE);     
  	i2cTransmit(reg);
 	i2cStop();
 	
-	i2cAddress(address, TW_READ);     
- 	return i2cRead(ACK_BIT);   
+	_delay_ms(1);
+	
+	
+	i2cAddress(address, TW_READ);
+   readByte = i2cRead(ACK_BIT);
+	i2cStop();     
+ 	return readByte;   
 }
 
 /* Places 'data' into register 'reg' */
