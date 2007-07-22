@@ -35,7 +35,7 @@ extern uint8_t currentState;
 /* Waking up from Power Down requires 6Clock Cycles */ 
 uint16_t sampleSetting;
 
-int32_t latestSample;
+
 
 
 void printSample(void);
@@ -54,10 +54,9 @@ int main(void)
 
    UCSRB |= (1 << RXCIE);
    
-	i2cInit(1 , 0);
+	i2cInit(2 , 0);
 
-   GS_Init();
-   
+   GS_Init(); 
    UI_Activate();    
    UI_KP_Init();  
    
@@ -65,7 +64,7 @@ int main(void)
    UI_LCD_Shutdown();
    _delay_ms(10);
        
-   UI_LCD_Activate();  
+   UI_LCD_Activate();    
    UI_LCD_Init();
       
    MenuSetDisplay(MENU_LCD);
@@ -85,13 +84,14 @@ int main(void)
    MenuUpdate();
    
    SPI_Init();
-   ADS1213_Init();
+
 
    sei();
+   UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
    
+ 
    while(1)
    {
-      UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));   
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -108,7 +108,7 @@ ISR(SIG_UART_RECV)
    static uint8_t rcvdByte = 0;
    static uint8_t lastInput = 0;
    static uint8_t uartMenu = 0;
-   static uint8_t channel = 0;
+   static uint8_t channel = 1;
    static uint8_t gain = 0;
    
    rcvdByte = UDR;
@@ -135,6 +135,16 @@ ISR(SIG_UART_RECV)
       ADS1213_Startup();  
    }
    
+   if( rcvdByte == 'i' )
+   {
+      ADS1213_Init();  
+   }
+   
+   if( rcvdByte == 'n' )
+   {
+      ADS1213_Reset();  
+   }      
+   
    if( rcvdByte == 'S')
    {
       ADS1213_Shutdown();  
@@ -155,18 +165,18 @@ ISR(SIG_UART_RECV)
    }   
    
    /* Dec Channel */
-   if( recvByte == '1' )
+   if( rcvdByte == '1' )
    {      
-      if( channel == 0 )
+      if( channel == 1                         )
       {
-         channel = 1;  
+         channel = 2;  
       }      
       channel = channel - 1;    
       GS_Channel(channel);
       uartTx(channel);
    }   
       
-   if( recvByte == '4' )
+   if( rcvdByte == '4' )
    {      
       if( channel == 32 )
       {
@@ -178,26 +188,26 @@ ISR(SIG_UART_RECV)
    } 
    
    /* Gain Selects */
-   if( recvByte == '5' )
+   if( rcvdByte == '5' )
    {      
       if( gain == 9 )
       {
          gain = 8;  
       }      
       gain = gain + 1;
-      GS_GainSel( pgm_read_byte( &GS_GAIN[gain]  );
+      GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
       uartTx(gain);      
    }
    
    
-   if( recvByte == '2' )
+   if( rcvdByte == '2' )
    {      
-      if( gain == 1 )
+      if( gain == 0 )
       {
          gain = 1;  
       }      
       gain = gain - 1;
-      GS_GainSel( pgm_read_byte( &GS_GAIN[gain]  );
+      GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
       uartTx(gain);      
    }              
                        
@@ -220,17 +230,26 @@ ISR(SIG_UART_RECV)
       
       uint8_t ADS1213Byte;
       
-      /* Read 1 byte, that is byte 3 of CMR */
+      /* Read 4 byte, that is 4 bytes of CMR */
       
       ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
       
-      ADS1213_TxByte( (1 << ADS1213_RW) | (1 << ADS1213_A2) );  
+      ADS1213_TxByte( (1 << ADS1213_RW) 
+                      | (1 << ADS1213_A2) 
+                      | (1 << ADS1213_MB0)
+                      | (1 << ADS1213_MB1) );  
       
       ADS1213Byte = ADS1213_RxByte();
-      
+      uartTx(ADS1213Byte);
+      ADS1213Byte = ADS1213_RxByte();
+      uartTx(ADS1213Byte);
+      ADS1213Byte = ADS1213_RxByte();
+      uartTx(ADS1213Byte);
+      ADS1213Byte = ADS1213_RxByte();
+      uartTx(ADS1213Byte);                        
       ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
       
-      uartTx(ADS1213Byte);
+
       
    }
    
@@ -240,20 +259,22 @@ ISR(SIG_UART_RECV)
 void printSample(void)
 {
    ADS1213Data_t number;
- 
+   uint32_t latestSample;
    latestSample = 0;
-   latestSample = ADS1213_GetResult(); 
    
-   number.FPresult = (float)latestSample;
+   while( latestSample == 0 )
+   {
+      latestSample = ADS1213_GetResult(); 
    
-   /* Now convert the sample to floats and voltage */
+
+      /* Now convert the sample to floats and voltage */
    
-   // Print as float.
-   uartTx( (number.result >> 24) & 0xFF);   
-   uartTx( (number.result >> 16) & 0xFF);
-   uartTx( (number.result >> 8)  & 0xFF);
-   uartTx( (number.result)       & 0xFF);         
-   
+      // Print as float.
+      uartTx( (latestSample >> 16) & 0xFF);   
+      uartTx( (latestSample >> 8) & 0xFF);
+      uartTx( (latestSample)  & 0xFF);
+       
+   }
 }
 
 
@@ -270,7 +291,7 @@ ISR(TIMER2_COMP_vect)
 /* Example */
 /* Happens every 10 seconds, max seconds = 25.5secs  
  * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
-	static SoftTimer_8 ControlEvent = {5*SC_SECONDS, 0};
+	static SoftTimer_8 ControlEvent = {5*SC_SECONDS, 0, 1};
 	
    
    counter_ms++;
@@ -281,11 +302,14 @@ ISR(TIMER2_COMP_vect)
       ControlEvent.timerCounter++;
 		
 		/* Functions which occur every xx*100msecs happen here */
-		if( ControlEvent.timerCounter == ControlEvent.timeCompare)
+		if( ControlEvent.timerCounter == ControlEvent.timeCompare 
+          && ControlEvent.timerEnable)
 		{
 			/* Do Control Event */
+			//ADS1213_Init();
 			//LCD_BL_PORT ^= (1 << LCD_BL_PIN);
 			ControlEvent.timerCounter = 0;
+			ControlEvent.timerEnable = 0;
 		}
 		
       

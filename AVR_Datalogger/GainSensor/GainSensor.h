@@ -36,6 +36,8 @@
 #define GS_GAIN_025  ((1 << GS_GAIN_B) | (1 << GS_GAIN_C) | (1 << GS_GAIN_D) | (1 << GS_GAIN_E) | (1 << GS_GAIN_F))
 #define GS_GAIN_02   ((1 << GS_GAIN_B) | (1 << GS_GAIN_E))
 #define GS_GAIN_01   ((1 << GS_GAIN_C) | (1 << GS_GAIN_D) | (1 << GS_GAIN_E) | (1 << GS_GAIN_F))
+
+/* Approximatley 0.0432 */
 #define GS_GAIN_005    ((1 << GS_GAIN_D) | (1 << GS_GAIN_E))
 
 /* All gains below are multiplied by the Gain Resolution */

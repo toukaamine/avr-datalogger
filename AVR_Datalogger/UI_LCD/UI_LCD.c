@@ -69,7 +69,7 @@ void UI_LCD_HWInit(void)
 
    /* Apply LCD Power */
    UI_LCD_Activate(); 
- 
+   _delay_ms(100);
 
 	/* Set all UI_LCD pins to outputs */
 	i2cAddress(UI_MAX7300_ADDRESS, TW_WRITE);	
