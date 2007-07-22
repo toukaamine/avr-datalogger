@@ -1,0 +1,5 @@
+/** \defgroup avr_external External Hardware Drivers
+
+Drivers for external hardware.
+
+*/

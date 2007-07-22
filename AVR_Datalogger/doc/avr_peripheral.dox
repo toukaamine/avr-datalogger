@@ -1,0 +1,5 @@
+/** \defgroup avr_peripheral AVR-Peripheral Drivers
+
+AVR-Mega Series peripheral drivers.
+
+*/

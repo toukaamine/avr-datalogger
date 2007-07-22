@@ -1,6 +1,5 @@
 
 #include <Util/delay.h>
-
 #include "max7300.h"
 #include "UI/UI.h"
 #include "I2C/i2c.h"
