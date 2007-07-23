@@ -12,6 +12,14 @@
 
 #include "hardUart/hardUart.h"
 
+
+
+
+
+
+
+
+
 /* TODO: Ensure that AVR Signed is done using two's comp */
 
 const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_11, GS_GAIN_5,
@@ -286,24 +294,6 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
    
    
 }
-
-
-
-/* 32bit is the largest we can print */
-void printFloat(int32_t integer, uint32_t decimal)
-{
-
-   char outputString[20];
-   
-   ltoa( integer, outputString, 10);
-   strcat( outputString, ".");
-   utoa( decimal, &outputString[strlen(outputString)], 10);  
-   
-   uartTxString( (uint8_t*)outputString );
-   
-}
-
-
 
 
 

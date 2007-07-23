@@ -1,5 +1,5 @@
-#ifndef	_GS_ROUTINES
-#define	_GS_ROUTINES
+#ifndef	_GSFP_ROUTINES
+#define	_GSFP_ROUTINES
 
 
 
@@ -69,8 +69,8 @@
 #define SENSOR_SATURATION_LIMIT ((2^16) - 1)
 
 /* Approximatley 2.5V */
-#define SENSOR_REFERNCE 25
-#define SENSOR_REF_MULTIPLIER 10
+#define SENSOR_REFERNCE 2.5
+#define SENSOR_REF_MULTIPLIER 1
 
 typedef struct _float32
 {
@@ -104,27 +104,8 @@ typedef union _GS_float
    
 } float32_t;
 
-/** Multiplies the passed float by 2^(adjust) 
-  * The 8 exponent bits are held in the 
-  * 1st 7 bits of the 4the byte and the last bit of the 3rd byte.
-  */
-float32_t floatExponent(float32_t data, int8_t adjust)
-{
-   int8_t newExponent;
-   
-   newExponent = ((data.byteField[3] & FLOAT_EXP_BITS_HI) << 1)
-                  + (data.byteField[2] & FLOAT_EXP_BITS_LO);
-                   
-   newExponent += adjust;
-   /* Clear the Exponent Bits */
-   data.byteField[3] &=  ~(FLOAT_EXP_BITS_HI) + (newExponent >> 1);
-   data.byteField[2] &=  ~(FLOAT_EXP_BITS_LO) + (newExponent << 7);   
-   
-   return data;  
-}
 
-
-extern const uint8_t  GS_GAIN[] PROGMEM;
+extern const uint8_t GS_GAIN[];
 
 void GS_Init(void);
 void GS_Channel(uint8_t channel);
@@ -132,6 +113,7 @@ void GS_GainSel(uint8_t gain);
 
 void SensorCondition(uint32_t data, uint8_t gainIndex);
 
+float32_t floatExponent(float32_t data, int8_t adjust);
 void printFloat(float data);
 
 
