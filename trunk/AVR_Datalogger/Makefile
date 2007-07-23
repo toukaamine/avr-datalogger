@@ -70,7 +70,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = main
+TARGET = longtest
 
 GETTIME 			= 1
 GETTIME_PATH 	= ../FuncLib/Other/Time/
@@ -90,13 +90,14 @@ UTIL_DIR = ../FuncLib/Util
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
+		$(PERIPHERALS_DIR)/hardUart/hardUart.c 
+#\
 		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
 		$(EXTERNALS_DIR)/DS1305/ds1305.c \
 		$(EXTERNALS_DIR)/SD_MMC/sd.c \
 		$(EXTERNALS_DIR)/MAX7300/max7300.c \
 		$(PERIPHERALS_DIR)/SPI/spi.c \
 		$(PERIPHERALS_DIR)/I2C/i2c.c \
-		$(PERIPHERALS_DIR)/hardUart/hardUart.c \
 		$(PERIPHERALS_DIR)/pwm/pwm.c \
   		$(MISC_DIR)/mmculib/uint8toa.c \
 		$(APPLICATIONS_DIR)/RTC/RTCPrint.c \
@@ -105,9 +106,10 @@ SRC = $(TARGET).c \
 		UI/UI.c \
 		UI_KP/UI_KP.c \
 		UI_LCD/UI_LCD.c \
-		GainSensor/GainSensor.c \
-		SampleCtrl/SampleCtrl.c
-
+		GainSensor/GainSensorFP.c \
+      SampleCtrl/SampleCtrl.c 
+      
+#		GainSensor/GainSensor.c \
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = 

@@ -14,7 +14,7 @@
 #include "UI_LCD/UI_LCD.h"
 #include "UI/UI.h"
 #include "Menu/Menu.h"
-#include "GainSensor/GainSensor.h"
+#include "GainSensor/GainSensorFP.h"
 #include "ADS1213/ads1213.h"
 
 
@@ -92,6 +92,9 @@ int main(void)
  
    while(1)
    {
+      
+      
+      
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -111,6 +114,7 @@ ISR(SIG_UART_RECV)
    static uint8_t channel = 1;
    static uint8_t gain = 0;
    
+   uint32_t lastestResult;
    rcvdByte = UDR;
    
    //UI_LCD_Char(rcvdByte);
@@ -126,7 +130,8 @@ ISR(SIG_UART_RECV)
    if( rcvdByte == 'G' )
    {
       
-      printSample();
+     lastestResult = ADS1213_GetResult();
+     SensorCondition(lastestResult, gain);
       
    }
    
@@ -139,12 +144,7 @@ ISR(SIG_UART_RECV)
    {
       ADS1213_Init();  
    }
-   
-   if( rcvdByte == 'n' )
-   {
-      ADS1213_Reset();  
-   }      
-   
+      
    if( rcvdByte == 'S')
    {
       ADS1213_Shutdown();  
@@ -225,6 +225,7 @@ ISR(SIG_UART_RECV)
       asm volatile("jmp 0"::);
    }
    
+   /* Read ADS1213 CMR */
    if( rcvdByte == 'r' )
    {
       
@@ -252,30 +253,13 @@ ISR(SIG_UART_RECV)
 
       
    }
+
+   
    
 }
 
 
-void printSample(void)
-{
-   ADS1213Data_t number;
-   uint32_t latestSample;
-   latestSample = 0;
-   
-   while( latestSample == 0 )
-   {
-      latestSample = ADS1213_GetResult(); 
-   
 
-      /* Now convert the sample to floats and voltage */
-   
-      // Print as float.
-      uartTx( (latestSample >> 16) & 0xFF);   
-      uartTx( (latestSample >> 8) & 0xFF);
-      uartTx( (latestSample)  & 0xFF);
-       
-   }
-}
 
 
 /* Counts number of SC_Compare_rate us. */
