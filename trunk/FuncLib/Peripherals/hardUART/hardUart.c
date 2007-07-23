@@ -110,6 +110,11 @@ void uartTxString_P(const char* outString_P)
    }
 }
 
+void uartNewLine(void)
+{
+   uartTx('\r');
+   uartTx('\n'); 
+}
 
 /* To echo the receiver buffer, write this code in the main.c file */
 /*

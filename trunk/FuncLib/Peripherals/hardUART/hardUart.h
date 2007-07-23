@@ -131,6 +131,6 @@ void uartTx(uint8_t outbyte);
  */
 //ISR(SIG_UART_RECV);
 
-
+void uartNewLine(void);
 
 #endif
