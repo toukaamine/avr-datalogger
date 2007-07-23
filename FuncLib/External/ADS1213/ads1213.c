@@ -17,10 +17,8 @@
 uint8_t ADS1213_TxByte(uint8_t data)
 {
 	uint8_t inputByte;
-	_delay_ms(3);	
 	inputByte = SPI_TxByte(data);
-	_delay_ms(3);
-		
+   		
 	return inputByte;
 }
 
@@ -30,23 +28,58 @@ void ADS1213_Reset(void)
 
 	SPCR &= ~(1 << SPE);
 	
+   SPI_PORT &= ~(1 << SCK);
+	_delay_us(100);
 	/* Perform a reset */
 	SPI_PORT |= (1 << SCK);
-	_delay_us(255);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);         
+	_delay_us(60);
+            	
 	SPI_PORT &= ~(1 << SCK);
-	_delay_us(10);	
+	_delay_us(6);
+   
+   	
 	SPI_PORT |= (1 << SCK);
-	_delay_us(100);	
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+               	
 	SPI_PORT &= ~(1 << SCK);
-	_delay_us(10);	
+	_delay_us(6);
+   
+   	
 	SPI_PORT |= (1 << SCK);
-	_delay_us(255);	
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);         
+	_delay_us(60);
+   	
 	SPI_PORT &= ~(1 << SCK);
-	_delay_us(10);		
+	_delay_us(6);
+   
+   		
 	SPI_PORT |= (1 << SCK);
-	_delay_ms(1);   	
+	_delay_ms(1);
+	_delay_us(60);
+         	
 	SPI_PORT &= ~(1 << SCK);
-	_delay_ms(100);   
+	_delay_ms(30);   
 
     
 	
@@ -56,16 +89,14 @@ void ADS1213_Reset(void)
 
 /* Note SPI_Init() must be called prior */
 void ADS1213_Init(void)
-{
+{  
    /* Set Chip Select as Output */
    ADS1213_CS_DDR |= (1 << ADS1213_CS_PIN);
     
    /* CPHA = 1 is required  for this ADC,
     * CPHA = 1 required for the DS1305 as well (DONE IN SPIINIT)*/
    
-   //ADS1213_CS_Pulse(); 
    
-
    ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);     
    ADS1213_TxByte( (1 << ADS1213_MB1) 
                | (1 << ADS1213_MB0)
@@ -73,20 +104,18 @@ void ADS1213_Init(void)
    	 
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
    ADS1213_TxByte( (1 << ADS1213_SDL) 
-                   | (1<<ADS1213_REFO)
-                   | (1<<ADS1213_UNIPOLAR)
-                   | (1<<ADS1213_BIAS));
+                   | (1<<ADS1213_REFO));
 
-   
-   
+
    /* Perform a self calibration */
-   ADS1213_TxByte( (1<<ADS1213_MD0) | (1<<ADS1213_MD2) );
+   ADS1213_TxByte( (1<<ADS1213_MD0) );
    
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte( (1 << ADS1213_SF0) + 0 );
+   ADS1213_TxByte(  0x02 );
 
-   ADS1213_TxByte( 23 );
+   /* Have a data rate of 2kHz */
+   ADS1213_TxByte( 0x70 );
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
 
@@ -118,10 +147,11 @@ uint32_t ADS1213_GetResult(void)
    for( retry = 0; retry < 32; retry++)
    {    
       ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);  
-      
+      _delay_us(10);
       /* Read CMD Register's DRDY */
             
       ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_A2));     
+      _delay_us(10);
       DRDY_Status = ADS1213_RxByte();
       
       if( !(DRDY_Status & (1<<ADS1213_DRDY)) )
@@ -144,12 +174,14 @@ uint32_t ADS1213_GetResult(void)
    }
    
    ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
-  _delay_us(10);
    /* Ask to read three bytes from DOR(1) */
    ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_MB1));
    Data.byte[2] = ADS1213_RxByte();
-   Data.byte[1] = ADS1213_RxByte();
+   Data.byte[1] = ADS1213_RxByte();   
    Data.byte[0] = ADS1213_RxByte();   
+
+   /* Release the chip */
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
    
    Data.byte[4] = 0;
    
@@ -159,8 +191,7 @@ uint32_t ADS1213_GetResult(void)
    
    temporary = Data.result;
    
-   /* Release the chip */
-   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
+
    
    /* Truncate data to 22 bits */
    return temporary & 0x003FFFFF;   
@@ -192,6 +223,8 @@ void ADS1213_Shutdown(void)
    /* Release CS */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
 }
+
+
 
 void ADS1213_Startup(void)
 {

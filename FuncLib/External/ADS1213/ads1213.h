@@ -4,6 +4,31 @@
  *
  */
 
+/* File Name	: 'ads1213.h'
+ 	Title			: Burr Brown 22-bit ADC
+ 	Author		: Adrian Gin
+
+
+*/
+
+/** \file ads1213.h
+	 \brief Burr Brown 22-bit ADC Interface.
+*/
+
+/**	 
+
+	\ingroup avr_external
+ 	\defgroup ads1213 Burr Brown 22-bit ADC Interface.
+ 	\code #include "ads1213.h" \endcode
+
+ 	 
+	 \par Description
+	This library allows the use of an SPI controlled ADS1213.
+	The ADS1213 is a 22-bit ADC.
+ 	 
+*/
+//@{
+
 
 #ifndef	_ADS1213_ROUTINES
 #define	_ADS1213_ROUTINES
@@ -35,11 +60,19 @@
 #define ADS1213_UNIPOLAR   (4)
 #define ADS1213_SDL        (1)
 #define ADS1213_DRDY       (0)
+#define ADS1213_DSYNC      (0)
 
 /* Byte 2 */
 #define ADS1213_MD2        (7)
 #define ADS1213_MD1        (6)
 #define ADS1213_MD0        (5)
+
+/* Operating Modes */
+#define ADS1213_SELFCALIB  (0x01) << (ADS1213_MD0)
+#define ADS1213_SLEEP      (0x06) << (ADS1213_MD0)
+#define ADS1213_NORMAL     (0x00) << (ADS1213_MD0)
+
+
 
 /* Byte 1 */
 #define ADS1213_SF2        (7)
