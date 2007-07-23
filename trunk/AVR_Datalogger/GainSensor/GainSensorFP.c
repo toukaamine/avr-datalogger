@@ -11,6 +11,56 @@
 #include "ADS1213/ads1213.h"
 
 #include "hardUart/hardUart.h"
+#include "mmculib/uint16toa.h"
+#include "mmculib/uint8toa.h"
+
+
+/** Multiplies the passed float by 2^(adjust) 
+  * The 8 exponent bits are held in the 
+  * 1st 7 bits of the 4the byte and the last bit of the 3rd byte.
+  */
+float32_t floatExponent(float32_t data, int8_t adjust)
+{
+   uint8_t newExponent;
+   
+   newExponent = ((data.byteField[3] & FLOAT_EXP_BITS_HI) << 1)
+                  | ((data.byteField[2] & FLOAT_EXP_BITS_LO) >> 7);
+                   
+   newExponent += adjust;
+   /* Clear the Exponent Bits */
+   data.byteField[3] =  (data.byteField[3] & ~(FLOAT_EXP_BITS_HI)) | (newExponent >> 1);
+   data.byteField[2] =  (data.byteField[2] & ~(FLOAT_EXP_BITS_LO))  | (newExponent << 7);   
+   
+   return data;  
+}
+
+
+/* 16bit integer and decimal is the largest we can print */
+void printFloat(float data)
+{
+
+   char outputString[20];
+   volatile float32_t working; 
+
+	working.FP = (int32_t)data;
+	if( working.byteField[3] & FLOAT_SIGN_BIT)
+	{
+   	uartTx('-');
+		data = -data;
+		working.byteField[3] &=  (~FLOAT_SIGN_BIT);
+	}
+
+
+   uint16toa( working.FP, outputString, 0);
+   uartTxString( (uint8_t*)outputString );   
+   uartTx('.');
+   
+	working.FP = data - (int32_t)data;
+	float_4dp( working.FP * 10000, outputString); 
+   uartTxString( (uint8_t*)outputString );
+}
+
+
 
 /* TODO: Ensure that AVR Signed is done using two's comp */
 
@@ -213,20 +263,16 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
 {
 
 	/* Could change to 64's */
-	Float64_t Gain;
-	Float128_t Voltage;
-	
 	char outputString[20];
 	
-	int32_t signedData;
-	static float   dataFP;
-	static float   gainFP;
+	volatile int32_t signedData;
+	volatile float32_t   dataFP;
+	volatile float32_t   gainFP;
 	int32_t realReading = 0;
 	
-	
-   signedData = (int32_t)data;
-	dataFP = (float)signedData;
-	
+/** Debug only because the float output function can only handle 16bit */		   signedData = (int32_t)data;
+	dataFP.FP = (float)signedData;
+
    ltoa( data, outputString, 10);
    uartTxString( (uint8_t*)"Raw Data = ");
    uartTxString(outputString);      
@@ -236,48 +282,32 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
    uartTxString( (uint8_t*)"Signed Data = ");
    uartTxString(outputString);      
    uartNewLine();
+
     
    uartTxString( (uint8_t*)"Float Data = ");
-   printFloat( dataFP ); 	
+   printFloat( dataFP.FP ); 	
    uartNewLine();
+/** Debug only */	
       
-   gainFP = SENSOR_GAIN[gainIndex];
+   gainFP.FP = SENSOR_GAIN[gainIndex];
    
+/** Debug only */	   
    uartTxString( (uint8_t*)"Current Gain = ");
-   printFloat( gainFP ); 	
+   printFloat( gainFP.FP ); 	
    uartNewLine();
+/** Debug only */	   
    
-   dataFP = dataFP * gainFP;
-   
-	dataFP = (dataFP * 2.5) * 2e-21 ;
+   /* Divide by 2^21 */
+   dataFP.FP = dataFP.FP * gainFP.FP * SENSOR_REFERNCE;
+	dataFP = floatExponent(dataFP, - (SENSOR_ENOB-1));
    
 
    uartTxString( (uint8_t*)"Conditioned 'Voltage' is: "); 
-   printFloat(dataFP);
+   printFloat(dataFP.FP);
      							
    /* At this point realReading is still SENSOR_REF_MULTIPLIER  * GAIN_RESOLUTION 
     * too large */
     
-   
-}
-
-
-
-/* 32bit is the largest we can print */
-void printFloat(float data)
-{
-
-   char outputString[20];
-   float working;
-   
-   working = data - (int32_t)data;
-   
-   
-   ltoa( (int32_t)data, outputString, 10);
-   strcat( outputString, ".");
-   utoa( working * 10000, &outputString[strlen(outputString)], 10);  
-   
-   uartTxString( (uint8_t*)outputString );
    
 }
 
