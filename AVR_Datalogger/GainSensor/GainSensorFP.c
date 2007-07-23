@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "I2C/i2c.h"
-#include "GainSensor.h"
+#include "GainSensorFP.h"
 #include "MAX7300/max7300.h"
 #include "MSB2LSB/MSB2LSB.h"
 #include "ADS1213/ads1213.h"
@@ -18,16 +18,12 @@ const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_1
                       GS_GAIN_05, GS_GAIN_025, GS_GAIN_02, GS_GAIN_01, GS_GAIN_005, 0}; 
 
 
-const Float32_t  GAIN_76FP PROGMEM = {GAIN_INT(GAIN_76), GAIN_DECIMAL(GAIN_76)};
-const Float32_t  GAIN_30FP PROGMEM = {GAIN_INT(GAIN_30), GAIN_DECIMAL(GAIN_30)};
-const Float32_t  GAIN_22FP PROGMEM = {GAIN_INT(GAIN_22), GAIN_DECIMAL(GAIN_22)};
-const Float32_t  GAIN_11FP PROGMEM = {GAIN_INT(GAIN_11), GAIN_DECIMAL(GAIN_11)};
-const Float32_t  GAIN_5FP  PROGMEM = {GAIN_INT(GAIN_5), GAIN_DECIMAL(GAIN_5)};
-
+const float  GAIN_76FP  = GAIN_76;
+const float  GAIN_30FP  = GAIN_30;
 
 
 /* Still to finish this off */
-static const Float32_t *SENSOR_GAIN[] = {&GAIN_76FP, &GAIN_30FP};
+static const float SENSOR_GAIN[] = {GAIN_76, GAIN_30};
 
 void GS_Init(void)
 {
@@ -223,81 +219,63 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
 	char outputString[20];
 	
 	int32_t signedData;
-	float   fpData;
+	static float   dataFP;
+	static float   gainFP;
+	int32_t realReading = 0;
+	
+	
    signedData = (int32_t)data;
-	fpData = signedData;
+	dataFP = (float)signedData;
 	
-   ltoa(data, outputString , 10);
-   uartNewLine(); 
+   ltoa( data, outputString, 10);
    uartTxString( (uint8_t*)"Raw Data = ");
-   uartTxString( (uint8_t*)outputString );   
-
-   ltoa(signedData, outputString, 10);
+   uartTxString(outputString);      
    uartNewLine(); 
+   
+   ltoa( signedData, outputString, 10);
    uartTxString( (uint8_t*)"Signed Data = ");
-   uartTxString( (uint8_t*)outputString );      
+   uartTxString(outputString);      
+   uartNewLine();
+    
+   uartTxString( (uint8_t*)"Float Data = ");
+   printFloat( dataFP ); 	
+   uartNewLine();
+      
+   gainFP = SENSOR_GAIN[gainIndex];
    
-   int32_t realReading = 0;
-	/* These need to be upgraded if Gain -> 64 bit , not really since
-    * SENSOR_GAIN elements are still only 16 bit... */
-	Gain.decimal = pgm_read_word( &(SENSOR_GAIN[gainIndex]->decimal));
-	Gain.integer = pgm_read_word( &(SENSOR_GAIN[gainIndex]->integer));
-		
-   uartNewLine(); 	
-   uartTxString( (uint8_t*)"Gain Setting = ");
-   printFloat(Gain.integer, Gain.decimal);
-   uartNewLine();     
-	
-	/* For voltages above 0 */
-	if( Gain.integer != 0 )
-	{
-      Voltage.integer = signedData * GAIN_RESOLUTION;   
-      Voltage.integer = Voltage.integer >> 21;						
-      Voltage.integer = Voltage.integer * SENSOR_REFERNCE;
-      Voltage.integer = Voltage.integer / Gain.integer;
-   }
+   uartTxString( (uint8_t*)"Current Gain = ");
+   printFloat( gainFP ); 	
+   uartNewLine();
+   
+   dataFP = dataFP * gainFP;
+   
+	dataFP = (dataFP * 2.5) * 2e-21 ;
    
 
-	if( Gain.decimal != 0 )
-	{
-      Voltage.decimal = (int64_t)signedData * GAIN_RESOLUTION;   
-      Voltage.decimal = Voltage.decimal >> 21;						
-      Voltage.decimal = Voltage.decimal * SENSOR_REFERNCE;
-      Voltage.decimal = Voltage.decimal / Gain.decimal;
-   }
-
-   printFloat(Voltage.integer, Voltage.decimal);
+   uartTxString( (uint8_t*)"Conditioned 'Voltage' is: "); 
+   printFloat(dataFP);
      							
    /* At this point realReading is still SENSOR_REF_MULTIPLIER  * GAIN_RESOLUTION 
     * too large */
     
-   realReading =  Voltage.integer - Voltage.decimal;
-       
-   ltoa( realReading, outputString, 10);
-   
-   uartNewLine();
-   uartTxString( (uint8_t*)"Conditioned 'Voltage' is: "); 
-   uartTxString( (uint8_t*)outputString );
-   uartNewLine(); 
-
-   printFloat(Voltage.integer, Voltage.decimal);
-   uartNewLine();     
-   printFloat(-525325, 41495);
-   
    
 }
 
 
 
 /* 32bit is the largest we can print */
-void printFloat(int32_t integer, uint32_t decimal)
+void printFloat(float data)
 {
 
    char outputString[20];
+   float working;
    
-   ltoa( integer, outputString, 10);
+   working = data - (int32_t)data;
+   
+   
+   ltoa( (int32_t)data, outputString, 10);
    strcat( outputString, ".");
-   utoa( decimal, &outputString[strlen(outputString)], 10);  
+   utoa( working * 10000, &outputString[strlen(outputString)], 10);  
    
    uartTxString( (uint8_t*)outputString );
    
