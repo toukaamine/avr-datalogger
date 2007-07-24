@@ -183,7 +183,7 @@ uint32_t ADS1213_GetResult(void)
    /* Release the chip */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
    
-   Data.byte[4] = 0;
+   Data.byte[4] = 0x00;
    
    uartTx(Data.byte[2]);
    uartTx(Data.byte[1]);
@@ -194,9 +194,27 @@ uint32_t ADS1213_GetResult(void)
 
    
    /* Truncate data to 22 bits */
-   return temporary & 0x003FFFFF;   
+   return temporary;   
   
 }
+
+
+/* Receives a 24bit integer in the form of an unsigned 32bit integer and
+ * translates it into a signed 32bit integer. */
+int32_t uint24_tSign(ADS1213Data_t data)
+{
+   
+   /* If the 24bit is negative... */
+   if( data.byte[2] & ADS1213_SIGN_BIT )
+   {
+      /* make it a 32_bit negative */
+      data.result = (~data.result + 1) & (0x007FFFFF);
+      data.result = -data.result;
+   }
+   
+   return data.result;
+}
+
 
 void ADS1213_CS_Pulse(void)
 {
@@ -237,14 +255,28 @@ void ADS1213_Startup(void)
 
    //ADS1213_TxByte( 1 << ADS1213_SDL );
    
-   /* Return to Normal mode */
-   ADS1213_TxByte( 0 );
+   /* Do a Self Calib */
+   ADS1213_TxByte( (1<<ADS1213_MD0) );
    
    /* Release CS */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
 }
 
 
+void ADS1213_PsuedoCalib(void)
+{
 
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+   
+   ADS1213_TxByte((1 << ADS1213_A2) | (1 << ADS1213_A0));
+    
+    /* Set to Psuedo Calib */
+   ADS1213_TxByte( (1<<ADS1213_MD2) );
+   
+   /* Release CS */
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);        
+   
+   
+}
 
 

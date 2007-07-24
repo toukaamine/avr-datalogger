@@ -34,6 +34,7 @@
 #define	_ADS1213_ROUTINES
 
 #include <stdint.h> 
+#include <math.h> 
  
 #define ADS1213_CLK        (2e6)
 #define ADS1213_CS_DDR     (DDRA)
@@ -41,7 +42,7 @@
 #define ADS1213_CS_PORT    (PORTA)  
 
 #define ADS1213_ENOB		22
-#define ADS1213_MAXOUTPUT (2^22 - 1)
+#define ADS1213_MAXOUTPUT ( pow(2,ADS1213_ENOB) - 1)
 
 /* Instruction Register Bits */
 #define ADS1213_RW         (7)
@@ -82,6 +83,8 @@
 /* The 23th bit holds the busy signal 
  * ie the 6th bit of Byte[2]*/
 #define ADS1213_BUSY       (0x1FFFFFFF)
+
+#define ADS1213_SIGN_BIT   (0x80)
 typedef union ADS1213_data 
 {
    uint8_t  byte[4];
@@ -104,6 +107,7 @@ void ADS1213_CS_Pulse(void);
 void ADS1213_Shutdown(void);
 void ADS1213_Startup(void);
 void ADS1213_Reset(void);
-
+void ADS1213_PsuedoCalib(void);
+int32_t uint24_tSign(ADS1213Data_t data);
 
 #endif
