@@ -129,7 +129,6 @@ ISR(SIG_UART_RECV)
    
    if( rcvdByte == 'G' )
    {
-      
      lastestResult = ADS1213_GetResult();
      SensorCondition(lastestResult, gain);
       
@@ -249,11 +248,12 @@ ISR(SIG_UART_RECV)
       ADS1213Byte = ADS1213_RxByte();
       uartTx(ADS1213Byte);                        
       ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
-      
-
-      
    }
 
+   if( rcvdByte == 'p' )
+   {
+      ADS1213_PsuedoCalib();
+   }
    
    
 }

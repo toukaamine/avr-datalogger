@@ -42,7 +42,7 @@ void printFloat(float data)
    char outputString[20];
    volatile float32_t working; 
 
-	working.FP = (int32_t)data;
+	working.FP = data;
 	if( working.byteField[3] & FLOAT_SIGN_BIT)
 	{
    	uartTx('-');
@@ -73,7 +73,9 @@ const float  GAIN_30FP  = GAIN_30;
 
 
 /* Still to finish this off */
-static const float SENSOR_GAIN[] = {GAIN_76, GAIN_30};
+static const float SENSOR_GAIN[] = {GAIN_76, GAIN_30, GAIN_22, GAIN_11,
+                                    GAIN_5, GAIN_05, GAIN_025, GAIN_02,
+                                    GAIN_01, GAIN_005};
 
 void GS_Init(void)
 {
@@ -259,26 +261,32 @@ void SensorAutoScale(uint8_t channel)
 }
 
 /* Turns all digits into voltages regardless of Type */
+/* Function assumes a signed 24bit integer */
 void SensorCondition(uint32_t data, uint8_t gainIndex)
 {
 
 	/* Could change to 64's */
 	char outputString[20];
 	
+	volatile ADS1213Data_t ConvertedData;
 	volatile int32_t signedData;
 	volatile float32_t   dataFP;
 	volatile float32_t   gainFP;
 	int32_t realReading = 0;
 	
-/** Debug only because the float output function can only handle 16bit */		   signedData = (int32_t)data;
-	dataFP.FP = (float)signedData;
+	/* Convert signed 24bit into signed 32bit */
+	ConvertedData.result = data;
+	signedData = uint24_tSign( ConvertedData );
+	
+/** Debug only because the float output function can only handle 16bit */		   
+	dataFP.FP = (float)(signedData);
 
    ltoa( data, outputString, 10);
    uartTxString( (uint8_t*)"Raw Data = ");
    uartTxString(outputString);      
    uartNewLine(); 
    
-   ltoa( signedData, outputString, 10);
+   ltoa( signedData , outputString, 10);
    uartTxString( (uint8_t*)"Signed Data = ");
    uartTxString(outputString);      
    uartNewLine();
@@ -298,8 +306,8 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
 /** Debug only */	   
    
    /* Divide by 2^21 */
-   dataFP.FP = dataFP.FP * gainFP.FP * SENSOR_REFERNCE;
-	dataFP = floatExponent(dataFP, - (SENSOR_ENOB-1));
+   dataFP.FP = dataFP.FP / gainFP.FP;
+	dataFP = floatExponent(dataFP, - (SENSOR_ENOB));
    
 
    uartTxString( (uint8_t*)"Conditioned 'Voltage' is: "); 
