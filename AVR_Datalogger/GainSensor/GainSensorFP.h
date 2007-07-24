@@ -46,10 +46,15 @@
 
 /* Finish these off to 4 dp*/
 #define GAIN_76   76.7141
-#define GAIN_30   30.38
+#define GAIN_30   31.5100
 #define GAIN_22   22.523
 #define GAIN_11   11.43
-#define GAIN_5    5.00
+#define GAIN_5    5.0000
+#define GAIN_05   0.6310
+#define GAIN_025  0.2511
+#define GAIN_02   0.1877
+#define GAIN_01   0.1003
+#define GAIN_005  0.0432  
 
 #define GAIN_DECIMAL(x) (uint16_t)( (int32_t)(x*GAIN_RESOLUTION) - (int32_t)(GAIN_INT(x)*GAIN_RESOLUTION)  )
 #define GAIN_INT(x) (uint16_t)((x/x) * x)
