@@ -15,6 +15,14 @@
  * Provide Alarm setting and re-setting functions. **Not Prio**
  *
  */
+
+uint8_t DS1305_TimeDate_config[] =       {BCD_SECONDS, 
+												   	BCD_MINUTES,
+														((BCD_HOURS) | (HOURS24)),
+														(((BCD_DAY+6)%7)+1),
+												  		BCD_DATE,
+												  		BCD_MONTH+1,
+												  		BCD_YEAR};		
  
  
 /* Need to enable oscillator */
@@ -25,7 +33,7 @@ void DS1305_Init(void)
 
    /* Enable Chip */
    DS1305_CE_PORT |= (1 << DS1305_CE_PIN);
-   _delay_loop_1(11);   
+   _delay_us(11);   
    
    
    /* Set the control registers */
@@ -34,29 +42,28 @@ void DS1305_Init(void)
    
    /* Enable the Oscillator and Interrupt */
    DS1305_WriteByte( DS1305_CTRL, 
-                     (1 << DS1305_EOSC) | 
                      (1 << DS1305_INTCN));   
 
    
    /* Release Chip */
    DS1305_CE_PORT &= ~(1 << DS1305_CE_PIN);
-   _delay_loop_1(11);
+   _delay_us(11); 
 }
 
 
 
-void DS1305_SetTime(void)
+void DS1305_SetTime(uint8_t* DS1305_config)
 {
    /* Enable Chip */
    DS1305_CE_PORT |= (1 << DS1305_CE_PIN);
-   _delay_loop_1(11);   
+   _delay_us(11); 
   
    SPI_TxByte( DS1305_SECS | (1 << DS1305_RW) );
-   SPI_TxBlock(DS1305_TimeDate_config , 7);
+   SPI_TxBlock(DS1305_config , 7);
    
    /* Release Chip */
    DS1305_CE_PORT &= ~(1 << DS1305_CE_PIN);
-   _delay_loop_1(11); 
+   _delay_us(11); 
 }
 
 

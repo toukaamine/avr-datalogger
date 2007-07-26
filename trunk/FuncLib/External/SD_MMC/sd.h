@@ -65,7 +65,7 @@
 #define MMC_PWR_PORT PORTB
 #define MMC_PWR_PIN  PB0
 
-#define MMC_MAX_RETRIES 10
+#define MMC_MAX_RETRIES 20
 
 
 // constants/macros/typdefs
@@ -99,6 +99,7 @@
 #define MMC_R1_ILLEGAL_COM			0x04
 #define MMC_R1_ERASE_RESET			0x02
 #define MMC_R1_IDLE_STATE			0x01
+#define MMC_R1_READY             0x00
 // Data Start tokens
 #define MMC_STARTBLOCK_READ			0xFE	///< when received from card, indicates that a block of data will follow
 #define MMC_STARTBLOCK_WRITE		0xFE	///< when sent to card, indicates that a block of data will follow
@@ -126,6 +127,7 @@ void SD_Startup(void);
 void SD_Shutdown(void);
 uint8_t SD_SendCommand(uint8_t cmd, uint32_t arg);
 uint8_t SD_Command(uint8_t cmd, uint32_t arg);
-
+uint8_t SD_Write(uint32_t sector, uint8_t* buffer);
+uint8_t SD_Read(uint32_t sector, uint8_t* buffer);
 
 #endif

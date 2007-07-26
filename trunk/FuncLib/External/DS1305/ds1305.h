@@ -67,20 +67,13 @@
 #define DS1305_RTC0     (0)
 #define DS1305_RTC1     (1)
 
-static uint8_t DS1305_TimeDate_config[] = {BCD_SECONDS, 
-												   	BCD_MINUTES,
-														((BCD_HOURS) | (HOURS24)),
-														(((BCD_DAY+6)%7)+1),
-												  		BCD_DATE,
-												  		BCD_MONTH+1,
-												  		BCD_YEAR};		
+extern uint8_t DS1305_TimeDate_config[];
 
 
 
 
-
-
-
+void DS1305_GetTime(uint8_t* time);
+void DS1305_SetTime(uint8_t* DS1305_config);
 void DS1305_Init(void);
 void DS1305_WriteByte(uint8_t address, uint8_t data);
 uint8_t DS1305_ReadByte(uint8_t address);
