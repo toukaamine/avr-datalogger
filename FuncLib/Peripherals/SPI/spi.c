@@ -52,7 +52,7 @@ uint8_t SPI_TxByte(uint8_t data)
    SPDR = data;
    //spiTransferComplete = TRANSFER_INCOMPLETE;
    while( ! ( SPSR & (1 << SPIF)));
-   
+   SPSR &= ~(1 << SPIF);
    
    return SPDR;
 }
