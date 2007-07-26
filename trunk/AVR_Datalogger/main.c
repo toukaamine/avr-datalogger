@@ -16,6 +16,9 @@
 #include "Menu/Menu.h"
 #include "GainSensor/GainSensorFP.h"
 #include "ADS1213/ads1213.h"
+#include "DS1305/ds1305.h"
+#include "RTC/RTCPrint.h"
+#include "SD_MMC/sd.h"
 
 
 #define UART_PORT PORTD
@@ -46,11 +49,18 @@ void printSample(void);
 
 int main(void)
 {
+ 
+   
+   /* Wait for power to resume */
+   for( uint8_t i = 0; i < 8; i++)
+   {
+      _delay_ms(30);
+   }    
    
    /* Good for 250kbit */
    uartInit(3, 1);
     
-
+   SD_Shutdown();
 
    UCSRB |= (1 << RXCIE);
    
@@ -69,10 +79,11 @@ int main(void)
       
    MenuSetDisplay(MENU_LCD);
 
-   /* Enable Keypad Presses */
+   /* Enable Keypad Presses Disable INT0 and use INT2 */
    UI_LCD_SetData();
-   MCUCR |= (0x03 << ISC00);
-   GICR |= (1 << INT0);
+   DDRB &= ~(1 << PB2);
+   MCUCSR |= (1 << ISC2);
+   GICR |= (1 << INT2);
    
    /* Sample Control */
    SC_Init();
@@ -86,18 +97,34 @@ int main(void)
    SPI_Init();
 
 
+
+	/* Write to the DS1305 The time and date */
+   DS1305_Init();
+   DS1305_SetTime(DS1305_TimeDate_config);
+
+
+
    sei();
    UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
-   
+  
+   SD_Startup();   
+   if( SD_Init() == 0 )
+   {
+      uartTxString_P( PSTR("SD Card Initialised!") );
+   }
+   else
+   {
+      uartTxString_P( PSTR("SD Card Failed!") );      
+   }
  
    while(1)
    {
-      
-      
-      
-      set_sleep_mode(SLEEP_MODE_IDLE);
+      /* Need to reset Interrupt */   
+      UI_SetRegister(UI_INTERRUPT, 0);   
+      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
       sleep_enable();
       sleep_cpu();
+      sleep_disable();
    }
    
    return 0;  
@@ -134,6 +161,69 @@ ISR(SIG_UART_RECV)
       
    }
    
+   if( rcvdByte == 'm' )
+   {
+    
+      SD_Startup();
+      uint32_t sector=0;
+      uint8_t buffer[0x200];
+      
+      buffer[0] = rcvdByte;
+      buffer[1] = '\0';
+      
+      if( SD_Write( 512 , buffer) == 0)
+      {
+         uartTxString("Write Success!");
+           
+      }
+      else
+      {
+         uartTxString("Write Fail!");         
+      }
+      
+      MMC_CS_PORT |= (1 << MMC_CS_PIN);
+   
+   }
+   
+   if( rcvdByte == 's' )
+   {
+      
+      uint8_t buffer[0x200];
+      if( SD_Read( 512 , buffer) == 0)
+      {
+         uartTxString("Read Success!");
+           
+      }
+      else
+      {
+         uartTxString("Read Fail!");         
+      }
+  
+  
+      printTime(buffer);
+      uartNewLine();
+      printDate(buffer);            
+      uartNewLine();
+            
+      MMC_CS_PORT |= (1 << MMC_CS_PIN);
+      
+   }   
+   
+   if( rcvdByte == 't' )
+   {
+      SPCR |= (1 << CPHA);
+      DS1305_GetTime(DS1305_TimeDate_config);
+      printTime(DS1305_TimeDate_config);
+      uartNewLine();
+      printDate(DS1305_TimeDate_config);
+      uartNewLine();   
+     
+      _delay_ms(10);
+      SD_Write( 512 , DS1305_TimeDate_config);
+      MMC_CS_PORT |= (1 << MMC_CS_PIN);     
+        
+   }   
+   
    if( rcvdByte == 'W' )
    {
       ADS1213_Startup();  
@@ -143,6 +233,16 @@ ISR(SIG_UART_RECV)
    {
       ADS1213_Init();  
    }
+   
+   if( rcvdByte == 'k' )
+   {
+      SD_Shutdown();  
+   }
+   
+   if( rcvdByte == 'o' )
+   {
+      SD_Startup();  
+   }   
       
    if( rcvdByte == 'S')
    {
@@ -277,6 +377,9 @@ ISR(TIMER2_COMP_vect)
  * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
 	static SoftTimer_8 ControlEvent = {5*SC_SECONDS, 0, 1};
 	
+	/* Restart after 2 seconds */
+	static SoftTimer_8 RestartEvent = {2*SC_SECONDS, 0, 1};
+		
    
    counter_ms++;
    
@@ -296,6 +399,7 @@ ISR(TIMER2_COMP_vect)
 			ControlEvent.timerEnable = 0;
 		}
 		
+		
       
    } 
    
@@ -309,11 +413,10 @@ ISR(TIMER2_COMP_vect)
 
 /* This is used to parse the KP inputs and RTC inputs */
 /* It is important to handle RTC inputs first */
-ISR(INT0_vect)
+ISR(INT2_vect)
 {
 
    /* Should have a debounce counter... */
-
    cli();
    
    uint8_t IntResult;   
