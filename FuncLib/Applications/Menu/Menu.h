@@ -27,23 +27,6 @@
 
 
 
-/* Could use enumeration */
-#define ST_MAIN      10
-#define ST_MESSAGES  11
-#define ST_TEXT      12
-#define ST_VOICE     13
-#define ST_SETTINGS  14
-#define ST_CALL_SETTINGS    15
-#define ST_PHONE_SETTINGS  16 
-#define ST_PROFILES  17
-#define ST_GENERAL   18
-#define ST_SILENT 19
-#define ST_OUTDOOR 20
-#define ST_MEETING 21
-#define ST_PAGER 22
-#define ST_OTHER 23
-#define ST_QUIET 24
-
 #define WINDOW_SIZE 3
 
 #if MENU_DEBUG == 1
@@ -79,7 +62,7 @@ typedef struct
 {
    uint8_t  parent;
    uint8_t  child;
-   uint8_t  sequence;
+   uint8_t  sequence; /// Effectively, which line of the LCD the item is listed on.
    
 } menu_list;
 
@@ -96,6 +79,41 @@ typedef struct
    void (*function)(void* data);
 
 } menu_data;
+
+/* Menu Texts */
+extern const MENU_TEXT  MT_NEW_RECORDING[];
+extern const MENU_TEXT  MT_VIEW_CHANNELS[];
+extern const MENU_TEXT  MT_STATISTICS[];
+extern const MENU_TEXT  MT_SD_CARD_SIZE[];
+extern const MENU_TEXT  MT_TOTAL_SAMPLES[];
+extern const MENU_TEXT  MT_UPTIME[];
+extern const MENU_TEXT  MT_DATA_DOWNLOAD[];
+extern const MENU_TEXT  MT_OPTIONS[];
+extern const MENU_TEXT  MT_SET_TIME[];
+extern const MENU_TEXT  MT_CALIBRATE[];
+extern const MENU_TEXT  MT_FORMAT_SD[];
+extern const MENU_TEXT  MT_RESET[];
+extern const MENU_TEXT  MT_VERSION_INFO[];
+extern const MENU_TEXT  MT_DISPLAY_MODE[];
+extern const MENU_TEXT  MT_UART_MODE[];
+extern const MENU_TEXT  MT_LCD_MODE[];
+
+
+extern uint8_t currentState;
+extern uint8_t RowPosition;
+extern uint8_t upperLimit;
+extern uint8_t lowerLimit;
+extern uint8_t firstEnter;
+extern uint8_t selectedItem;
+/** General Menu Functions */
+void MenuSetDisplay(uint8_t display);
+void (*MenuPrint)(uint8_t* string);
+/* For a string residing in FLASH */
+void (*MenuPrint_P)(const char* string);
+void (*MenuNewLine)(void);
+void (*MenuReset)(void);
+
+
 
 
 void LCD_NewLine(void);
@@ -120,8 +138,8 @@ uint8_t GetParent(uint8_t state);
 uint8_t SubItems(uint8_t state);
 uint8_t GetIndex(uint8_t parent);
 void executeState(uint8_t state);
-
-
+uint8_t LargestSequence(uint8_t state);
+uint8_t SmallestSequence(uint8_t state);
 
 
 

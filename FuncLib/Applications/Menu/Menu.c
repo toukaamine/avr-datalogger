@@ -2,6 +2,7 @@
 
 #include "Menu.h"
 #include "hardUart/hardUart.h"
+#include "uartTerm/userFunctions.h"
 
 #if MENU_DEBUG == 1
 #include <stdio.h>
@@ -16,23 +17,54 @@
 #include "UI_KP/UI_KP.h"
 #endif
 
-static uint8_t currentState = ST_MAIN;
+
+
+enum {  
+   ST_MAIN = 10,
+   ST_NEW_RECORDING,
+   ST_VIEW_CHANNELS,
+   ST_STATISTICS,
+   ST_SD_CARD_SIZE,
+   ST_TOTAL_SAMPLES,
+   ST_UPTIME,
+   ST_DATA_DOWNLOAD,
+   ST_OPTIONS,
+   ST_SET_TIME,
+   ST_CALIBRATE,
+   ST_FORMAT_SD,
+   ST_RESET,
+   ST_VERSION_INFO,
+   ST_DISPLAY_MODE,
+   ST_UART_MODE,
+   ST_LCD_MODE,
+   ST_EXTRA_MODE,
+} menuIds;
+
+uint8_t currentState = ST_MAIN;
+uint8_t RowPosition = 0;
 static uint8_t MenuInput;
-static uint8_t selectedItem = 0;
-static uint8_t upperLimit = WINDOW_SIZE;
-static uint8_t lowerLimit = 0;
-static uint8_t RowPosition = 0;
+uint8_t selectedItem = 0;
+uint8_t upperLimit = WINDOW_SIZE;
+uint8_t lowerLimit = 0;
+uint8_t firstEnter = 1;
 
-
-void MenuSetDisplay(uint8_t display);
-void (*MenuPrint)(uint8_t* string);
-/* For a string residing in FLASH */
-void (*MenuPrint_P)(const char* string);
-void (*MenuNewLine)(void);
-void (*MenuReset)(void);
-
-
-
+const MENU_TEXT  MT_NEW_RECORDING[] = "Start New Recording";
+const MENU_TEXT  MT_VIEW_CHANNELS[] = "View Channels";
+const MENU_TEXT  MT_STATISTICS[] = "Statistics";
+const MENU_TEXT  MT_SD_CARD_SIZE[] = "SD Card Usage";
+const MENU_TEXT  MT_TOTAL_SAMPLES[] = "Total Samples Taken";
+const MENU_TEXT  MT_UPTIME[] = "Uptime";
+const MENU_TEXT  MT_DATA_DOWNLOAD[] = "Data Download";
+const MENU_TEXT  MT_OPTIONS[] = "Options";
+const MENU_TEXT  MT_SET_TIME[] = "Set Time";
+const MENU_TEXT  MT_CALIBRATE[] = "Calibrate";
+const MENU_TEXT  MT_FORMAT_SD[] = "Format Memory";
+const MENU_TEXT  MT_RESET[] = "Reset";
+const MENU_TEXT  MT_VERSION_INFO[] = "Version ID";
+const MENU_TEXT  MT_DISPLAY_MODE[] = "Set Display Mode";
+const MENU_TEXT  MT_UART_MODE[] = "Terminal Mode";
+const MENU_TEXT  MT_LCD_MODE[] = "Keypad Mode";
+const MENU_TEXT  MT_EXTRA_MODE[] = "EXTRA Mode";
 
 void MenuSetDisplay(uint8_t display)
 {
@@ -56,21 +88,8 @@ void MenuSetDisplay(uint8_t display)
 
 
 
-/* Menu Texts */
-static const MENU_TEXT  MT_MESSAGES[] = "Messages";
-static const MENU_TEXT  MT_SETTINGS[] = "Settings";
-static const MENU_TEXT  MT_PROFILES[] = "Profiles";
-static const MENU_TEXT  MT_TEXT[] = "Text";
-static const MENU_TEXT  MT_VOICE[] = "Voice";
-static const MENU_TEXT  MT_CALL_SETTINGS[] = "Call Settings";
-static const MENU_TEXT  MT_PHONE_SETTINGS[] = "Phone Settings";
-static const MENU_TEXT  MT_GENERAL[] = "General";
-static const MENU_TEXT  MT_SILENT[] = "Silent";
-static const MENU_TEXT  MT_MEETING[] = "Meeting";
-static const MENU_TEXT  MT_OUTDOOR[] = "Outdoor";
-static const MENU_TEXT  MT_PAGER[] = "Pager";
-static const MENU_TEXT  MT_OTHER[] = "Other";
-static const MENU_TEXT  MT_QUIET[] = "QUIET";
+
+
 
 /* Once a menu item is selected, it will either end in
  * 1) Another Menu or
@@ -82,25 +101,33 @@ const menu_list MenuState[] = {
 const menu_list MenuState[] = {
 #endif
 
-   {ST_MAIN,   ST_MESSAGES,   0},
-   {ST_MAIN,   ST_SETTINGS,   1},
-   {ST_MAIN,   ST_PROFILES,   2},
+   {ST_MAIN,   ST_NEW_RECORDING,   0},
+   {ST_MAIN,   ST_VIEW_CHANNELS,   1},
+   {ST_MAIN,   ST_DATA_DOWNLOAD,   2},
+   {ST_MAIN,   ST_OPTIONS,   3},
+   {ST_MAIN,   ST_STATISTICS,   4},   
    
-   {ST_MESSAGES, ST_TEXT,     0},
-   {ST_MESSAGES, ST_VOICE,    1},
+   {ST_STATISTICS, ST_SD_CARD_SIZE,     0},
+   {ST_STATISTICS, ST_TOTAL_SAMPLES,    1},
+   {ST_STATISTICS, ST_UPTIME,    2},
       
-   {ST_SETTINGS, ST_CALL_SETTINGS,  0},
-   {ST_SETTINGS, ST_PHONE_SETTINGS, 1},
-
-   {ST_PROFILES, ST_GENERAL,  0},
-   {ST_PROFILES, ST_SILENT, 1},
-   {ST_PROFILES, ST_MEETING, 2},
-   {ST_PROFILES, ST_OUTDOOR, 3},
-   {ST_PROFILES, ST_PAGER, 4},
-   {ST_PROFILES, ST_OTHER, 5},
-   {ST_PROFILES, ST_QUIET, 6},   
+   {ST_OPTIONS, ST_SET_TIME,  0},
+   {ST_OPTIONS, ST_CALIBRATE, 1},
+   {ST_OPTIONS, ST_FORMAT_SD, 2},
+   {ST_OPTIONS, ST_VERSION_INFO, 3},
+   {ST_OPTIONS, ST_RESET, 4},
+   {ST_OPTIONS, ST_DISPLAY_MODE, 5},  
+   
+   {ST_DISPLAY_MODE, ST_UART_MODE,  2},
+   {ST_DISPLAY_MODE, ST_LCD_MODE, 3},   
+   {ST_DISPLAY_MODE, ST_EXTRA_MODE, 4},    
+   
    {0, 0, 0}
 };
+
+
+
+
 
 #if MENU_DEBUG == 1
 const menu_data MenuData[] = {
@@ -108,20 +135,23 @@ const menu_data MenuData[] = {
 const menu_data MenuData[] = {
 #endif
    {ST_MAIN, 0, 0},
-   {ST_MESSAGES, MT_MESSAGES, 0},
-   {ST_SETTINGS, MT_SETTINGS, 0},
-   {ST_PROFILES, MT_PROFILES, 0},
-   {ST_TEXT, MT_TEXT,  message},
-   {ST_VOICE, MT_VOICE, 0},
-   {ST_CALL_SETTINGS, MT_CALL_SETTINGS, 0},
-   {ST_PHONE_SETTINGS, MT_PHONE_SETTINGS, 0},
-   {ST_GENERAL, MT_GENERAL, 0},
-   {ST_SILENT, MT_SILENT, 0},
-   {ST_MEETING, MT_MEETING, 0},
-   {ST_OUTDOOR, MT_OUTDOOR, 0},
-   {ST_PAGER, MT_PAGER, 0},
-   {ST_OTHER, MT_OTHER, 0},
-   {ST_QUIET, MT_QUIET, 0},        
+   {ST_NEW_RECORDING, MT_NEW_RECORDING, message},
+   {ST_VIEW_CHANNELS, MT_VIEW_CHANNELS, 0},
+   {ST_STATISTICS, MT_STATISTICS, 0},
+   {ST_SD_CARD_SIZE, MT_SD_CARD_SIZE, 0},
+   {ST_TOTAL_SAMPLES, MT_TOTAL_SAMPLES, 0},
+   {ST_UPTIME, MT_UPTIME, 0},
+   {ST_DATA_DOWNLOAD, MT_DATA_DOWNLOAD, 0},
+   {ST_OPTIONS, MT_OPTIONS, 0},
+   {ST_SET_TIME, MT_SET_TIME, 0},
+   {ST_CALIBRATE, MT_CALIBRATE, 0},
+   {ST_FORMAT_SD, MT_FORMAT_SD, 0},
+   {ST_RESET, MT_RESET, Reset},
+   {ST_VERSION_INFO, MT_VERSION_INFO, 0},
+   {ST_DISPLAY_MODE, MT_DISPLAY_MODE, MenuDisplayMode},
+   {ST_UART_MODE, MT_UART_MODE, MenuSetUartMode},
+   {ST_LCD_MODE, MT_LCD_MODE, MenuSetLCDMode},
+   {ST_EXTRA_MODE, MT_EXTRA_MODE, 0},   
    {0, 0, 0}
 };
 
@@ -179,8 +209,6 @@ void MenuUart_Reset(void)
 /* All printf's should be changed to UI_LCD_String("x") */
 void message(void* data)
 {
-   
-   static uint8_t firstEnter = 1;
    uint8_t* input = 0;
    char haha = 0;
    
@@ -188,8 +216,6 @@ void message(void* data)
    MenuPrint_P( PSTR("Hello!"));
    MenuNewLine();  
    input = data;
-
-   
 
    if( firstEnter == 0 )
    {      
@@ -206,15 +232,19 @@ void message(void* data)
             MenuNewLine();
          break;
          
+         case 'e':
+            MenuPrint_P(PSTR("Exiting UART Mode..."));
+            MenuSetLCDMode();
+            break;
+         
+         
          /* Menu Function exit routine */
          case KB_BACK:
          case KP_BACK:
-            
+          
             MenuSetInput(KP_BACK);
             stateMachine(currentState);
-            firstEnter = 1;
             MenuSetInput(0);
-            MenuUpdate();
             return;
             
             break;
@@ -242,13 +272,19 @@ void MenuUpdate(void)
 
    /* Only switch Menu input IF we are in a menu item which has NO associated
     * function */
+   /*
    if( MenuData[ GetIndex(currentState) ].function == 0 )
    {
       stateMachine( currentState ); 
-   }
-      
+   } */
+   
+   stateMachine( currentState );       
 
-      
+   /* Run the associated function */      
+   /* And run its function if it has one ? */   
+   executeState(currentState);    
+   
+   /** Print out the menu's sub-menu's */   
    /* Ensures that the screen limits are not exceeded */
    for( i = 0, sequenceIndex = 0;  (MenuState[i].parent != 0) ; i++)
    {  
@@ -326,9 +362,7 @@ void MenuUpdate(void)
         
    //scanf("%c", &MenuInput);
    
-   /* Run the associated function */      
-   /* And run its function if it has one ? */   
-   executeState(currentState);        
+    
 }
 
 
@@ -348,7 +382,7 @@ void stateMachine(uint8_t state)
    {
       case KB_UP:
       case KP_UP:
-         if( selectedItem != 0 )
+         if(!(selectedItem <= SmallestSequence(currentState)) )
          {
             selectedItem--;
          }
@@ -357,9 +391,9 @@ void stateMachine(uint8_t state)
       case KB_DOWN:   
       case KP_DOWN:
          selectedItem++;          
-         if( selectedItem > maxStateItems )
+         if( selectedItem - SmallestSequence(currentState) > maxStateItems )
          {
-            selectedItem = maxStateItems;
+            selectedItem = LargestSequence(currentState);
          }
       break;
       
@@ -367,7 +401,7 @@ void stateMachine(uint8_t state)
       case KP_ENTER:
          /* Go into child sub menu */
          currentState = GetMenuState(currentState, selectedItem);
-         selectedItem = 0;
+         selectedItem = MenuState[currentState].sequence;
          upperLimit = WINDOW_SIZE;
          lowerLimit = 0;
          
@@ -375,6 +409,12 @@ void stateMachine(uint8_t state)
       
       case KB_BACK:
       case KP_BACK: 
+         /** Need to reset the 'first' enter flag */
+         /** This is so that the commands of a function are not
+          * executed on entering the associated sub-menu */
+         firstEnter = 1;
+         
+                    
          parentIndex = GetParent(currentState);
          
          if(parentIndex != INVALID_STATE)
@@ -494,19 +534,52 @@ uint8_t GetIndex(uint8_t parent)
 uint8_t SubItems(uint8_t state)
 {
    int i;
-   uint8_t maxStateItems = 0;    
+   uint8_t StateItems = 0;    
+   for( i = 0; MenuState[i].parent; i++)
+   {
+      if(MenuState[i].parent == state)
+      {
+         StateItems++;
+      }
+   }
+   return (StateItems - 1);
+}
+
+/* Get the maximum sequence of the the passed state */
+uint8_t LargestSequence(uint8_t state)
+{
+   int i;
+   uint8_t StateItem = 0;    
    for( i = 0; MenuState[i].parent; i++)
    {
       if(MenuState[i].parent == state)
       {
          /* Obtain the number of Menu Items in the given state */
-         if( MenuState[i].sequence >= maxStateItems )
+         if( MenuState[i].sequence >= StateItem )
          {
-            maxStateItems = MenuState[i].sequence;
+            StateItem = MenuState[i].sequence;
          } 
       }
    }
-   return maxStateItems;
+   return (StateItem);
+}
+
+uint8_t SmallestSequence(uint8_t state)
+{
+   int i;
+   uint8_t StateItem = 0xFF;    
+   for( i = 0; MenuState[i].parent; i++)
+   {
+      if(MenuState[i].parent == state)
+      {
+         /* Obtain the number of Menu Items in the given state */
+         if( MenuState[i].sequence <= StateItem )
+         {
+            StateItem = MenuState[i].sequence;
+         } 
+      }
+   }
+   return (StateItem);
 }
 
 

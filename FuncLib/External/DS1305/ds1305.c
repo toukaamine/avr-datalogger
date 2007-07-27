@@ -35,7 +35,7 @@ void DS1305_Init(void)
    DS1305_CE_PORT |= (1 << DS1305_CE_PIN);
    _delay_us(11);   
    
-   
+   SPI_RxByte();
    /* Set the control registers */
    /* Disable the WP */
    DS1305_WriteByte( DS1305_CTRL, 0 );
