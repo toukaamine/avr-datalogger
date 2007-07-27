@@ -93,8 +93,8 @@ SRC = $(TARGET).c \
 		$(PERIPHERALS_DIR)/hardUart/hardUart.c \
 		$(MISC_DIR)/mmculib/uint8toa.c \
   		$(MISC_DIR)/mmculib/uint16toa.c \
-		GainSensor/GainSensorFP.c \
-		$(PERIPHERALS_DIR)/I2C/i2c.c \
+      GainSensor/GainSensorFP.c \
+   	$(PERIPHERALS_DIR)/I2C/i2c.c \
 		$(EXTERNALS_DIR)/MAX7300/max7300.c \
 		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
 		$(PERIPHERALS_DIR)/SPI/spi.c \
@@ -108,7 +108,9 @@ SRC = $(TARGET).c \
 		UI/UI.c \
 		UI_KP/UI_KP.c \
 		UI_LCD/UI_LCD.c \
-		SampleCtrl/SampleCtrl.c 
+		SampleCtrl/SampleCtrl.c \
+		uartTerm/uartInput.c \
+		uartTerm/userFunctions.c 
       
 #		GainSensor/GainSensor.c
 

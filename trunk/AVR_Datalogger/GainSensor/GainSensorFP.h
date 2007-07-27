@@ -1,7 +1,11 @@
 #ifndef	_GSFP_ROUTINES
 #define	_GSFP_ROUTINES
 
-
+#include "MAX7300/max7300.h"
+#include "MSB2LSB/MSB2LSB.h"
+#include "ADS1213/ads1213.h"
+#include "mmculib/uint16toa.h"
+#include "mmculib/uint8toa.h"
 
 #define SENSOR_MACRO 0
 
@@ -54,7 +58,7 @@
 #define GAIN_025  0.2511
 #define GAIN_02   0.1877
 #define GAIN_01   0.1003
-#define GAIN_005  0.0432  
+#define GAIN_005  0.0432
 
 #define GAIN_DECIMAL(x) (uint16_t)( (int32_t)(x*GAIN_RESOLUTION) - (int32_t)(GAIN_INT(x)*GAIN_RESOLUTION)  )
 #define GAIN_INT(x) (uint16_t)((x/x) * x)
@@ -111,6 +115,7 @@ typedef union _GS_float
 
 
 extern const uint8_t GS_GAIN[];
+extern const float SENSOR_GAIN[];
 
 void GS_Init(void);
 void GS_Channel(uint8_t channel);
@@ -120,7 +125,7 @@ void SensorCondition(uint32_t data, uint8_t gainIndex);
 
 float32_t floatExponent(float32_t data, int8_t adjust);
 void printFloat(float data);
-
+float pgm_read_float(uint16_t* address_short);
 
 
 

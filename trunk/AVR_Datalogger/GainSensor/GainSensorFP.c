@@ -6,13 +6,9 @@
 #include <string.h>
 #include "I2C/i2c.h"
 #include "GainSensorFP.h"
-#include "MAX7300/max7300.h"
-#include "MSB2LSB/MSB2LSB.h"
-#include "ADS1213/ads1213.h"
-
 #include "hardUart/hardUart.h"
-#include "mmculib/uint16toa.h"
-#include "mmculib/uint8toa.h"
+
+
 
 
 /** Multiplies the passed float by 2^(adjust) 
@@ -61,6 +57,19 @@ void printFloat(float data)
 }
 
 
+/** Returns a float from address short. */
+float pgm_read_float(uint16_t* address_short)
+{
+   float32_t* floatPtr = (float32_t*)(address_short);;   
+   float32_t returnFloat;
+   returnFloat.byteField[3] = pgm_read_byte( &floatPtr->byteField[3] );
+   returnFloat.byteField[2] = pgm_read_byte( &floatPtr->byteField[2]);
+   returnFloat.byteField[1] = pgm_read_byte( &floatPtr->byteField[1]);
+   returnFloat.byteField[0] = pgm_read_byte( &floatPtr->byteField[0]);         
+   return returnFloat.FP;
+}
+
+
 
 /* TODO: Ensure that AVR Signed is done using two's comp */
 
@@ -68,14 +77,11 @@ const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_1
                       GS_GAIN_05, GS_GAIN_025, GS_GAIN_02, GS_GAIN_01, GS_GAIN_005, 0}; 
 
 
-const float  GAIN_76FP  = GAIN_76;
-const float  GAIN_30FP  = GAIN_30;
-
-
 /* Still to finish this off */
-static const float SENSOR_GAIN[] = {GAIN_76, GAIN_30, GAIN_22, GAIN_11,
-                                    GAIN_5, GAIN_05, GAIN_025, GAIN_02,
-                                    GAIN_01, GAIN_005};
+const float SENSOR_GAIN[] PROGMEM = { 
+   GAIN_76, GAIN_30, GAIN_22, GAIN_11, 
+   GAIN_5, GAIN_05, GAIN_025, GAIN_02, 
+   GAIN_01, GAIN_005};
 
 void GS_Init(void)
 {
@@ -271,7 +277,7 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
 	volatile ADS1213Data_t ConvertedData;
 	volatile int32_t signedData;
 	volatile float32_t   dataFP;
-	volatile float32_t   gainFP;
+	static volatile float32_t   gainFP;
 	int32_t realReading = 0;
 	
 	/* Convert signed 24bit into signed 32bit */
@@ -296,8 +302,8 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
    printFloat( dataFP.FP ); 	
    uartNewLine();
 /** Debug only */	
-      
-   gainFP.FP = SENSOR_GAIN[gainIndex];
+   
+   gainFP = (float32_t)pgm_read_float( (uint16_t*) &SENSOR_GAIN[gainIndex] );
    
 /** Debug only */	   
    uartTxString( (uint8_t*)"Current Gain = ");
@@ -315,8 +321,6 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
      							
    /* At this point realReading is still SENSOR_REF_MULTIPLIER  * GAIN_RESOLUTION 
     * too large */
-    
-   
 }
 
 

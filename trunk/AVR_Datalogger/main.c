@@ -19,6 +19,7 @@
 #include "DS1305/ds1305.h"
 #include "RTC/RTCPrint.h"
 #include "SD_MMC/sd.h"
+#include "uartTerm/uartInput.h"
 
 
 #define UART_PORT PORTD
@@ -37,7 +38,9 @@ extern uint8_t currentState;
 
 /* Waking up from Power Down requires 6Clock Cycles */ 
 uint16_t sampleSetting;
-
+uint8_t channel = 1;
+uint8_t gain = 0;
+uint8_t uartMenu = 0;
 
 
 
@@ -46,7 +49,6 @@ void printSample(void);
 /* To do, MMC add #conditional includes
  * MAX7300 routines.
  */
-
 int main(void)
 {
  
@@ -60,7 +62,7 @@ int main(void)
    /* Good for 250kbit */
    uartInit(3, 1);
     
-   SD_Shutdown();
+   //SD_Shutdown();
 
    UCSRB |= (1 << RXCIE);
    
@@ -121,7 +123,7 @@ int main(void)
    {
       /* Need to reset Interrupt */   
       UI_SetRegister(UI_INTERRUPT, 0);   
-      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+      set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
       sleep_disable();
@@ -131,21 +133,14 @@ int main(void)
    
 }
 
+
 /* To echo the receiver buffer*/
 ISR(SIG_UART_RECV)
 {
 
-   static uint8_t rcvdByte = 0;
-   static uint8_t lastInput = 0;
-   static uint8_t uartMenu = 0;
-   static uint8_t channel = 1;
-   static uint8_t gain = 0;
+   uint8_t rcvdByte = 0;
    
-   uint32_t lastestResult;
    rcvdByte = UDR;
-   
-   //UI_LCD_Char(rcvdByte);
-   
 
    /* Update the menu if we are in UART mode */
    if( uartMenu )
@@ -154,208 +149,13 @@ ISR(SIG_UART_RECV)
       MenuUpdate();  
    }
    
-   if( rcvdByte == 'G' )
-   {
-     lastestResult = ADS1213_GetResult();
-     SensorCondition(lastestResult, gain);
-      
-   }
+   /* Use the UART Terminal Interface */
    
-   if( rcvdByte == 'm' )
+   else
    {
-    
-      SD_Startup();
-      uint32_t sector=0;
-      uint8_t buffer[0x200];
-      
-      buffer[0] = rcvdByte;
-      buffer[1] = '\0';
-      
-      if( SD_Write( 512 , buffer) == 0)
-      {
-         uartTxString("Write Success!");
-           
-      }
-      else
-      {
-         uartTxString("Write Fail!");         
-      }
-      
-      MMC_CS_PORT |= (1 << MMC_CS_PIN);
-   
-   }
-   
-   if( rcvdByte == 's' )
-   {
-      
-      uint8_t buffer[0x200];
-      if( SD_Read( 512 , buffer) == 0)
-      {
-         uartTxString("Read Success!");
-           
-      }
-      else
-      {
-         uartTxString("Read Fail!");         
-      }
-  
-  
-      printTime(buffer);
-      uartNewLine();
-      printDate(buffer);            
-      uartNewLine();
-            
-      MMC_CS_PORT |= (1 << MMC_CS_PIN);
-      
+      switch_uart_input(rcvdByte);
+      return; 
    }   
-   
-   if( rcvdByte == 't' )
-   {
-      SPCR |= (1 << CPHA);
-      DS1305_GetTime(DS1305_TimeDate_config);
-      printTime(DS1305_TimeDate_config);
-      uartNewLine();
-      printDate(DS1305_TimeDate_config);
-      uartNewLine();   
-     
-      _delay_ms(10);
-      SD_Write( 512 , DS1305_TimeDate_config);
-      MMC_CS_PORT |= (1 << MMC_CS_PIN);     
-        
-   }   
-   
-   if( rcvdByte == 'W' )
-   {
-      ADS1213_Startup();  
-   }
-   
-   if( rcvdByte == 'i' )
-   {
-      ADS1213_Init();  
-   }
-   
-   if( rcvdByte == 'k' )
-   {
-      SD_Shutdown();  
-   }
-   
-   if( rcvdByte == 'o' )
-   {
-      SD_Startup();  
-   }   
-      
-   if( rcvdByte == 'S')
-   {
-      ADS1213_Shutdown();  
-   }
-   
-   if( rcvdByte == 'l')
-   {
-      MenuSetDisplay(MENU_LCD);
-      uartMenu = 0;
-      MenuUpdate(); 
-   }   
-
-   if( rcvdByte == 'u')
-   {
-      MenuSetDisplay(MENU_UART);
-      uartMenu = 1;
-      MenuUpdate();
-   }   
-   
-   /* Dec Channel */
-   if( rcvdByte == '1' )
-   {      
-      if( channel == 1                         )
-      {
-         channel = 2;  
-      }      
-      channel = channel - 1;    
-      GS_Channel(channel);
-      uartTx(channel);
-   }   
-      
-   if( rcvdByte == '4' )
-   {      
-      if( channel == 32 )
-      {
-         channel = 31;  
-      }      
-      channel = channel + 1;    
-      GS_Channel(channel);
-      uartTx(channel);      
-   } 
-   
-   /* Gain Selects */
-   if( rcvdByte == '5' )
-   {      
-      if( gain == 9 )
-      {
-         gain = 8;  
-      }      
-      gain = gain + 1;
-      GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
-      uartTx(gain);      
-   }
-   
-   
-   if( rcvdByte == '2' )
-   {      
-      if( gain == 0 )
-      {
-         gain = 1;  
-      }      
-      gain = gain - 1;
-      GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
-      uartTx(gain);      
-   }              
-                       
-      
-      
-   if( rcvdByte == 'q')
-   {
-      
-      uartTx( UI_ReadRegister(MAX7300_CONFIG) );
-      UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));
-   }      
-   
-   if( rcvdByte == 'R' )
-   {
-      asm volatile("jmp 0"::);
-   }
-   
-   /* Read ADS1213 CMR */
-   if( rcvdByte == 'r' )
-   {
-      
-      uint8_t ADS1213Byte;
-      
-      /* Read 4 byte, that is 4 bytes of CMR */
-      
-      ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
-      
-      ADS1213_TxByte( (1 << ADS1213_RW) 
-                      | (1 << ADS1213_A2) 
-                      | (1 << ADS1213_MB0)
-                      | (1 << ADS1213_MB1) );  
-      
-      ADS1213Byte = ADS1213_RxByte();
-      uartTx(ADS1213Byte);
-      ADS1213Byte = ADS1213_RxByte();
-      uartTx(ADS1213Byte);
-      ADS1213Byte = ADS1213_RxByte();
-      uartTx(ADS1213Byte);
-      ADS1213Byte = ADS1213_RxByte();
-      uartTx(ADS1213Byte);                        
-      ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
-   }
-
-   if( rcvdByte == 'p' )
-   {
-      ADS1213_PsuedoCalib();
-   }
-   
-   
 }
 
 
