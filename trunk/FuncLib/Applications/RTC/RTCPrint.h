@@ -34,7 +34,16 @@
 #define	HOUR_MASK	(0x30)
 
 
-
+typedef struct _time
+{
+   uint8_t seconds;
+   uint8_t minutes;
+   uint8_t hours;
+   uint8_t dayOfWeek;
+   uint8_t date;
+   uint8_t month;
+   uint8_t year;  
+} Time_t;
 
 
 /* printTime:
@@ -52,7 +61,9 @@ void printDate(uint8_t* time);
  */
 void printTIMEDATE(uint8_t timeDATA, uint8_t separator);
 
+void RTC_ConvertDate(uint8_t* time, uint8_t* convDate);
 
+void RTC_ConvertTime(uint8_t* time, uint8_t* convTime);
 
 
 #endif

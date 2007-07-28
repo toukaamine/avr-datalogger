@@ -136,7 +136,7 @@ const menu_data MenuData[] = {
 #endif
    {ST_MAIN, 0, 0},
    {ST_NEW_RECORDING, MT_NEW_RECORDING, message},
-   {ST_VIEW_CHANNELS, MT_VIEW_CHANNELS, 0},
+   {ST_VIEW_CHANNELS, MT_VIEW_CHANNELS, GS_Status},
    {ST_STATISTICS, MT_STATISTICS, 0},
    {ST_SD_CARD_SIZE, MT_SD_CARD_SIZE, 0},
    {ST_TOTAL_SAMPLES, MT_TOTAL_SAMPLES, 0},
@@ -234,7 +234,7 @@ void message(void* data)
          
          case 'e':
             MenuPrint_P(PSTR("Exiting UART Mode..."));
-            MenuSetLCDMode();
+            MenuSetLCDMode(0);
             break;
          
          
@@ -266,6 +266,11 @@ void MenuUpdate(void)
    uint8_t i;   
    uint8_t sequenceIndex = 0;
    uint8_t sequenceParent;
+   uint8_t MenuOffset;
+   uint8_t MenuMax;
+   
+   
+   
    char* outputString;
    
    MenuReset();
@@ -283,6 +288,10 @@ void MenuUpdate(void)
    /* Run the associated function */      
    /* And run its function if it has one ? */   
    executeState(currentState);    
+
+   MenuOffset = SmallestSequence(currentState);
+   MenuMax = LargestSequence(currentState);
+
    
    /** Print out the menu's sub-menu's */   
    /* Ensures that the screen limits are not exceeded */
@@ -298,25 +307,25 @@ void MenuUpdate(void)
          if( selectedItem > upperLimit )
          {
             upperLimit = selectedItem;
-            lowerLimit = upperLimit - WINDOW_SIZE;   
+            lowerLimit = upperLimit - WINDOW_SIZE + MenuOffset;   
          }
             
          if( selectedItem < lowerLimit )
          {
             lowerLimit = selectedItem;
-            upperLimit = lowerLimit + WINDOW_SIZE;               
+            upperLimit = lowerLimit + WINDOW_SIZE - MenuOffset;               
          }
          
          /* If this is the selected item then prefix an asterix */
          if( (sequenceIndex <= upperLimit) && (sequenceIndex >= lowerLimit) )
          {
-            if(MenuState[i].sequence > WINDOW_SIZE)
+            if(sequenceIndex > WINDOW_SIZE)
             {
                UI_LCD_Pos(0, 19);
                MenuPrint_P( PSTR("^") );               
             }
             
-            if( SubItems(currentState) - MenuState[i].sequence  > WINDOW_SIZE)
+            if( MenuMax - sequenceIndex + MenuOffset  > WINDOW_SIZE)
             {
                UI_LCD_Pos(3, 19);
                MenuPrint_P( PSTR("v") );
@@ -401,7 +410,7 @@ void stateMachine(uint8_t state)
       case KP_ENTER:
          /* Go into child sub menu */
          currentState = GetMenuState(currentState, selectedItem);
-         selectedItem = MenuState[currentState].sequence;
+         selectedItem = SmallestSequence(currentState);
          upperLimit = WINDOW_SIZE;
          lowerLimit = 0;
          
@@ -412,9 +421,7 @@ void stateMachine(uint8_t state)
          /** Need to reset the 'first' enter flag */
          /** This is so that the commands of a function are not
           * executed on entering the associated sub-menu */
-         firstEnter = 1;
-         
-                    
+         firstEnter = 1;                
          parentIndex = GetParent(currentState);
          
          if(parentIndex != INVALID_STATE)

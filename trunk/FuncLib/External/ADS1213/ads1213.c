@@ -17,15 +17,14 @@
 uint8_t ADS1213_TxByte(uint8_t data)
 {
 	uint8_t inputByte;
+	/* Set to a slower speed */	
 	inputByte = SPI_TxByte(data);
-   		
+
 	return inputByte;
 }
 
 void ADS1213_Reset(void)
 {
- 
-
 	SPCR &= ~(1 << SPE);
 	
    SPI_PORT &= ~(1 << SCK);
@@ -103,23 +102,21 @@ void ADS1213_Init(void)
                | (1 << ADS1213_A2) );  
    	 
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
-   ADS1213_TxByte( (1 << ADS1213_SDL) 
-                   | (1<<ADS1213_REFO));
+   ADS1213_TxByte( (1 << ADS1213_SDL) );
 
 
-   /* Perform a self calibration */
+   /* Perform a bkground calibration */
    ADS1213_TxByte( (1<<ADS1213_MD0) );
    
+   /* Always use Turbo 16 as it offers better performance */
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte(  0x02 );
+   ADS1213_TxByte( (1<<ADS1213_SF2) |  0x13 );
 
    /* Have a data rate of 2kHz */
-   ADS1213_TxByte( 0x70 );
+   ADS1213_TxByte( 0x88 );
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
-
-
 }
 
 
@@ -251,9 +248,9 @@ void ADS1213_Startup(void)
    ADS1213_TxByte((1 << ADS1213_MB0) | (1 << ADS1213_A2));
     
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
-   ADS1213_TxByte( (1 << ADS1213_SDL) | (1 << ADS1213_REFO) );
+   //ADS1213_TxByte( (1 << ADS1213_SDL) | (1 << ADS1213_REFO) );
 
-   //ADS1213_TxByte( 1 << ADS1213_SDL );
+   ADS1213_TxByte( 1 << ADS1213_SDL );
    
    /* Do a Self Calib */
    ADS1213_TxByte( (1<<ADS1213_MD0) );
