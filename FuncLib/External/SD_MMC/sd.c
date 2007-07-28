@@ -62,7 +62,9 @@ uint8_t SD_Init(void)
    r1 = SD_Command(MMC_CRC_ON_OFF, 0);
    r1 = SD_Command(MMC_SET_BLOCKLEN, 512);     
    
+   /* Release and return clock phase and speed back to default */
    MMC_CS_PORT |= (1 << MMC_CS_PIN);
+   SPCR |= (1 << CPHA) | (1 << SPR1);
    
    return 0;
     
@@ -111,7 +113,8 @@ uint8_t SD_Command(uint8_t cmd, uint32_t arg)
 	uint8_t r1;
 	uint8_t retry = 0;
 
-   SPCR &= ~(1 << CPHA);	
+   /* Ensure speed is max */
+   SPCR &= ~((1 << CPHA) | (1 << SPR1));	
 	
 	// send command
 	SPI_TxByte(cmd | 0x40);
@@ -185,10 +188,10 @@ uint8_t SD_Read(uint32_t sector, uint8_t* buffer)
 	while(!SPI_RxByte());
 
 		
-   SPCR |= (1 << CPHA);	
-	// release chip select
+   /* Release and return clock phase and speed back to default */
    MMC_CS_PORT |= (1 << MMC_CS_PIN);
-   
+   SPCR |= (1 << CPHA) | (1 << SPR1);
+  
    
 	// return success
 	return 0;
@@ -238,9 +241,9 @@ uint8_t SD_Write(uint32_t sector, uint8_t* buffer)
 	// wait until card not busy
 	while(!SPI_RxByte());
 
-	// release chip select
-   SPCR |= (1 << CPHA);
+   /* Release and return clock phase and speed back to default */
    MMC_CS_PORT |= (1 << MMC_CS_PIN);
+   SPCR |= (1 << CPHA) | (1 << SPR1);
 
 	
 	// return success

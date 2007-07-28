@@ -44,17 +44,42 @@ void printTIMEDATE(uint8_t timeDATA, uint8_t separator)
 	{
 		uartTx('0');
 	}
-		
-		//pausems(2);
-				
+
 	uartTxString(OutputString);
 	uartTx(separator);
 
 }
 
 
+/** Receives the time array and converts the HH:MM:SS section
+ * into decimal. The result is placed in the convTime address */
+void RTC_ConvertTime(uint8_t* time, uint8_t* convTime)
+{
+   uint8_t i;
+   
+   /* Ignore the 12/24 hour bit */
+	time[HOURS] &= ~(HOURS24);   
+      
+	for( i = SECONDS; i <= HOURS; i++)
+	{
+		convTime[i] = ((time[i] & TENS_MASK) >> 3)*5;
+		convTime[i] = convTime[i] + (time[i] & ONES_MASK);
+	}
+}
 
-
+/** Receives the time array and converts the "DAY" DD/MM/YY section
+ * into decimal. The result is placed in the convTime address */
+void RTC_ConvertDate(uint8_t* time, uint8_t* convDate)
+{
+   
+   uint8_t i;
+   
+	for( i = DAY; i <= YEAR; i++)
+	{
+		convDate[i-DAY] = ((time[i] & TENS_MASK) >> 3)*5;
+		convDate[i-DAY] = convDate[i - DAY] + (time[i] & ONES_MASK);
+	}    
+}
 
 
 
@@ -69,15 +94,7 @@ void printTime(uint8_t* time)
 	uint8_t i;
 	
 	/*Convert all times from BCD to decimal */
-	for( i = SECONDS; i <= MINUTES; i++)
-	{
-		temp_time[i] = ((time[i] & TENS_MASK) >> 3)*5;
-		temp_time[i] = temp_time[i] + (time[i] & ONES_MASK);
-	}
-
-	temp_time[HOURS] = ((time[HOURS] & HOUR_MASK) >> 3)*5;
-	temp_time[HOURS] = temp_time[HOURS] + (time[HOURS] & ONES_MASK);
-
+	RTC_ConvertTime( time , temp_time);
 	/* Print out the time in the format HH:MM:SS */
 	uartTxString_P( PSTR("\rThe current time is: "));
 	for( i = HOURS; i <= HOURS; i--)
@@ -99,12 +116,7 @@ void printDate(uint8_t* time)
 	uint8_t i;
 	
 	/*Convert all dates from BCD to decimal */
-	for( i = DAY; i <= YEAR; i++)
-	{
-		temp_time[i-DAY] = ((time[i] & TENS_MASK) >> 3)*5;
-		temp_time[i-DAY] = temp_time[i-DAY] + (time[i] & ONES_MASK);
-	}
-	
+	RTC_ConvertDate( time, temp_time);
 	/* Print out the day of the week*/
 	uartTxString_P( PSTR("\rThe current date is: ") );
 	

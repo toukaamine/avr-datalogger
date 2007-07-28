@@ -13,7 +13,11 @@ volatile uint8_t spiTransferComplete = TRANSFER_COMPLETE;
 
 ISR(SPI_STC_vect)
 {
+   cli();
+   
    spiTransferComplete = TRANSFER_COMPLETE;
+   
+   sei();
 }
 
 /** Sets the micro up as a
@@ -34,13 +38,12 @@ void SPI_Init(void)
    /* Initiate as Master and Use CPHA = 1*/
    SPCR |= ((1 << SPE) | (1 << MSTR) | (1 << CPHA) );
     
-   /* set CLK speed to fclk/128 */
-   SPCR |= ((1 << SPR0) | (1 << SPR1));
-   
+   /* set CLK speed to fclk/32 */
+   SPCR |= ((1 << SPR1) );
+   SPSR |= (1<<SPI2X);
    /*
    SPSR;
-   SPCR |= (1 << SPIE);    */
-   
+   SPCR |= (1 << SPIE);  */
 }
 
 
