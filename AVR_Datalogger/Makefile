@@ -110,7 +110,8 @@ SRC = $(TARGET).c \
 		UI_LCD/UI_LCD.c \
 		SampleCtrl/SampleCtrl.c \
 		uartTerm/uartInput.c \
-		uartTerm/userFunctions.c 
+		uartTerm/userFunctions.c \
+		MemMan/memman.c
       
 #		GainSensor/GainSensor.c
 
@@ -131,7 +132,7 @@ ASRC =
 # Optimization level, can be [0, 1, 2, 3, s]. 
 #     0 = turn off optimization. s = optimize for size.
 #     (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
-OPT = s
+OPT = 0
 
 
 # Debugging format.

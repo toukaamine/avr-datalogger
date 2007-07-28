@@ -23,3 +23,7 @@ void SC_Init(void)
    TCNT2 = 0x00;
 }
 
+
+
+
+

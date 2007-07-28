@@ -20,7 +20,7 @@
 #include "RTC/RTCPrint.h"
 #include "SD_MMC/sd.h"
 #include "uartTerm/uartInput.h"
-
+#include "MemMan/memman.h"
 
 #define UART_PORT PORTD
 #define UART_DDR  DDRD
@@ -96,19 +96,19 @@ int main(void)
    /* Reprint Menu */   
    MenuUpdate();
    
+   /* Set speed to 500kHz */
    SPI_Init();
 
 
 
 	/* Write to the DS1305 The time and date */
+	/* Max frequency is 600kHz */
    DS1305_Init();
    DS1305_SetTime(DS1305_TimeDate_config);
 
-
-
-   sei();
    UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
   
+   /** Initialise SD Card */
    SD_Startup();   
    if( SD_Init() == 0 )
    {
@@ -118,15 +118,27 @@ int main(void)
    {
       uartTxString_P( PSTR("SD Card Failed!") );      
    }
+   
+   /* Setup ADC, perform offset calibration */
+   ADS1213_Init();
+   GS_Channel(2);
+   GS_GainSel(GS_GAIN_005);
+   ADS1213_PsuedoCalib(); 
+
+
+   MM_CreateRecording(0);
+
+   sei();
  
    while(1)
    {
       /* Need to reset Interrupt */   
-      UI_SetRegister(UI_INTERRUPT, 0);   
+      //UI_SetRegister(UI_INTERRUPT, 0);   
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
       sleep_disable();
+      sei();
    }
    
    return 0;  
@@ -137,7 +149,7 @@ int main(void)
 /* To echo the receiver buffer*/
 ISR(SIG_UART_RECV)
 {
-
+   cli();
    uint8_t rcvdByte = 0;
    
    rcvdByte = UDR;
@@ -155,10 +167,11 @@ ISR(SIG_UART_RECV)
    {
       switch_uart_input(rcvdByte);
       return; 
-   }   
+   }
+   
+   sei();
+      
 }
-
-
 
 
 
@@ -169,21 +182,22 @@ ISR(SIG_UART_RECV)
 ISR(TIMER2_COMP_vect)
 {
    cli();
-   
    static uint8_t counter_ms;
 
 /* Example */
 /* Happens every 10 seconds, max seconds = 25.5secs  
  * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
-	static SoftTimer_8 ControlEvent = {5*SC_SECONDS, 0, 1};
+	static SoftTimer_8 ControlEvent = {1, 0, 1};
 	
 	/* Restart after 2 seconds */
 	static SoftTimer_8 RestartEvent = {2*SC_SECONDS, 0, 1};
 		
+   float32_t conditionedResult;
+   static uint32_t SD_Sector = 0;
    
    counter_ms++;
    
-   if( counter_ms == 100*SC_MILLISECOND)
+   if( counter_ms == 1*SC_MILLISECOND)
    {
 		counter_ms = 0;
       ControlEvent.timerCounter++;
@@ -195,8 +209,9 @@ ISR(TIMER2_COMP_vect)
 			/* Do Control Event */
 			//ADS1213_Init();
 			//LCD_BL_PORT ^= (1 << LCD_BL_PIN);
+
+			
 			ControlEvent.timerCounter = 0;
-			ControlEvent.timerEnable = 0;
 		}
 		
 		
@@ -204,11 +219,46 @@ ISR(TIMER2_COMP_vect)
    } 
    
    /* Functions occuring between 1 to 99msecs occur here */
+   uint32_t lastestResult;
+
+         uint8_t temp_time[3];
+         static uint16_t sampleCnt = 0;
+         uint8_t i;
+         uint8_t outputString[10];
+      
+         if( sampleCnt < 512 )
+         {
+            MM_Write( 'A' ); 
+            sampleCnt++; 
+//            /* Update the time */
+//            DS1305_GetTime( DS1305_TimeDate_config );
+//            RTC_ConvertTime(DS1305_TimeDate_config, temp_time);
+//            
+//            for( i = SECONDS; i <= HOURS; i++)
+//            {
+//               MM_Write( temp_time[i] );                  
+//               uartTxString_P( PSTR("Sample #:") );            
+//               uint16toa(sampleCnt, outputString, 0);
+//               uartTxString(outputString);
+//               uartNewLine();
+//               sampleCnt++;                    
+//
+//            }
+            
+
+         }	
+		
+      			
+
    
-   
-   sei();
+   //lastestResult = ADS1213_GetResult();
+   //conditionedResult = SensorCondition(lastestResult, gain);     
+//   SC_EnableTimer();
+
+
    
 }
+
 
 
 /* This is used to parse the KP inputs and RTC inputs */

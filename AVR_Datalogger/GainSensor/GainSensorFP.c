@@ -8,7 +8,7 @@
 #include "GainSensorFP.h"
 #include "hardUart/hardUart.h"
 
-
+#define RESULT_DEBUG 1
 
 
 /** Multiplies the passed float by 2^(adjust) 
@@ -52,7 +52,7 @@ void printFloat(float data)
    uartTx('.');
    
 	working.FP = data - (int32_t)data;
-	float_4dp( working.FP * 10000, outputString); 
+	float_4dp( working.FP * GAIN_RESOLUTION, outputString); 
    uartTxString( (uint8_t*)outputString );
 }
 
@@ -268,7 +268,7 @@ void SensorAutoScale(uint8_t channel)
 
 /* Turns all digits into voltages regardless of Type */
 /* Function assumes a signed 24bit integer */
-void SensorCondition(uint32_t data, uint8_t gainIndex)
+float32_t SensorCondition(uint32_t data, uint8_t gainIndex)
 {
 
 	/* Could change to 64's */
@@ -287,6 +287,7 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
 /** Debug only because the float output function can only handle 16bit */		   
 	dataFP.FP = (float)(signedData);
 
+#if RESULT_DEBUG
    ltoa( data, outputString, 10);
    uartTxString( (uint8_t*)"Raw Data = ");
    uartTxString(outputString);      
@@ -301,26 +302,32 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
    uartTxString( (uint8_t*)"Float Data = ");
    printFloat( dataFP.FP ); 	
    uartNewLine();
+#endif   
 /** Debug only */	
    
    gainFP = (float32_t)pgm_read_float( (uint16_t*) &SENSOR_GAIN[gainIndex] );
-   
+
+#if RESULT_DEBUG   
 /** Debug only */	   
    uartTxString( (uint8_t*)"Current Gain = ");
    printFloat( gainFP.FP ); 	
    uartNewLine();
+#endif   
 /** Debug only */	   
    
-   /* Divide by 2^21 */
-   dataFP.FP = dataFP.FP / gainFP.FP;
-	dataFP = floatExponent(dataFP, - (SENSOR_ENOB));
+   /* Divide by 2^22 */
+   dataFP.FP = dataFP.FP / (SENSOR_REF_MULTIPLIER * gainFP.FP);
+	dataFP = floatExponent(dataFP, - (SENSOR_ENOB) + 8);
    
-
+#if RESULT_DEBUG  
    uartTxString( (uint8_t*)"Conditioned 'Voltage' is: "); 
    printFloat(dataFP.FP);
-     							
+#endif      							
    /* At this point realReading is still SENSOR_REF_MULTIPLIER  * GAIN_RESOLUTION 
     * too large */
+   
+   return dataFP; 
+    
 }
 
 
