@@ -14,7 +14,7 @@
 
 
 
-
+#define RESULT_DEBUG 1
 
 
 
@@ -234,7 +234,8 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
 	float   fpData;
    signedData = (int32_t)data;
 	fpData = signedData;
-	
+
+#if 1	
    ltoa(data, outputString , 10);
    uartNewLine(); 
    uartTxString( (uint8_t*)"Raw Data = ");
@@ -244,8 +245,8 @@ void SensorCondition(uint32_t data, uint8_t gainIndex)
    uartNewLine(); 
    uartTxString( (uint8_t*)"Signed Data = ");
    uartTxString( (uint8_t*)outputString );      
+#endif
    
-   int32_t realReading = 0;
 	/* These need to be upgraded if Gain -> 64 bit , not really since
     * SENSOR_GAIN elements are still only 16 bit... */
 	Gain.decimal = pgm_read_word( &(SENSOR_GAIN[gainIndex]->decimal));

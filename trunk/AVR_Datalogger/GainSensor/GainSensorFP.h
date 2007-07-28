@@ -52,13 +52,15 @@
 #define GAIN_76   76.7141
 #define GAIN_30   31.5100
 #define GAIN_22   22.523
-#define GAIN_11   11.43
+#define GAIN_11   11.922
 #define GAIN_5    5.0000
-#define GAIN_05   0.6310
-#define GAIN_025  0.2511
-#define GAIN_02   0.1877
-#define GAIN_01   0.1003
-#define GAIN_005  0.0432
+
+/* Calibrated */
+#define GAIN_05   0.6275
+#define GAIN_025  0.2454
+#define GAIN_02   0.1831
+#define GAIN_01   0.0985
+#define GAIN_005  0.0408
 
 #define GAIN_DECIMAL(x) (uint16_t)( (int32_t)(x*GAIN_RESOLUTION) - (int32_t)(GAIN_INT(x)*GAIN_RESOLUTION)  )
 #define GAIN_INT(x) (uint16_t)((x/x) * x)
@@ -78,8 +80,8 @@
 #define SENSOR_SATURATION_LIMIT ((2^16) - 1)
 
 /* Approximatley 2.5V */
-#define SENSOR_REFERNCE 2.5
-#define SENSOR_REF_MULTIPLIER 1
+#define SENSOR_REFERNCE 256
+#define SENSOR_REF_MULTIPLIER 100.0
 
 typedef struct _float32
 {
@@ -121,7 +123,7 @@ void GS_Init(void);
 void GS_Channel(uint8_t channel);
 void GS_GainSel(uint8_t gain);
 
-void SensorCondition(uint32_t data, uint8_t gainIndex);
+float32_t SensorCondition(uint32_t data, uint8_t gainIndex);
 
 float32_t floatExponent(float32_t data, int8_t adjust);
 void printFloat(float data);
