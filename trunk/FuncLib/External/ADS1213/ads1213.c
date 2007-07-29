@@ -111,10 +111,10 @@ void ADS1213_Init(void)
    /* Always use Turbo 16 as it offers better performance */
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte( (1<<ADS1213_SF2) |  0x13 );
+   ADS1213_TxByte( (1<<ADS1213_SF2) |  0x1 );
 
    /* Have a data rate of 2kHz */
-   ADS1213_TxByte( 0x88 );
+   ADS1213_TxByte( 0x20 );
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
 }
@@ -129,10 +129,7 @@ uint32_t ADS1213_GetResult(void)
    uint8_t BusyFlag;
    uint8_t DRDY_Status;
    uint16_t retry;
-   
-   
-   uint32_t temporary;
-   
+      
    ADS1213Data_t Data;
    Data.result = 0;
 
@@ -140,6 +137,7 @@ uint32_t ADS1213_GetResult(void)
     * if nDRDY is LOW */
    
    BusyFlag = 1;
+     
     
    for( retry = 0; retry < 32; retry++)
    {    
@@ -148,50 +146,41 @@ uint32_t ADS1213_GetResult(void)
       /* Read CMD Register's DRDY */
             
       ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_A2));     
-      _delay_us(10);
+      _delay_us(10);     
       DRDY_Status = ADS1213_RxByte();
       
       if( !(DRDY_Status & (1<<ADS1213_DRDY)) )
       { 
 
          BusyFlag = 0;
-         ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
-         _delay_ms(2);
+         ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);
+         _delay_us(10);     
          break;
       }
    
-      ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
-      _delay_ms(2);
+      ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);
+      _delay_us(10); 
    }
    
-   uartTx(retry);
    if(BusyFlag)
    {
       return ADS1213_BUSY;  
    }
    
-   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);    
    /* Ask to read three bytes from DOR(1) */
-   ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_MB1));
+   ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_MB1)); 
    Data.byte[2] = ADS1213_RxByte();
-   Data.byte[1] = ADS1213_RxByte();   
+   Data.byte[1] = ADS1213_RxByte();    
    Data.byte[0] = ADS1213_RxByte();   
-
    /* Release the chip */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);   
    
+   
    Data.byte[4] = 0x00;
-   
-   uartTx(Data.byte[2]);
-   uartTx(Data.byte[1]);
-   uartTx(Data.byte[0]);      
-   
-   temporary = Data.result;
-   
-
-   
+       
    /* Truncate data to 22 bits */
-   return temporary;   
+   return Data.result & 0xFFFFFF;   
   
 }
 
