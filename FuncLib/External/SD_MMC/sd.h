@@ -65,7 +65,7 @@
 #define MMC_PWR_PORT PORTB
 #define MMC_PWR_PIN  PB0
 
-#define MMC_MAX_RETRIES 20
+#define MMC_MAX_RETRIES 8
 
 
 // constants/macros/typdefs

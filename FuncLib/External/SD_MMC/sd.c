@@ -16,20 +16,19 @@ uint8_t SD_Init(void)
    MMC_CS_DDR |= (1 << MMC_CS_PIN);
    MMC_PWR_DDR |= (1 << MMC_PWR_PIN);
    
-   /* Select the card */
-   MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
-   SD_Shutdown();
-   _delay_ms(30);
    SD_Startup();
    _delay_ms(30);   
-   
-   
+      
     /* card needs 74 cycles minimum to start up */
    for(i = 0; i < MMC_MAX_RETRIES; ++i)
    {
         /* wait 8 clock cycles */
       SPI_RxByte();
    }
+    
+    
+   /* Select the card */
+   MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
     
    /* Reset the card */
    for( i = 0; ; i++)
@@ -53,7 +52,7 @@ uint8_t SD_Init(void)
       if(r1 == MMC_R1_READY){
          break;
       }    
-      if( i > MMC_MAX_RETRIES )
+      if( i > 200 )
       {
          return 1;
       }
@@ -142,7 +141,7 @@ uint8_t SD_Command(uint8_t cmd, uint32_t arg)
    
    uartNewLine();   
 	
-	
+   SPCR |= (1 << CPHA) | (1 << SPR1);	
 	return r1;
 }
 
