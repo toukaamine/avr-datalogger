@@ -54,8 +54,9 @@ int main(void)
  
    
    /* Wait for power to resume */
-   for( uint8_t i = 0; i < 8; i++)
+   for( uint8_t i = 0; i < 30; i++)
    {
+      _delay_ms(30);
       _delay_ms(30);
    }    
    

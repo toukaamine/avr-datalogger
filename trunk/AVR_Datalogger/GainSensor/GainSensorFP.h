@@ -44,23 +44,31 @@
 /* Approximatley 0.0432 */
 #define GS_GAIN_005    ((1 << GS_GAIN_D) | (1 << GS_GAIN_E))
 
+
+enum {
+   GAIN76X = 0, GAIN30X, GAIN22X, GAIN11X,
+   GAIN5X,  GAIN05X, GAIN025X, 
+   GAIN02X, GAIN01X, GAIN005X
+} Gains;   
+
+
 /* All gains below are multiplied by the Gain Resolution */
 /* This means that floats will not need to be used */
 #define GAIN_RESOLUTION (10000)
 
 /* Finish these off to 4 dp*/
-#define GAIN_76   76.7141
-#define GAIN_30   31.5100
-#define GAIN_22   22.523
-#define GAIN_11   11.922
-#define GAIN_5    5.0000
+#define GAIN_76FP   76.7141
+#define GAIN_30FP   31.5100
+#define GAIN_22FP   22.523
+#define GAIN_11FP   11.922
+#define GAIN_5FP    5.0000
 
 /* Calibrated */
-#define GAIN_05   0.6275
-#define GAIN_025  0.2454
-#define GAIN_02   0.1831
-#define GAIN_01   0.0985
-#define GAIN_005  0.0408
+#define GAIN_05FP   0.6275
+#define GAIN_025FP  0.2454
+#define GAIN_02FP   0.1831
+#define GAIN_01FP   0.0985
+#define GAIN_005FP  0.0408
 
 #define GAIN_DECIMAL(x) (uint16_t)( (int32_t)(x*GAIN_RESOLUTION) - (int32_t)(GAIN_INT(x)*GAIN_RESOLUTION)  )
 #define GAIN_INT(x) (uint16_t)((x/x) * x)
@@ -123,15 +131,20 @@ void GS_Init(void);
 void GS_Channel(uint8_t channel);
 void GS_GainSel(uint8_t gain);
 
-float32_t SensorCondition(uint32_t data, uint8_t gainIndex);
+
 
 float32_t floatExponent(float32_t data, int8_t adjust);
 void printFloat(float data);
 float pgm_read_float(uint16_t* address_short);
 
 
-
-
+uint8_t SensorGetState(uint8_t channel);
+uint8_t SensorGetType(uint8_t channel);
+void SensorOn(uint8_t channel);
+void SensorOff(uint8_t channel);
+uint8_t SensorGetGain(uint8_t channel);
+void SensorSetGain(uint8_t channel, uint8_t gain);
+float32_t SensorCondition(uint32_t data, uint8_t gainIndex);
 
 
 

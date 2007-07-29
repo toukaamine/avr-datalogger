@@ -70,7 +70,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = main
+TARGET = SampleTest
 
 GETTIME 			= 1
 GETTIME_PATH 	= ../FuncLib/Other/Time/
@@ -91,27 +91,28 @@ UTIL_DIR = ../FuncLib/Util
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
 		$(PERIPHERALS_DIR)/hardUart/hardUart.c \
+		MemMan/memman.c \
+		$(EXTERNALS_DIR)/SD_MMC/sd.c \
 		$(MISC_DIR)/mmculib/uint8toa.c \
   		$(MISC_DIR)/mmculib/uint16toa.c \
-      GainSensor/GainSensorFP.c \
+		$(PERIPHERALS_DIR)/SPI/spi.c \
    	$(PERIPHERALS_DIR)/I2C/i2c.c \
+		$(EXTERNALS_DIR)/DS1305/ds1305.c \
+		$(APPLICATIONS_DIR)/RTC/RTCPrint.c \
+      GainSensor/GainSensorFP.c \
 		$(EXTERNALS_DIR)/MAX7300/max7300.c \
 		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
-		$(PERIPHERALS_DIR)/SPI/spi.c \
 		$(UTIL_DIR)/MSB2LSB/MSB2LSB.c \
-		$(EXTERNALS_DIR)/DS1305/ds1305.c \
-		$(EXTERNALS_DIR)/SD_MMC/sd.c \
 		$(PERIPHERALS_DIR)/pwm/pwm.c \
   		$(MISC_DIR)/mmculib/uint8toa.c \
-		$(APPLICATIONS_DIR)/RTC/RTCPrint.c \
 		$(APPLICATIONS_DIR)/Menu/Menu.c \
 		UI/UI.c \
 		UI_KP/UI_KP.c \
 		UI_LCD/UI_LCD.c \
 		SampleCtrl/SampleCtrl.c \
 		uartTerm/uartInput.c \
-		uartTerm/userFunctions.c \
-		MemMan/memman.c
+		uartTerm/userFunctions.c
+
       
 #		GainSensor/GainSensor.c
 
@@ -132,7 +133,7 @@ ASRC =
 # Optimization level, can be [0, 1, 2, 3, s]. 
 #     0 = turn off optimization. s = optimize for size.
 #     (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
-OPT = 0
+OPT = s
 
 
 # Debugging format.
