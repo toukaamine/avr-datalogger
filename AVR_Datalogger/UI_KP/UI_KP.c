@@ -22,8 +22,9 @@ void UI_KP_Init(void)
 	/* UI_COLS to Inputs and ROW0 to output*/
 	i2cTransmit(0xA9);
 
+   /* Enable Pullups on RTC0/RTC1 */
    /* Set P31 to an output and COL0 to an input*/
-	i2cTransmit(0x6A);
+	i2cTransmit(0x7E);
 	i2cStop();	
 
    /* Set UI_Rows to to output LOW */
@@ -53,7 +54,7 @@ uint8_t UI_KP_GetPress(void)
 	i2cAddress(UI_MAX7300_ADDRESS, TW_WRITE);     
  	i2cTransmit(MAX7300_DDRB2);
 	i2cTransmit(0x56); 
-	i2cTransmit(0x69);
+	i2cTransmit(0x7D);
 	i2cStop();
 	
 	/* Set all columns to Output High and Bring INT0 low*/

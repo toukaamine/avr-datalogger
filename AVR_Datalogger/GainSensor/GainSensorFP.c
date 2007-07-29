@@ -8,7 +8,9 @@
 #include "GainSensorFP.h"
 #include "hardUart/hardUart.h"
 
-#define RESULT_DEBUG 1
+#define RESULT_DEBUG 0
+
+
 
 
 /** Multiplies the passed float by 2^(adjust) 
@@ -36,7 +38,7 @@ void printFloat(float data)
 {
 
    char outputString[20];
-   volatile float32_t working; 
+   float32_t working; 
 
 	working.FP = data;
 	if( working.byteField[3] & FLOAT_SIGN_BIT)
@@ -45,7 +47,6 @@ void printFloat(float data)
 		data = -data;
 		working.byteField[3] &=  (~FLOAT_SIGN_BIT);
 	}
-
 
    uint16toa( working.FP, outputString, 0);
    uartTxString( (uint8_t*)outputString );   
@@ -79,9 +80,9 @@ const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_1
 
 /* Still to finish this off */
 const float SENSOR_GAIN[] PROGMEM = { 
-   GAIN_76, GAIN_30, GAIN_22, GAIN_11, 
-   GAIN_5, GAIN_05, GAIN_025, GAIN_02, 
-   GAIN_01, GAIN_005};
+   GAIN_76FP, GAIN_30FP, GAIN_22FP, GAIN_11FP, 
+   GAIN_5FP, GAIN_05FP, GAIN_025FP, GAIN_02FP, 
+   GAIN_01FP, GAIN_005FP};
 
 void GS_Init(void)
 {
@@ -217,9 +218,14 @@ uint8_t SensorGetGain(uint8_t channel)
  * SENSOR_GAIN's are used. gain must be within the SENSOR_GAIN index */
 void SensorSetGain(uint8_t channel, uint8_t gain)
 {
+   uint8_t nibble;
+   
+   nibble = 4* (channel % 2);
+   
 	/* To use the correct nibble */
 	gain = gain & 0x0F;
-	SensorGain[ (channel / 2) ] = gain << (4* (channel % 2));
+	SensorGain[ (channel / 2) ] &= ~( 0x0F << nibble);
+	SensorGain[ (channel / 2) ] |= (gain << nibble);
 	
 }
 
@@ -283,7 +289,7 @@ float32_t SensorCondition(uint32_t data, uint8_t gainIndex)
 	/* Convert signed 24bit into signed 32bit */
 	ConvertedData.result = data;
 	signedData = uint24_tSign( ConvertedData );
-	
+		
 /** Debug only because the float output function can only handle 16bit */		   
 	dataFP.FP = (float)(signedData);
 

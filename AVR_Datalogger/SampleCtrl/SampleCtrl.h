@@ -17,6 +17,9 @@
 /* Sets up the required timers etc */
 void SC_Init(void);
 
+void SC_Sample(void);
+
+
 typedef struct _softTimer8
 {
 	uint8_t timeCompare;
