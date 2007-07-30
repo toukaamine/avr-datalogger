@@ -70,7 +70,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = SampleTest
+TARGET = main
 
 GETTIME 			= 1
 GETTIME_PATH 	= ../FuncLib/Other/Time/
