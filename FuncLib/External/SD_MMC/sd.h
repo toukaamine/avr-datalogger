@@ -74,10 +74,13 @@
 #define MMC_SEND_OP_COND			1		///< set card operational mode
 #define MMC_SEND_CSD				9		///< get card's CSD
 #define MMC_SEND_CID				10		///< get card's CID
+#define MMC_STOP_READ_TRANS		12
 #define MMC_SEND_STATUS				13
 #define MMC_SET_BLOCKLEN			16		///< Set number of bytes to transfer per block
 #define MMC_READ_SINGLE_BLOCK		17		///< read a block
+#define MMC_READ_MULTIPLE_BLOCK	18
 #define MMC_WRITE_BLOCK				24		///< write a block
+#define MMC_WRITE_MULTIPLE_BLOCK	25
 #define MMC_PROGRAM_CSD				27
 #define MMC_SET_WRITE_PROT			28
 #define MMC_CLR_WRITE_PROT			29
@@ -89,6 +92,7 @@
 #define MMC_TAG_ERARE_GROUP_END		36		///< Sets end of erase group (mass erase)
 #define MMC_UNTAG_ERASE_GROUP		37		///< Untag (unset) erase group (mass erase)
 #define MMC_ERASE					38		///< Perform block/mass erase
+#define MMC_READ_OCR					58
 #define MMC_CRC_ON_OFF				59		///< Turns CRC check on/off
 // R1 Response bit-defines
 #define MMC_R1_BUSY					0x80	///< R1 response: bit indicates card is busy
@@ -101,7 +105,7 @@
 #define MMC_R1_IDLE_STATE			0x01
 #define MMC_R1_READY             0x00
 // Data Start tokens
-#define MMC_STARTBLOCK_READ			0xFE	///< when received from card, indicates that a block of data will follow
+#define MMC_STARTBLOCK_READ		0xFE	///< when received from card, indicates that a block of data will follow
 #define MMC_STARTBLOCK_WRITE		0xFE	///< when sent to card, indicates that a block of data will follow
 #define MMC_STARTBLOCK_MWRITE		0xFC
 // Data Stop tokens
@@ -120,14 +124,19 @@
 #define MMC_DR_REJECT_WRITE_ERROR	0x0D
 
 
-
-
 uint8_t SD_Init(void);
 void SD_Startup(void);
 void SD_Shutdown(void);
-uint8_t SD_SendCommand(uint8_t cmd, uint32_t arg);
+
+
+uint8_t SD_ReadBlock(uint8_t* buffer, uint16_t byteCount);
+uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token);
 uint8_t SD_Command(uint8_t cmd, uint32_t arg);
+
+/** SD DISK IO Functions */
 uint8_t SD_Write(uint32_t sector, uint8_t* buffer);
 uint8_t SD_Read(uint32_t sector, uint8_t* buffer);
+DSTATUS SD_disk_status (void);
+DRESULT disk_ioctl (	uint8_t ctrl,	void *buff );
 
 #endif
