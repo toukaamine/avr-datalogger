@@ -18,7 +18,7 @@
 #include "Menu/Menu.h"
 #include "UI_KP/UI_KP.h"
 #include "MemMan/memman.h"
-
+#include "TinyFS/tff.h"
 
 /** These functions are accessed via the UART */
 
@@ -76,7 +76,7 @@ void GetTime(void* data)
    uartNewLine();   
   
    _delay_ms(10);
-   SD_Write( 512 , DS1305_TimeDate_config);
+   SD_Write( DS1305_TimeDate_config, 512 , 1);
    MMC_CS_PORT |= (1 << MMC_CS_PIN);    
    
 }
@@ -85,7 +85,7 @@ void MMC_ReadTimeTest(void* data)
 {
    
    uint8_t buffer[20];
-   if( SD_Read( 512 , buffer) == 0)
+   if( SD_Read( buffer, 512 , 1) == 0)
    {
       uartTxString("Read Success!");
         
@@ -109,10 +109,10 @@ void MMC_WriteTest(void* data)
 {
    SD_Startup();
    uint32_t sector=0;
-   uint8_t buffer[0x5] = {"Hello!"};
+   uint8_t buffer[0x8] = {"Hello!"};
    
       
-   if( SD_Write( 512 , buffer) == 0)
+   if( SD_Write(buffer , 512, 1 ) == 0)
    {
       uartTxString("Write Success!");
         
@@ -333,4 +333,60 @@ void ADS1213_Status(void* data)
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
 }
 
+FATFS filesys;
 
+void MountSD(void* data)
+{
+
+	if( f_mount(0, &filesys) )
+	{
+		uartTxString_P( PSTR("Mount Failed!") );	
+	}
+}
+
+static FIL hellotxt;
+
+void OpenSD(void* data)
+{
+
+	if( f_open(&hellotxt, "hah.txt", FA_CREATE_ALWAYS | FA_WRITE) )
+	{
+		uartTxString_P( PSTR("Open Failed!") );	
+	}
+}
+
+void CloseSD(void* data)
+{
+	if (f_close(&hellotxt) )
+	{
+		uartTxString_P( PSTR("Close Failed!") );			
+	}
+}
+
+void WriteSD(void* data)
+{
+	uint8_t messageStr[] = "Hi David";
+	uint16_t cnt;
+	
+	if( f_write(&hellotxt, messageStr, 9 , &cnt) )
+	{
+		uartTxString_P( PSTR("Write Failed!") );			
+	}
+}
+
+void ReadSD(void* data)
+{
+	uint16_t cnt;
+	uint8_t buffer[10];
+	if( f_read(&hellotxt, buffer, 8, &cnt) )
+	{
+		uartTxString_P( PSTR("Read Failed!") );			
+	}
+	
+	uartTxString(buffer);
+}
+
+void UnMountSD(void* data)
+{
+	f_mount(0, 0);
+}
