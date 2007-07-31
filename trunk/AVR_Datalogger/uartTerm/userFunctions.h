@@ -22,3 +22,12 @@ void GS_Status(void* data);
 void MenuSetUartMode(void* data);
 void MenuSetLCDMode(void* data);
 void MenuDisplayMode(void* data);
+
+
+
+void MountSD(void* data);
+void OpenSD(void* data);
+void CloseSD(void* data);
+void WriteSD(void* data);
+void ReadSD(void* data);
+void UnMountSD(void* data);

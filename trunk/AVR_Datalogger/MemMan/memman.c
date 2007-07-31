@@ -74,7 +74,7 @@ void MM_Write(uint8_t data)
    if( BlockAddress >= 512 )
    {
       /* Write the data */
-      SD_Write(MM_Sector, MM_Buffer);
+      SD_Write(MM_Buffer, MM_Sector, 1);
       
       BlockAddress = 0;
       MM_Sector++;
@@ -86,7 +86,7 @@ void MM_Write(uint8_t data)
 /** Reads out the whole recording */
 void MM_Read(uint8_t recordingIndex, uint8_t* dataBuffer)
 {
-   SD_Read(recordingIndex, dataBuffer);
+   SD_Read( dataBuffer, recordingIndex, 1);
    /* Reset the write block address buffer */
    BlockAddress = 0;
 }

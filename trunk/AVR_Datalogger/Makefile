@@ -91,7 +91,6 @@ UTIL_DIR = ../FuncLib/Util
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
 		$(PERIPHERALS_DIR)/hardUart/hardUart.c \
-		MemMan/memman.c \
 		$(EXTERNALS_DIR)/SD_MMC/sd.c \
 		$(MISC_DIR)/mmculib/uint8toa.c \
   		$(MISC_DIR)/mmculib/uint16toa.c \
@@ -111,8 +110,9 @@ SRC = $(TARGET).c \
 		UI_LCD/UI_LCD.c \
 		SampleCtrl/SampleCtrl.c \
 		uartTerm/uartInput.c \
-		uartTerm/userFunctions.c
-
+		uartTerm/userFunctions.c \
+		MemMan/memman.c \
+		$(APPLICATIONS_DIR)/TinyFS/tff.c 
       
 #		GainSensor/GainSensor.c
 

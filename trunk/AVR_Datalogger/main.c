@@ -45,6 +45,7 @@ uint8_t uartMenu = 0;
 
 
 void printSample(void);
+void Channel_Setup(void);
 
 /* To do, MMC add #conditional includes
  * MAX7300 routines.
@@ -54,25 +55,25 @@ int main(void)
  
    
    /* Wait for power to resume */
-   for( uint8_t i = 0; i < 30; i++)
+   for( uint8_t i = 0; i < 32; i++)
    {
-      _delay_ms(30);
       _delay_ms(30);
    }    
    
    /* Good for 250kbit */
-   uartInit(3, 1);
+   uartInit(0, 1);
     
    //SD_Shutdown();
 
    UCSRB |= (1 << RXCIE);
    
-	i2cInit(2 , 0);
+	i2cInit(3 , 0);
 
    GS_Init(); 
+
    UI_Activate();    
-   UI_KP_Init();  
-   
+   UI_KP_Init();
+      
    UI_LCD_HWInit();
    UI_LCD_Shutdown();
    _delay_ms(10);
@@ -101,40 +102,45 @@ int main(void)
    SPI_Init();
 
 
+   /* Setup ADC, perform offset calibration */
+   ADS1213_Init();
+   GS_Channel(3);
+//   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN01X]) );
+//   ADS1213_PsuedoCalib();
+   
+   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN01X]) );
+   ADS1213_PsuedoCalib();   
 
+   
 	/* Write to the DS1305 The time and date */
 	/* Max frequency is 600kHz */
    DS1305_Init();
    DS1305_SetTime(DS1305_TimeDate_config);
 
    UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
-  
+ 
+ 
    /** Initialise SD Card */
-   SD_Startup();   
-   if( SD_Init() == 0 )
+   if( SD_Init() == SD_SUCCESS )
    {
       uartTxString_P( PSTR("SD Card Initialised!") );
    }
    else
    {
-      uartTxString_P( PSTR("SD Card Failed!") );      
+      uartTxString_P( PSTR("SD Card Failed!") ); 
+      MMC_CS_PORT |= (1 << MMC_CS_PIN);     
    }
+  
+
    
-   /* Setup ADC, perform offset calibration */
-   ADS1213_Init();
-   GS_Channel(2);
-   GS_GainSel(GS_GAIN_005);
-   ADS1213_PsuedoCalib(); 
-
-
    MM_CreateRecording(0);
-
+   Channel_Setup();
    sei();
+
  
    while(1)
    {
-      /* Need to reset Interrupt */   
-      //UI_SetRegister(UI_INTERRUPT, 0);   
+      /* Need to reset Interrupt */     
       set_sleep_mode(SLEEP_MODE_IDLE);
       sleep_enable();
       sleep_cpu();
@@ -170,8 +176,6 @@ ISR(SIG_UART_RECV)
       return; 
    }
    
-   sei();
-      
 }
 
 
@@ -191,18 +195,19 @@ ISR(TIMER2_COMP_vect)
 	static SoftTimer_8 ControlEvent = {1, 0, 1};
 	
 	/* Restart after 2 seconds */
-	static SoftTimer_8 RestartEvent = {2*SC_SECONDS, 0, 1};
+	static SoftTimer_16 RestartEvent = {10000, 0, 1};
 		
    float32_t conditionedResult;
    static uint32_t SD_Sector = 0;
    
    counter_ms++;
    
-   if( counter_ms == 1*SC_MILLISECOND)
+   if( counter_ms == 5*SC_MILLISECOND)
    {
 		counter_ms = 0;
       ControlEvent.timerCounter++;
-		
+      RestartEvent.timerCounter++;	
+      	
 		/* Functions which occur every xx*100msecs happen here */
 		if( ControlEvent.timerCounter == ControlEvent.timeCompare 
           && ControlEvent.timerEnable)
@@ -210,27 +215,32 @@ ISR(TIMER2_COMP_vect)
 			/* Do Control Event */
 			//ADS1213_Init();
 			//LCD_BL_PORT ^= (1 << LCD_BL_PIN);
-
+         SC_Sample();
 			
 			ControlEvent.timerCounter = 0;
 		}
 		
+      if( RestartEvent.timerCounter == RestartEvent.timeCompare 
+          && RestartEvent.timerEnable)
+      {
+         uartTxString("STOP THE CLOCK!!!");
+         ControlEvent.timerEnable = 0;
+               
+      }	
 		
       
    } 
    
    /* Functions occuring between 1 to 99msecs occur here */
-   uint32_t lastestResult;
-
-         uint8_t temp_time[3];
-         static uint16_t sampleCnt = 0;
-         uint8_t i;
-         uint8_t outputString[10];
-      
-         if( sampleCnt < 512 )
-         {
-            MM_Write( 'A' ); 
-            sampleCnt++; 
+//   uint32_t lastestResult;
+//
+//         uint8_t temp_time[3];
+//         static uint16_t sampleCnt = 0;
+//         uint8_t i;
+//         uint8_t outputString[10];
+//      
+//         if( sampleCnt < 512 )
+//         {
 //            /* Update the time */
 //            DS1305_GetTime( DS1305_TimeDate_config );
 //            RTC_ConvertTime(DS1305_TimeDate_config, temp_time);
@@ -243,21 +253,11 @@ ISR(TIMER2_COMP_vect)
 //               uartTxString(outputString);
 //               uartNewLine();
 //               sampleCnt++;                    
-//
 //            }
-            
-
-         }	
-		
-      			
-
-   
-   //lastestResult = ADS1213_GetResult();
-   //conditionedResult = SensorCondition(lastestResult, gain);     
-//   SC_EnableTimer();
+//         }		
 
 
-   
+		  
 }
 
 
@@ -269,13 +269,14 @@ ISR(INT2_vect)
 
    /* Should have a debounce counter... */
    cli();
-   
-   uint8_t IntResult;   
+
+   static uint8_t IntResult;   
    IntResult = ~(UI_ReadRegister(MAX7300_PORTINT) >> UI_RTC_INT0) & (0x03); 
    /* Need to reset Interrupt */   
    UI_SetRegister(UI_INTERRUPT, 0);   
-
+   UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL));
    
+
    /* Check for RTC interrupt */
    switch( IntResult )
    {
@@ -302,33 +303,43 @@ ISR(INT2_vect)
       
       
       /* Interrupt must have been from a Button press then */
-      default:       
+      default:
+         IntResult = UI_KP_GetPress();
+   
+         if( IntResult == KP_D )
+         {
+            LCD_BL_PORT ^= (1 << LCD_BL_PIN);  
+         }
+   
+         uartTx(IntResult);
+         if( IntResult != KP_INVALID)
+         {
+            MenuSetInput(IntResult);   
+            MenuUpdate();
+         }   
          break;
    }
 
-   IntResult = UI_KP_GetPress();
-   
-   if( IntResult == KP_D )
-   {
-      LCD_BL_PORT ^= (1 << LCD_BL_PIN);  
-   }
-   
-   
-   
-   uartTx(IntResult);
-   if( IntResult != KP_INVALID)
-   {
-      MenuSetInput(IntResult);   
-      MenuUpdate();
-   }
+
    /* Set the M-bit in the UI Register */
    UI_Activate();
    sei();
 }
 
 
-
-
+void Channel_Setup(void)
+{
+//   SensorOn(2); // DC Voltages
+   SensorOn(1); // Sine Wave
+//   SensorOn(2); // SHORT
+//   SensorOn(3); // OPEN
+   
+   SensorSetGain(0, GAIN01X);
+   SensorSetGain(1, GAIN5X);
+   SensorSetGain(2, GAIN01X);      
+   SensorSetGain(3, GAIN05X);
+   
+}
 
 
 

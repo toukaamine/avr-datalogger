@@ -7,6 +7,7 @@
 #include "main.h"
 
 
+
 static const char uartReset[] PROGMEM = "Reset";
 
 /* ADC Functions */
@@ -23,6 +24,13 @@ static const char uartGetTime[] PROGMEM = "Get Time";
 static const char uartReadTime[] PROGMEM = "Read Time";
 static const char uartTestMMCRead[] PROGMEM = "Read MMC";
 static const char uartTestMMCWrite[] PROGMEM = "Write MMC";
+
+static const char uartFAT16Mount[] PROGMEM = "Mount SD";
+static const char uartFAT16UnMount[] PROGMEM = "Unmount";
+static const char uartFAT16Open[] PROGMEM = "Open";
+static const char uartFAT16Close[] PROGMEM = "Close";
+static const char uartFAT16Write[] PROGMEM = "Write";
+static const char uartFAT16Read[] PROGMEM = "Read";
 
 static const char uartTestMenuUart[] PROGMEM = "Set UART";
 static const char uartHelp[] PROGMEM = "Help";
@@ -55,8 +63,19 @@ static const UartCompare UartFunctions[] PROGMEM= {
     
    {uartTestMenuUart, 1, MenuSetUartMode},       
    {uartHelp, 1, uartTermHelp}, 
+
+   {uartFAT16UnMount, 1, UnMountSD},   
+   {uartFAT16Mount, 1, MountSD},
+   {uartFAT16Open, 1, OpenSD},
+   {uartFAT16Close, 1, CloseSD},	   
+   {uartFAT16Write, 1, WriteSD},
+   {uartFAT16Read, 1, ReadSD},   
    {0,0,0}
 };
+
+
+
+
 
 
 /** Returns a Uart Compare type given an address in PGM space */

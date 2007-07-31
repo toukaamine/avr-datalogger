@@ -21,3 +21,6 @@ typedef struct _uart_compare
 void switch_uart_input(uint8_t nextChar);
 void branch_input(uint8_t* inputStr);
 void uartTermHelp(void);
+
+
+
