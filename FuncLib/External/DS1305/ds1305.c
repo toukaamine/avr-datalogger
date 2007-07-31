@@ -19,7 +19,7 @@
 uint8_t DS1305_TimeDate_config[] =       {BCD_SECONDS, 
 												   	BCD_MINUTES,
 														((BCD_HOURS) | (HOURS24)),
-														(((BCD_DAY+6)%7)+1),
+														(BCD_DAY+1),
 												  		BCD_DATE,
 												  		BCD_MONTH+1,
 												  		BCD_YEAR};		
