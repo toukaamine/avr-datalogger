@@ -8,10 +8,20 @@
 #include "hardUart/hardUart.h"
 #include "diskio/diskio.h"
 
-#define SD_ERROR 		0
-#define SD_SUCCESS 	1
 
 DSTATUS MMC_Stat = STA_NOINIT;
+
+uint8_t SD_disk_Init(void)
+{
+	if( SD_Init() == SD_SUCCESS)
+	{
+		return RES_OK;	
+	}	
+	else
+	{
+		return RES_ERROR;	
+	}
+}
 
 /* returns 0 if success */
 uint8_t SD_Init(void)
@@ -73,9 +83,6 @@ uint8_t SD_Init(void)
    
    MMC_Stat &= ~(STA_NOINIT); /// Set to initialised
    return SD_SUCCESS;
-    
-
-
 }
 
 void SD_Startup(void)
@@ -137,8 +144,7 @@ uint8_t SD_Command(uint8_t cmd, uint32_t arg)
    uartTxString(outputString);
    
    uartNewLine();   
-	
-   SPCR |= (1 << CPHA) | (1 << SPR1);	
+
 	return r1;
 }
 
@@ -162,7 +168,10 @@ uint8_t SD_ReadBlock(uint8_t* buffer, uint16_t byteCount)
 		*buffer++ = SPI_RxByte();
 	}
 	SPI_RxByte(); /// read 16-bit CRC
-	SPI_RxByte()
+	SPI_RxByte();
+	
+	
+	
 	return SD_SUCCESS;	
 }
 
@@ -170,16 +179,15 @@ uint8_t SD_ReadBlock(uint8_t* buffer, uint16_t byteCount)
 /** Writes the buffer to the sector. secCount is the number of sectors to write */	
 uint8_t SD_Read(uint8_t* buffer, uint32_t sector, uint8_t secCount )
 {
-	uint16_t i;
-   uint8_t outputString[5];
-
 	// assert chip select
    MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
    
    
+   sector = sector << 9;
+   
 	if (secCount == 1) {									// Single block read 
 		if ((SD_Command(MMC_READ_SINGLE_BLOCK, sector) == 0)		// READ_SINGLE_BLOCK 
-			&& SD_ReadSector(buffer, 512))
+			&& SD_ReadBlock(buffer, 512))
 			secCount = 0;
 	}
 	else {	// Multiple block read
@@ -187,10 +195,10 @@ uint8_t SD_Read(uint8_t* buffer, uint32_t sector, uint8_t secCount )
 		{	// READ_MULTIPLE_BLOCK 
 			do 
 			{
-				if (!SD_ReadSector(buffer, 512)) break;
+				if (!SD_ReadBlock(buffer, 512)) break;
 				buffer += 512;
 			} while (--secCount);
-			MMC_send_cmd(MMC_STOP_READ_TRANS, 0);				// STOP_TRANSMISSION 
+			SD_Command(MMC_STOP_READ_TRANS, 0);				// STOP_TRANSMISSION 
 		}
 	}
   
@@ -213,15 +221,10 @@ uint8_t SD_Read(uint8_t* buffer, uint32_t sector, uint8_t secCount )
 uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token)
 {
 	uint8_t retry = 0;	
+	uint16_t i;
 
-	/** Wait until card is ready */
-	while( SPI_RxByte() != 0xFF)
-	{
-		if(retry++ > MMC_MAX_RETRIES)
-		{
-			return SD_ERROR;		
-		}
-	}	
+	/* Send Dummy Byte */
+	SPI_RxByte();
 
 	SPI_TxByte(token);
 
@@ -231,11 +234,23 @@ uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token)
 		SPI_TxByte(*buffer++);
 	}
 	SPI_RxByte(); /// read 16-bit CRC
-	SPI_RxByte()
+	SPI_RxByte();
 	
+	uint8_t r1 = SPI_RxByte();
 	// read data response token
-	if( (SPI_RxByte() & MMC_DR_MASK) != MMC_DR_ACCEPT)
+	if( (r1 & MMC_DR_MASK) != MMC_DR_ACCEPT)
+	{
+		uint8_t outputString[5];
+	
+   	uartNewLine();
+   	uartTxString("R1 Response: ");
+   	uint8toa(r1, outputString);
+   	uartTxString(outputString);
+   
+   	uartNewLine();  
 		return SD_ERROR;	
+	}
+		
 	
 	
 	return SD_SUCCESS;	
@@ -244,19 +259,16 @@ uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token)
 
 
 /* Writes 'secCount' sectors of buffer to the address sector */
-uint8_t SD_Write(uint8_t* buffer, uint32_t sector, uint8_t secCount)
-{
-	uint8_t r1;
-	uint16_t i;
-   uint8_t outputString[5];
-   
+uint8_t SD_Write(const uint8_t* buffer, uint32_t sector, uint8_t secCount)
+{   
 	// assert chip select
    MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
    
+   sector = sector << 9;
    
 	if (secCount == 1) {									// Single block write 
-		if ((SD_Command(MMC_WRITE_SINGLE_BLOCK, sector) == 0)
-			&& SD_WriteSector(buffer, MMC_STARTBLOCK_WRITE))
+		if ((SD_Command(MMC_WRITE_BLOCK, sector) == 0)
+			&& SD_WriteSector( (uint8_t*) buffer, MMC_STARTBLOCK_WRITE))
 			secCount = 0;
 	}
 	else {	// Multiple block Write
@@ -264,7 +276,7 @@ uint8_t SD_Write(uint8_t* buffer, uint32_t sector, uint8_t secCount)
 		{ 
 			do 
 			{
-				if (!SD_WriteSector(buffer, MMC_STARTBLOCK_MWRITE)) break;
+				if (!SD_WriteSector( (uint8_t*)buffer, MMC_STARTBLOCK_MWRITE)) break;
 				buffer += 512;
 			} while (--secCount);
 			SPI_TxByte(MMC_STOPTRAN_WRITE);				// STOP_TRANSMISSION 
@@ -287,7 +299,7 @@ uint8_t SD_Write(uint8_t* buffer, uint32_t sector, uint8_t secCount)
 
 
 /** Disk IO Functions */
-DSTATUS SD_disk_status (void)
+DSTATUS SD_disk_status(void)
 {
 	return 0;
 }
@@ -297,7 +309,7 @@ DSTATUS SD_disk_status (void)
 /*-----------------------------------------------------------------------*/
 /** Ctrl is the control command to send */
 /** buff is the memory to read or write the control data to */
-DRESULT disk_ioctl (	uint8_t ctrl,	void *buff )
+DRESULT SD_disk_ioctl(	uint8_t ctrl,	void *buff )
 {
 	DRESULT res;
 	uint8_t n, csd[16], *ptr = buff;
@@ -306,7 +318,7 @@ DRESULT disk_ioctl (	uint8_t ctrl,	void *buff )
 	res = RES_ERROR;
 
 
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
+	if (MMC_Stat & STA_NOINIT) return RES_NOTRDY;
 
    /* Select the card */
    MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
@@ -314,7 +326,7 @@ DRESULT disk_ioctl (	uint8_t ctrl,	void *buff )
 	switch (ctrl) 
 	{
 		case GET_SECTOR_COUNT :	/* Get number of sectors on the disk (DWORD) */
-			if ((SD_Command(MMC_SEND_CSD, 0) == 0) && SD_ReadSector(csd, 16)) {
+			if ((SD_Command(MMC_SEND_CSD, 0) == 0) && SD_ReadBlock(csd, 16)) {
 				if ((csd[0] >> 6) == 1) {	/* SDC ver 2.00 */
 					csize = csd[9] + ((uint16_t)csd[8] << 8) + 1;
 					*(uint32_t*)buff = (uint32_t)csize << 10;
@@ -339,13 +351,13 @@ DRESULT disk_ioctl (	uint8_t ctrl,	void *buff )
 	
 		case MMC_GET_CSD :	/* Receive CSD as a data block (16 uint8_ts) */
 			if (SD_Command(MMC_SEND_CSD, 0) == 0		/* READ_CSD */
-				&& SD_ReadSector(ptr, 16))
+				&& SD_ReadBlock(ptr, 16))
 				res = RES_OK;
 			break;
 	
 		case MMC_GET_CID :	/* Receive CID as a data block (16 uint8_ts) */
 			if (SD_Command(MMC_SEND_CID, 0) == 0		/* READ_CID */
-				&& SD_ReadSector(ptr, 16))
+				&& SD_ReadBlock(ptr, 16))
 				res = RES_OK;
 			break;
 	
@@ -357,7 +369,7 @@ DRESULT disk_ioctl (	uint8_t ctrl,	void *buff )
 			}
 	
 		case MMC_GET_TYPE :	/* Get card type flags (1 uint8_t) */
-			*ptr = CardType;
+			*ptr = 0;
 			res = RES_OK;
 			break;
 	

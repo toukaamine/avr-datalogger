@@ -3,12 +3,11 @@
 /-----------------------------------------------------------------------*/
 
 #ifndef _DISKIO
-#define _DISK_IO
+#define _DISKIO
 
 #define _READONLY	0	/* 1: Read-only mode */
 
-#include "integer.h"
-#include "SD_MMC/sd.h"
+#include <stdint.h>
 
 /* Status of Disk Functions */
 typedef uint8_t	DSTATUS;
@@ -59,10 +58,14 @@ DRESULT disk_ioctl (uint8_t, uint8_t, void*);
 
 
 
-#define disk_initialize(drv) SD_Init()
+#define disk_initialize(drv) SD_disk_Init()
+
 #define disk_status(drv) SD_disk_status()
+
 #define disk_read(drv, buff, sector, count) SD_Read(buff, sector, count)
-#define disk_ioctl(drv, ctrl, buff) disk_ioctl(ctrl, buff)
+
+#define disk_ioctl(drv, ctrl, buff) SD_disk_ioctl(ctrl, buff)
+
 #if	_READONLY == 0
 	#define disk_write(drv, buff, sector, count) SD_Write(buff, sector, count)
 #endif
