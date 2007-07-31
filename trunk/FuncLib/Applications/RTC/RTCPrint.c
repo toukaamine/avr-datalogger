@@ -19,13 +19,14 @@ static const prog_char Friday[] = "Friday";
 static const prog_char Saturday[] = "Saturday";
 static const prog_char Sunday[] = "Sunday";
 
-static const PGM_P WEEKDAYS[7] = {  Monday,
+static const PGM_P WEEKDAYS[7] = {  Sunday,
+												Monday,
 									         Tuesday,
 									         Wednesday,
 									         Thursday,
 									         Friday,
 									         Saturday,
-									         Sunday};
+									         };
 									 
 									 
 							 
