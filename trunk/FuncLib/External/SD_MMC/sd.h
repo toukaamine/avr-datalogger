@@ -32,7 +32,7 @@
 ///	    / 9                |	Pins 8 and 9 are present only on SD cards
 ///	    |    MMC/SD Card   |
 ///	    |                  |
-///	    /\/\/\/\/\/\/\/\/\/\
+///	    
 ///	    1 - CS   (chip select)          - wire to any available I/O pin(*)
 ///	    2 - DIN  (data in, card<-host)  - wire to SPI MOSI pin
 ///	    3 - VSS  (ground)               - wire to ground
@@ -56,6 +56,10 @@
 #ifndef MMC_H
 #define MMC_H
 
+#include "diskio/diskio.h"
+
+#define SD_ERROR 		0
+#define SD_SUCCESS 	1
 
 #define MMC_CS_DDR   DDRD
 #define MMC_CS_PORT  PORTD
@@ -123,7 +127,7 @@
 #define MMC_DR_REJECT_CRC			0x0B
 #define MMC_DR_REJECT_WRITE_ERROR	0x0D
 
-
+uint8_t SD_disk_Init(void);
 uint8_t SD_Init(void);
 void SD_Startup(void);
 void SD_Shutdown(void);
@@ -134,9 +138,9 @@ uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token);
 uint8_t SD_Command(uint8_t cmd, uint32_t arg);
 
 /** SD DISK IO Functions */
-uint8_t SD_Write(uint32_t sector, uint8_t* buffer);
-uint8_t SD_Read(uint32_t sector, uint8_t* buffer);
-DSTATUS SD_disk_status (void);
-DRESULT disk_ioctl (	uint8_t ctrl,	void *buff );
+uint8_t SD_Write(const uint8_t* buffer, uint32_t sector, uint8_t secCount );
+uint8_t SD_Read(uint8_t* buffer, uint32_t sector, uint8_t secCount );
+DSTATUS SD_disk_status(void);
+DRESULT SD_disk_ioctl(uint8_t ctrl,	void *buff);
 
 #endif
