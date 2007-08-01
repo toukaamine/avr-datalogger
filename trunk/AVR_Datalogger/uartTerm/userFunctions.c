@@ -257,13 +257,16 @@ void GS_Status(void* data)
 
 void SetSamplingRate(void* data)
 {
-	
-	
 	MenuPrint_P( PSTR("Samp. Rate: ") );
-   
+	
+	
+	
 	
 	MenuNewLine();
 }
+
+
+
 
 /** Function to setup each individual channel */
 void ChannelSettings(void* data)

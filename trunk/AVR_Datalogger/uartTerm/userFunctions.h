@@ -3,6 +3,7 @@
 
 /** Function to setup each individual channel */
 void ChannelSettings(void* data);
+void SetSamplingRate(void* data);
 
 void Reset(void* data);
 void GetResult(void* data);
