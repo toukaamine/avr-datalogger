@@ -17,6 +17,10 @@
 #define TIMER_DISABLE 0
 #define TIMER_ENABLE 1 
 
+/** The Sample control is using the Internal clock */
+#define SC_SAMPLE_INTERNAL 	0
+#define SC_SAMPLE_EXTERNAL 		1 /// Using the external RTC clock
+
 typedef struct _softTimer8
 {
 	uint8_t timeCompare;

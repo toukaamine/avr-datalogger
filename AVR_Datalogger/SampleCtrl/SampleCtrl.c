@@ -21,6 +21,9 @@
 
 /* Disable Sampling Timer */
 SoftTimer_8	SC_MasterTimer = {0,0,0};
+
+uint8_t SampleMode;
+
 static uint8_t SC_RTC_Alarm[3];
 
 void SC_Init(void)
