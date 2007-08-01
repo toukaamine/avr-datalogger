@@ -14,11 +14,8 @@
 #define SC_EnableTimer()   TIMSK |= (1 << OCIE2)
 #define SC_DisableTimer()  TIMSK &= ~(1 << OCIE2)
 
-/* Sets up the required timers etc */
-void SC_Init(void);
-
-void SC_Sample(void);
-
+#define TIMER_DISABLE 0
+#define TIMER_ENABLE 1 
 
 typedef struct _softTimer8
 {
@@ -43,3 +40,12 @@ typedef struct _softTimer32
 	uint32_t timerCounter;
 	uint8_t timerEnable;	
 } SoftTimer_32;
+
+
+extern SoftTimer_8 SC_MasterTimer;
+
+/* Sets up the required timers etc */
+void SC_Init(void);
+void SC_Sample(void);
+
+
