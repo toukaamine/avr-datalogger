@@ -192,7 +192,6 @@ ISR(TIMER2_COMP_vect)
 /* Example */
 /* Happens every 10 seconds, max seconds = 25.5secs  
  * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
-	static SoftTimer_8 ControlEvent = {1, 0, 1};
 	
 	/* Restart after 2 seconds */
 	static SoftTimer_16 RestartEvent = {10000, 0, 1};
@@ -200,32 +199,31 @@ ISR(TIMER2_COMP_vect)
    float32_t conditionedResult;
    static uint32_t SD_Sector = 0;
    
-   counter_ms++;
+   counter_ms++;   
    
-   if( counter_ms == 5*SC_MILLISECOND)
+   if( counter_ms == 10*SC_MILLISECOND)
    {
 		counter_ms = 0;
-      ControlEvent.timerCounter++;
+		
+		/* Clock the Master Timer at a 10ms Resolution */
       RestartEvent.timerCounter++;	
-      	
-		/* Functions which occur every xx*100msecs happen here */
-		if( ControlEvent.timerCounter == ControlEvent.timeCompare 
-          && ControlEvent.timerEnable)
+   	SC_MasterTimer.timerCounter++;   	
+   	
+		/* Functions which occur every xx*10msecs happen here */
+		if( SC_MasterTimer.timerCounter == SC_MasterTimer.timeCompare 
+          && SC_MasterTimer.timerEnable)
 		{
-			/* Do Control Event */
-			//ADS1213_Init();
-			//LCD_BL_PORT ^= (1 << LCD_BL_PIN);
+			/* Take a sample */
          SC_Sample();
-			
-			ControlEvent.timerCounter = 0;
+         /* Reset the timer */
+			SC_MasterTimer.timerCounter = 0;
 		}
 		
       if( RestartEvent.timerCounter == RestartEvent.timeCompare 
           && RestartEvent.timerEnable)
       {
          uartTxString("STOP THE CLOCK!!!");
-         ControlEvent.timerEnable = 0;
-               
+         SC_MasterTimer.timerEnable = 0;  
       }	
 		
       

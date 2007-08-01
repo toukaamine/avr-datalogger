@@ -11,11 +11,17 @@
 
 
 #include <avr/io.h>
+#include <stdlib.h>
+#include <util/delay.h>
+
 #include "SampleCtrl.h"
 #include "GainSensor/GainSensorFP.h"
 #include "hardUart/hardUart.h"
-#include <stdlib.h>
-#include <util/delay.h>
+#include "RTC/RTCPrint.h"
+
+/* Disable Sampling Timer */
+SoftTimer_8	SC_MasterTimer = {0,0,0};
+static uint8_t SC_RTC_Alarm[3];
 
 void SC_Init(void)
 {
@@ -63,15 +69,15 @@ void SC_Sample(void)
          {
             sample = SensorCondition(ADCValue, chGain); 
 
-            /* Debugging */         
+            /* Debugging */
+            uint8toa(i , outputString);
+				uartTxString_P("Channel: ");
+				uartNewLine();
+				uartTxString(outputString);
+				uartNewLine();       
             printFloat(sample.FP);
             uartNewLine();   
          }
-         else
-         {
-            _delay_ms(2);  
-         }
-
          /* End of Debugging */
          
          /** Write data to buffer */
@@ -79,5 +85,19 @@ void SC_Sample(void)
    }   
 }
 
+/* Valid up to 2 seconds */
+void SC_SetSamplingRate(uint8_t tensMilliseconds)
+{
+	
+	SC_MasterTimer.timeCompare = tensMilliseconds;
+	SC_MasterTimer.timerEnable = TIMER_ENABLE;	
+}
 
-
+/* This function uses the RTC to provide sampling interrupts */
+void SC_SetSamplingRate_Long(uint8_t seconds, uint8_t minutes, uint8_t hours)
+{
+	SC_MasterTimer.timerEnable = TIMER_DISABLE;
+	SC_RTC_Alarm[SECONDS] = seconds;
+	SC_RTC_Alarm[MINUTES] = minutes;	
+	SC_RTC_Alarm[HOURS] = hours;	
+}

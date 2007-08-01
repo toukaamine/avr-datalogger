@@ -175,32 +175,38 @@ static uint8_t SensorGain[SENSOR_COUNT/2];
 
 void SensorOn(uint8_t channel)
 {
-   SensorState |= (1<<channel);
+   SensorState |= ( (uint32_t)(1) << channel);
 }
 
 void SensorOff(uint8_t channel)
 {
-   SensorState &= ~(1<<channel);
+   SensorState &= ~((uint32_t)(1) <<channel);
 }
 
-void SensorTypeVoltage(uint8_t channel)
+void SensorToggle(uint8_t channel)
 {
-   SensorType |= (1<<channel);   
+	SensorState = SensorState ^ ((uint32_t)(1) << channel);	
 }
 
-void SensorTypeTemp(uint8_t channel)
+void SensorSetType(uint8_t channel, uint8_t type)
 {
-   SensorType &= ~(1<<channel);   
+	SensorType &= ~( (uint32_t)(1) << channel);
+	SensorType |= ( (uint32_t)(type) << channel);	
+}
+
+void SensorTypeToggle(uint8_t channel)
+{
+	SensorType = SensorType ^ ((uint32_t)(1) << channel);		
 }
 
 uint8_t SensorGetType(uint8_t channel)
 {
-   return (SensorType & (1 << channel));
+   return (SensorType & ((uint32_t)(1) << channel)) ? SENSOR_VOLTAGE : SENSOR_TEMP ;
 }
 
 uint8_t SensorGetState(uint8_t channel)
 {
-   return (SensorState & (1 << channel));
+   return (SensorState & ((uint32_t)(1) << channel)) ? SENSOR_ON : SENSOR_OFF;
 }
 
 

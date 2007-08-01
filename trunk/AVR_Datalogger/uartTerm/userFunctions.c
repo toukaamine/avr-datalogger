@@ -228,15 +228,11 @@ void GS_Status(void* data)
             return;
             
             break;
-            
-            
-            
+               
          default:
          break;     
          
       }
-      
-      
    }
 
    MenuPrint_P( PSTR("Channel: ") );
@@ -256,11 +252,133 @@ void GS_Status(void* data)
    MenuNewLine();    
    
    firstEnter = 0;   
-   
-   
-   
 }
 
+
+void SetSamplingRate(void* data)
+{
+	
+	
+	MenuPrint_P( PSTR("Samp. Rate: ") );
+   
+	
+	MenuNewLine();
+}
+
+/** Function to setup each individual channel */
+void ChannelSettings(void* data)
+{
+   uint8_t* input = 0;
+   uint8_t outputString[21];
+   static int8_t SelectedChannel = 0;
+   static int8_t SelectedGain = 0;
+   
+   input = data;
+
+   if( firstEnter == 0 )
+   {      
+      switch( *input )
+      {
+			case KB_UP:
+         case KP_UP:
+				if( ++SelectedChannel > (SENSOR_COUNT - 1) )
+				{
+					SelectedChannel = 0;	
+				}       
+         break;
+         
+			case KB_DOWN:
+         case KP_DOWN:
+				if( --SelectedChannel < 0 )
+				{
+					SelectedChannel = (SENSOR_COUNT - 1);	
+				}       
+         break;
+         
+         /* Setting Modifiers */
+         case 'A':
+         case KP_A:
+				SensorToggle(SelectedChannel);
+            break;
+         
+         case 'B':
+         case KP_B:
+         	SensorTypeToggle(SelectedChannel);
+         	break;
+         
+         case 'C':
+			case KP_C:
+				SelectedGain = SensorGetGain(SelectedChannel);
+				if( ++SelectedGain > (GAIN_COUNT - 1) )
+				{
+					SelectedGain = 0;
+				}
+				SensorSetGain( SelectedChannel, SelectedGain);				
+				break;
+         
+         /* Menu Function exit routine */
+         case KB_BACK:
+         case KP_BACK:
+          
+            MenuSetInput(KP_BACK);
+            stateMachine(currentState);
+            MenuSetInput(0);
+            return;
+            
+            break;
+            
+         
+         default:
+            break;
+      }
+      
+   }
+   
+   firstEnter = 0;	
+	
+	/* Indicate the channel selected */
+	uint8toa(SelectedChannel + 1, outputString);
+	MenuPrint_P(PSTR("Channel: "));
+	MenuPrint(outputString);          
+   MenuNewLine();	
+   
+   /* Print the status */
+	MenuPrint_P(PSTR("Status: "));   
+	if( SensorGetState(SelectedChannel) == SENSOR_ON )
+	{
+		MenuPrint_P( PSTR("On") );
+	}
+	else
+	{
+		MenuPrint_P( PSTR("Off") );		
+	}
+	MenuNewLine();	
+
+   /* Indicate the Channel Type */
+	MenuPrint_P(PSTR("Input: "));   
+	if( SensorGetType(SelectedChannel) == SENSOR_VOLTAGE )
+	{
+		MenuPrint_P( PSTR("Voltage") );
+	}
+	else
+	{
+		MenuPrint_P( PSTR("Temperature") );		
+	}
+	MenuNewLine();	   
+	
+	/* Display the channel 'gain' */
+	uint8toa(SensorGetGain(SelectedChannel), outputString);
+	MenuPrint_P(PSTR("Gain: "));
+	MenuPrint(outputString);          
+   MenuNewLine();
+}
+
+
+void SetPrimarySamplingRate(void* data)
+{
+		
+	
+}
 
 void MenuDisplayMode(void* data)
 {
@@ -275,7 +393,6 @@ void MenuDisplayMode(void* data)
    {
       MenuPrint_P(MT_UART_MODE);      
    }
-
    MenuNewLine();   
 }
 

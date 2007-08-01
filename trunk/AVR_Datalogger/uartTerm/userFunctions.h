@@ -1,6 +1,9 @@
 
 #include "ADS1213/ads1213.h"
 
+/** Function to setup each individual channel */
+void ChannelSettings(void* data);
+
 void Reset(void* data);
 void GetResult(void* data);
 void GetTime(void* data);

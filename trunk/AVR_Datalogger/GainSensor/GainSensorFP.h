@@ -81,6 +81,7 @@ enum {
 #define SENSOR_VOLTAGE (1)
 
 #define SENSOR_COUNT (32)
+#define GAIN_COUNT (10)
 
 /* 22-bits resolution */
 #define SENSOR_ENOB	(ADS1213_ENOB)
@@ -138,10 +139,16 @@ void printFloat(float data);
 float pgm_read_float(uint16_t* address_short);
 
 
+void SensorTypeToggle(uint8_t channel);
 uint8_t SensorGetState(uint8_t channel);
 uint8_t SensorGetType(uint8_t channel);
+void SensorSetType(uint8_t channel, uint8_t type);
+
+
 void SensorOn(uint8_t channel);
 void SensorOff(uint8_t channel);
+void SensorToggle(uint8_t channel);
+
 uint8_t SensorGetGain(uint8_t channel);
 void SensorSetGain(uint8_t channel, uint8_t gain);
 float32_t SensorCondition(uint32_t data, uint8_t gainIndex);
