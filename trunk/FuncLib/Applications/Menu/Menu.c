@@ -38,6 +38,15 @@ enum {
    ST_UART_MODE,
    ST_LCD_MODE,
    ST_EXTRA_MODE,
+   ST_REC_NAME,
+	ST_CH_SETUP,
+	ST_SAMPLNG_RATE,
+	ST_SAMPLE_SETUP,
+	ST_REC_START,
+	ST_SAMP_MILLISECONDS,
+	ST_SAMP_SECONDS,
+	ST_SAMP_MINUTES,
+	ST_SAMP_HOURS
 } menuIds;
 
 uint8_t currentState = ST_MAIN;
@@ -65,6 +74,15 @@ const MENU_TEXT  MT_DISPLAY_MODE[] = "Set Display Mode";
 const MENU_TEXT  MT_UART_MODE[] = "Terminal Mode";
 const MENU_TEXT  MT_LCD_MODE[] = "Keypad Mode";
 const MENU_TEXT  MT_EXTRA_MODE[] = "EXTRA Mode";
+const MENU_TEXT  MT_REC_NAME[] = "Edit Recording Name";
+const MENU_TEXT  MT_CH_SETUP[] = "Channel Setup";
+const MENU_TEXT  MT_SAMPLNG_RATE[] = "Set Sample Rate";
+const MENU_TEXT  MT_SAMPLE_SETUP[] = "Recording Options";
+const MENU_TEXT  MT_REC_START[] = "Start Logging";
+const MENU_TEXT  MT_SET_MILLISECONDS[] = "Set milliseconds";
+const MENU_TEXT  MT_SET_SECONDS[] = "Set seconds";
+const MENU_TEXT  MT_SET_MINUTES[] = "Set minutes";
+const MENU_TEXT  MT_SET_HOURS[] = "Set hours";
 
 void MenuSetDisplay(uint8_t display)
 {
@@ -98,7 +116,7 @@ void MenuSetDisplay(uint8_t display)
 #if MENU_DEBUG == 1
 const menu_list MenuState[] = {
 #else
-const menu_list MenuState[] = {
+const menu_list MenuState[] PROGMEM = {
 #endif
 
    {ST_MAIN,   ST_NEW_RECORDING,   0},
@@ -106,6 +124,17 @@ const menu_list MenuState[] = {
    {ST_MAIN,   ST_DATA_DOWNLOAD,   2},
    {ST_MAIN,   ST_OPTIONS,   3},
    {ST_MAIN,   ST_STATISTICS,   4},   
+   
+   {ST_NEW_RECORDING, ST_REC_NAME, 0},
+   {ST_NEW_RECORDING, ST_CH_SETUP, 1},
+   {ST_NEW_RECORDING, ST_SAMPLNG_RATE, 2},
+   {ST_NEW_RECORDING, ST_SAMPLE_SETUP, 3},   	   
+   {ST_NEW_RECORDING, ST_REC_START, 4},   
+   
+   {ST_SAMPLNG_RATE, ST_SAMP_MILLISECONDS, 1},
+   {ST_SAMPLNG_RATE, ST_SAMP_SECONDS, 2},
+   {ST_SAMPLNG_RATE, ST_SAMP_MINUTES, 3},
+   {ST_SAMPLNG_RATE, ST_SAMP_HOURS, 4},
    
    {ST_STATISTICS, ST_SD_CARD_SIZE,     0},
    {ST_STATISTICS, ST_TOTAL_SAMPLES,    1},
@@ -121,7 +150,7 @@ const menu_list MenuState[] = {
    {ST_DISPLAY_MODE, ST_UART_MODE,  2},
    {ST_DISPLAY_MODE, ST_LCD_MODE, 3},   
    {ST_DISPLAY_MODE, ST_EXTRA_MODE, 4},    
-   
+
    {0, 0, 0}
 };
 
@@ -132,10 +161,10 @@ const menu_list MenuState[] = {
 #if MENU_DEBUG == 1
 const menu_data MenuData[] = {
 #else
-const menu_data MenuData[] = {
+const menu_data MenuData[] PROGMEM = {
 #endif
    {ST_MAIN, 0, 0},
-   {ST_NEW_RECORDING, MT_NEW_RECORDING, message},
+   {ST_NEW_RECORDING, MT_NEW_RECORDING, ChannelSettings},
    {ST_VIEW_CHANNELS, MT_VIEW_CHANNELS, GS_Status},
    {ST_STATISTICS, MT_STATISTICS, 0},
    {ST_SD_CARD_SIZE, MT_SD_CARD_SIZE, 0},
@@ -151,7 +180,16 @@ const menu_data MenuData[] = {
    {ST_DISPLAY_MODE, MT_DISPLAY_MODE, MenuDisplayMode},
    {ST_UART_MODE, MT_UART_MODE, MenuSetUartMode},
    {ST_LCD_MODE, MT_LCD_MODE, MenuSetLCDMode},
-   {ST_EXTRA_MODE, MT_EXTRA_MODE, 0},   
+   {ST_EXTRA_MODE, MT_EXTRA_MODE, 0},
+   {ST_REC_NAME, MT_REC_NAME, 0},
+	{ST_CH_SETUP, MT_CH_SETUP, 0},
+	{ST_SAMPLNG_RATE, MT_SAMPLNG_RATE, 0},
+	{ST_SAMPLE_SETUP, MT_SAMPLE_SETUP, 0},
+	{ST_REC_START, MT_REC_START, 0},
+	{ST_SAMP_MILLISECONDS, MT_SET_MILLISECONDS, 0},
+	{ST_SAMP_SECONDS, MT_SET_SECONDS, 0},
+	{ST_SAMP_MINUTES, MT_SET_MINUTES, 0},
+	{ST_SAMP_HOURS, MT_SET_HOURS, 0},
    {0, 0, 0}
 };
 
@@ -295,13 +333,13 @@ void MenuUpdate(void)
    
    /** Print out the menu's sub-menu's */   
    /* Ensures that the screen limits are not exceeded */
-   for( i = 0, sequenceIndex = 0;  (MenuState[i].parent != 0) ; i++)
+   for( i = 0, sequenceIndex = 0;  ( (pgm_read_byte(&MenuState[i].parent)) != 0) ; i++)
    {  
       /* Find the current state's sub children. */        
-      if( MenuState[i].parent == currentState )
+      if( (pgm_read_byte(&MenuState[i].parent)) == currentState )
       {  
-         outputString = MenuDescriptor(MenuState[i].child);
-         sequenceIndex = MenuState[i].sequence;
+         outputString = MenuDescriptor( pgm_read_byte(&MenuState[i].child) );
+         sequenceIndex = pgm_read_byte(&MenuState[i].sequence);
          
          
          if( selectedItem > upperLimit )
@@ -333,7 +371,7 @@ void MenuUpdate(void)
             
             UI_LCD_Pos(RowPosition, 0); 
             
-            if(MenuState[i].sequence == selectedItem)
+            if( (pgm_read_byte(&MenuState[i].sequence)) == selectedItem)
             {
 #if MENU_DEBUG == 1  
                printf("*");    
@@ -429,8 +467,8 @@ void stateMachine(uint8_t state)
             upperLimit = WINDOW_SIZE;
             lowerLimit = 0;
             
-            currentState = MenuState[ parentIndex ].parent;
-            selectedItem = MenuState[ parentIndex ].sequence; 
+            currentState = pgm_read_byte(&MenuState[ parentIndex ].parent);
+            selectedItem = pgm_read_byte(&MenuState[ parentIndex ].sequence); 
          }
       break;     
       
@@ -460,7 +498,7 @@ char* MenuDescriptor(uint8_t menuItem)
 #if MENU_DEBUG == 1     
       strcpy( buffer, MenuData[index].descriptor);
 #else
-      strcpy_P(buffer, MenuData[index].descriptor);
+      strcpy_P(buffer, (PGM_P)(pgm_read_word(&MenuData[index].descriptor)));
 #endif
       return buffer;
    }
@@ -473,11 +511,11 @@ char* MenuDescriptor(uint8_t menuItem)
 uint8_t GetMenuState(uint8_t state, uint8_t Sequence)
 {
    int i;
-   for( i = 0; MenuState[i].parent; i++)
+   for( i = 0; (pgm_read_byte(&MenuState[i].parent)); i++)
    {
-      if( (MenuState[i].parent == state) 
-       && (MenuState[i].sequence == Sequence) ){      
-         return MenuState[i].child;
+      if( ( pgm_read_byte(&MenuState[i].parent) == state) 
+       && ( pgm_read_byte(&MenuState[i].sequence) == Sequence) ){      
+         return pgm_read_byte(&MenuState[i].child);
       }
    }
    return NO_STATE;
@@ -489,9 +527,9 @@ uint8_t GetParent(uint8_t state)
 {
  
    int i;  
-   for( i = 0; MenuState[i].parent; i++)
+   for( i = 0; pgm_read_byte(&MenuState[i].parent); i++)
    {
-      if(MenuState[i].child == state) {      
+      if( pgm_read_byte(&MenuState[i].child) == state) {      
          return i;
       }
    }
@@ -508,13 +546,16 @@ void MenuSetInput(uint8_t NewInput)
 void executeState(uint8_t state)
 {
    uint8_t index;
+   void (*funcPtr)(void* data);
+   
    index = GetIndex(state);
    
    if(index != INVALID_STATE)
    {
-      if( MenuData[index].function != 0)
+      if( pgm_read_word(&MenuData[index].function) != 0)
       {
-         MenuData[index].function(&MenuInput);
+         funcPtr = (void*)(pgm_read_word(&MenuData[index].function));
+         funcPtr(&MenuInput);
       }
    }
    
@@ -525,9 +566,9 @@ void executeState(uint8_t state)
 uint8_t GetIndex(uint8_t parent)
 {
    uint8_t i;
-   for( i = 0; MenuData[i].menu_item; i++)
+   for( i = 0; (pgm_read_byte(&MenuData[i].menu_item)); i++)
    {
-      if(MenuData[i].menu_item == parent)
+      if( (pgm_read_byte(&MenuData[i].menu_item)) == parent)
       {
          return i;   
       } 
@@ -542,9 +583,9 @@ uint8_t SubItems(uint8_t state)
 {
    int i;
    uint8_t StateItems = 0;    
-   for( i = 0; MenuState[i].parent; i++)
+   for( i = 0; (pgm_read_byte(&MenuState[i].parent)); i++)
    {
-      if(MenuState[i].parent == state)
+      if( (pgm_read_byte(&MenuState[i].parent)) == state)
       {
          StateItems++;
       }
@@ -557,14 +598,14 @@ uint8_t LargestSequence(uint8_t state)
 {
    int i;
    uint8_t StateItem = 0;    
-   for( i = 0; MenuState[i].parent; i++)
+   for( i = 0; pgm_read_byte(&MenuState[i].parent); i++)
    {
-      if(MenuState[i].parent == state)
+      if( pgm_read_byte(&MenuState[i].parent) == state)
       {
          /* Obtain the number of Menu Items in the given state */
-         if( MenuState[i].sequence >= StateItem )
+         if( pgm_read_byte(&MenuState[i].sequence) >= StateItem )
          {
-            StateItem = MenuState[i].sequence;
+            StateItem = pgm_read_byte(&MenuState[i].sequence);
          } 
       }
    }
@@ -575,14 +616,14 @@ uint8_t SmallestSequence(uint8_t state)
 {
    int i;
    uint8_t StateItem = 0xFF;    
-   for( i = 0; MenuState[i].parent; i++)
+   for( i = 0; pgm_read_byte(&MenuState[i].parent); i++)
    {
-      if(MenuState[i].parent == state)
+      if( pgm_read_byte(&MenuState[i].parent) == state)
       {
          /* Obtain the number of Menu Items in the given state */
-         if( MenuState[i].sequence <= StateItem )
+         if( pgm_read_byte(&MenuState[i].sequence) <= StateItem )
          {
-            StateItem = MenuState[i].sequence;
+            StateItem = pgm_read_byte(&MenuState[i].sequence);
          } 
       }
    }
@@ -599,12 +640,12 @@ uint8_t GetSequence(uint8_t parent, uint8_t child)
    parentIndex = GetIndex(parent);
    
 
-   for( i = 0; MenuState[i].parent; i++)
+   for( i = 0; pgm_read_byte(&MenuState[i].parent); i++)
    {
-      if( MenuState[i].parent == parent &&
-          MenuState[i].child  == child )
+      if( pgm_read_byte(&MenuState[i].parent) == parent &&
+          pgm_read_byte(&MenuState[i].child)  == child )
       {
-         return MenuState[i].sequence;     
+         return pgm_read_byte(&MenuState[i].sequence);     
       }
    }      
    return INVALID_SEQUENCE;

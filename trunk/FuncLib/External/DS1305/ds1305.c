@@ -50,6 +50,33 @@ void DS1305_Init(void)
    _delay_us(11); 
 }
 
+/** Alarm Index is either 0 for RTC0 and 1 for RTC1 
+  * Setting Enable to 1 enables the RTC otherwise 0 disables it */
+void DS1305_AlarmControl(uint8_t alarmIndex, uint8_t enable)
+{
+	uint8_t controlReg;
+	controlReg = DS1305_ReadByte(DS1305_CTRL);
+	controlReg &= ~( 1 << alarmIndex );
+	controlReg |= (enable << alarmIndex );	
+	DS1305_WriteByte(DS1305_CTRL, controlReg);
+}
+
+
+/** alarmConfig has same structure as TimeDate config except
+ * the Date,Month and Year are excluded */
+void DS1305_SetAlarm(uint8_t* alarmConfig, uint8_t alarmIndex)
+{
+   /* Enable Chip */
+   DS1305_CE_PORT |= (1 << DS1305_CE_PIN);
+   _delay_us(11); 
+  
+   SPI_TxByte( (DS1305_A0_SECS + (DS1305_SIZEOFALARM*alarmIndex)) | (1 << DS1305_RW) );
+   SPI_TxBlock(alarmConfig , DS1305_SIZEOFALARM);
+   
+   /* Release Chip */
+   DS1305_CE_PORT &= ~(1 << DS1305_CE_PIN);
+   _delay_us(11);
+}
 
 
 void DS1305_SetTime(uint8_t* DS1305_config)

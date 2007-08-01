@@ -46,6 +46,9 @@
 #define DS1305_MONTH    (0x05)
 #define DS1305_YEAR     (0x06)
 
+/* Number of bytes in each alarm register */
+#define DS1305_SIZEOFALARM (0x04)
+
 /* Alarm 0 Registers */
 #define DS1305_A0_SECS     (0x07)
 #define DS1305_A0_MINS     (0x08)
