@@ -85,10 +85,11 @@ void UI_LCD_Char(uint8_t data);
 void UI_LCD_Clear(void);
 void UI_LCD_Home(void);
 
-
 void UI_LCD_Pos(uint8_t row, uint8_t col);
-
 void UI_LCD_Strobe(void);
+
+void UI_LCD_SetCursor(void);
+void UI_LCD_ClearCursor(void);
 
 void UI_LCD_Activate(void);
 void UI_LCD_Shutdown(void);
