@@ -159,17 +159,6 @@ void UI_LCD_Clear(void)
    _delay_ms(2);   
 }
 
-
-/* Prints a character to the LCD at the current position */
-
-/*
-void UI_LCD_Char(uint8_t data)
-{
-   UI_LCD_Write(data);
-}
-*/
-
-
 /* Prints a string to the LCD at the current position 
  * If the line overflows, the data continues to the next address */
 void UI_LCD_String(uint8_t* string)
@@ -237,11 +226,29 @@ void UI_LCD_Activate(void)
 }
 
 
+void UI_LCD_SetCursor(void)
+{
+	UI_LCD_SetInstruction();
+	
+	/** Activates the display, cursor and cursor blink */
+	UI_LCD_Write( (1 << LCD_DISPLAY) 
+					| (1 << LCD_ON_DISPLAY) 
+					| (1 << LCD_ON_CURSOR)
+					| (1 << LCD_ON_BLINK) ); 
+}
+
+void UI_LCD_ClearCursor(void)
+{
+	UI_LCD_SetInstruction();
+	
+	/** Activates the display, cursor and cursor blink */
+	UI_LCD_Write( (1 << LCD_DISPLAY) | (1 << LCD_ON_DISPLAY)); 
+}
+
 
 
 void UI_LCD_Shutdown(void)
 {
-
    /* Set UI_LCD pins to to output LOW */
 	UI_SetRegister(UI_LCD_PORT, 0x00);   
    UI_SetRegister(UI_LCD_POWER, 0x00); 

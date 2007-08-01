@@ -8,6 +8,7 @@ void SetSamplingRate(void* data);
 void Reset(void* data);
 void GetResult(void* data);
 void GetTime(void* data);
+uint8_t* MakeTime(void* data);
 
 void ReadData(void* data);
 void MMC_ReadTimeTest(void* data);

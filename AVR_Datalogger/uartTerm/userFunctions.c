@@ -3,6 +3,7 @@
 #include <avr/pgmspace.h>
 #include <Util/delay.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "main.h"
 
@@ -17,6 +18,7 @@
 #include "uartTerm/uartInput.h"
 #include "Menu/Menu.h"
 #include "UI_KP/UI_KP.h"
+#include "UI_LCD/UI_LCD.h"
 #include "MemMan/memman.h"
 #include "TinyFS/tff.h"
 
@@ -254,20 +256,6 @@ void GS_Status(void* data)
    firstEnter = 0;   
 }
 
-
-void SetSamplingRate(void* data)
-{
-	MenuPrint_P( PSTR("Samp. Rate: ") );
-	
-	
-	
-	
-	MenuNewLine();
-}
-
-
-
-
 /** Function to setup each individual channel */
 void ChannelSettings(void* data)
 {
@@ -376,6 +364,123 @@ void ChannelSettings(void* data)
    MenuNewLine();
 }
 
+#define SECONDS_MAX	59
+#define MINUTES_MAX	59
+#define HOURS_MAX		23
+
+#define MKTIME_SECONDS 	0
+#define MKTIME_MINUTES	1
+#define MKTIME_HOURS 	2
+
+/** Allow the user to generate a time stamp based on user input */
+uint8_t* MakeTime(void* data)
+{
+	
+   uint8_t outputString[11];
+   uint8_t buffer[3];
+   uint8_t* input = (uint8_t*)data;
+   int8_t i;
+   
+	const uint8_t timeLimits[MKTIME_HOURS+1] = {SECONDS_MAX, MINUTES_MAX, HOURS_MAX};
+	static int8_t timeComponent[MKTIME_HOURS+1];
+	/* Either SECONDS, MINUTE or HOUR */
+	static int8_t selectedComponent;
+
+	
+   if( firstEnter == 0 )
+   {     
+      switch( *input )
+      {
+         /* Increment selected time */
+         case 'q':
+         case KP_A:
+            ++timeComponent[selectedComponent];   
+         break;
+            
+         /* Deccrement selected time */  
+         case 'a':                   
+         case KP_B:
+            --timeComponent[selectedComponent]; 
+         break;
+  
+         /* Time Component increment function */
+         case KB_ENTER:
+         case KP_ENTER:
+          	++selectedComponent;
+         break;
+         
+         /* Time Component decrement function and exit*/
+         case KB_BACK:
+         case KP_BACK:
+         	if(--selectedComponent < 0)
+         	{
+					return 0;
+				}
+         break;
+         
+         case 'c':
+         case KP_C:
+               /* Return the time here */
+               return timeComponent;
+         break;
+               
+         default:
+         break;     
+      }
+   }
+   
+   outputString[0] = 0;
+   
+   /* Ensure Seconds to Hours are within their limits */
+   for( i = MKTIME_HOURS; i >= 0; i--)
+   {
+		if( timeComponent[i] > timeLimits[i] )
+		{
+			timeComponent[i] = 0;		
+		}
+		
+		if( timeComponent[i] < 0 )
+		{
+			timeComponent[i] = timeLimits[i];
+		}
+		
+		/* Write them to a string */
+		uint8toa(timeComponent[i], &buffer[MKTIME_HOURS - i]);
+				
+		strcat( outputString, (const char*)buffer );
+		strcat( outputString, ":" );
+	}
+	
+   firstEnter = 0;
+   
+   /* Get rid of the last ':' */
+   outputString[8] = 0;
+   
+   /* Enable Blinking Cursor */
+   UI_LCD_SetCursor();
+   
+	/* Print instructions */
+	MenuPrint_P( PSTR("Press 'C' to save") );
+	MenuPrint_P( PSTR("24 Hour Mode") );	
+	MenuNewLine();
+	/* Move to centre of screen and print edited time */
+	UI_LCD_Pos(2, 5);
+	MenuPrint( outputString );
+	   
+   /* Set position of cursor to the editing component */
+   UI_LCD_Pos(2, 13 - (3*selectedComponent) );
+}
+
+
+void SetSamplingRate(void* data)
+{
+	MenuPrint_P( PSTR("S.Rate: HH:MM:SS ") );
+	
+	
+	
+	
+	MenuNewLine();
+}
 
 void SetPrimarySamplingRate(void* data)
 {
