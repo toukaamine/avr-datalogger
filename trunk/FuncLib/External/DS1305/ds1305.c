@@ -78,6 +78,20 @@ void DS1305_SetAlarm(uint8_t* alarmConfig, uint8_t alarmIndex)
    _delay_us(11);
 }
 
+void DS1305_GetAlarm(uint8_t* alarmConfig, uint8_t alarmIndex)
+{
+	   /* Enable Chip */
+   DS1305_CE_PORT |= (1 << DS1305_CE_PIN);
+   _delay_us(11); 
+  
+   SPI_TxByte( (DS1305_A0_SECS + (DS1305_SIZEOFALARM*alarmIndex)));
+   SPI_RxBlock(alarmConfig , DS1305_SIZEOFALARM);
+   
+   /* Release Chip */
+   DS1305_CE_PORT &= ~(1 << DS1305_CE_PIN);
+   _delay_us(11);
+}
+
 
 void DS1305_SetTime(uint8_t* DS1305_config)
 {

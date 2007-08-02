@@ -43,10 +43,8 @@ enum {
 	ST_SAMPLNG_RATE,
 	ST_SAMPLE_SETUP,
 	ST_REC_START,
-	ST_SAMP_MILLISECONDS,
-	ST_SAMP_SECONDS,
-	ST_SAMP_MINUTES,
-	ST_SAMP_HOURS
+	ST_SAMP_SHORT,
+	ST_SAMP_LONG
 } menuIds;
 
 uint8_t currentState = ST_MAIN;
@@ -79,10 +77,8 @@ const MENU_TEXT  MT_CH_SETUP[] = "Channel Setup";
 const MENU_TEXT  MT_SAMPLNG_RATE[] = "Set Sample Rate";
 const MENU_TEXT  MT_SAMPLE_SETUP[] = "Recording Options";
 const MENU_TEXT  MT_REC_START[] = "Start Logging";
-const MENU_TEXT  MT_SET_MILLISECONDS[] = "Set milliseconds";
-const MENU_TEXT  MT_SET_SECONDS[] = "Set seconds";
-const MENU_TEXT  MT_SET_MINUTES[] = "Set minutes";
-const MENU_TEXT  MT_SET_HOURS[] = "Set hours";
+const MENU_TEXT  MT_SET_SHORT[] = "Fast < 100ms";
+const MENU_TEXT  MT_SET_LONG[] =  "Slow > 5s";
 
 void MenuSetDisplay(uint8_t display)
 {
@@ -131,10 +127,8 @@ const menu_list MenuState[] PROGMEM = {
    {ST_NEW_RECORDING, ST_SAMPLE_SETUP, 3},   	   
    {ST_NEW_RECORDING, ST_REC_START, 4},   
    
-   {ST_SAMPLNG_RATE, ST_SAMP_MILLISECONDS, 1},
-   {ST_SAMPLNG_RATE, ST_SAMP_SECONDS, 2},
-   {ST_SAMPLNG_RATE, ST_SAMP_MINUTES, 3},
-   {ST_SAMPLNG_RATE, ST_SAMP_HOURS, 4},
+   {ST_SAMPLNG_RATE, ST_SAMP_SHORT, 1},
+   {ST_SAMPLNG_RATE, ST_SAMP_LONG, 2},
    
    {ST_STATISTICS, ST_SD_CARD_SIZE,     0},
    {ST_STATISTICS, ST_TOTAL_SAMPLES,    1},
@@ -164,7 +158,7 @@ const menu_data MenuData[] = {
 const menu_data MenuData[] PROGMEM = {
 #endif
    {ST_MAIN, 0, 0},
-   {ST_NEW_RECORDING, MT_NEW_RECORDING, ChannelSettings},
+   {ST_NEW_RECORDING, MT_NEW_RECORDING, 0},
    {ST_VIEW_CHANNELS, MT_VIEW_CHANNELS, GS_Status},
    {ST_STATISTICS, MT_STATISTICS, 0},
    {ST_SD_CARD_SIZE, MT_SD_CARD_SIZE, 0},
@@ -172,7 +166,7 @@ const menu_data MenuData[] PROGMEM = {
    {ST_UPTIME, MT_UPTIME, 0},
    {ST_DATA_DOWNLOAD, MT_DATA_DOWNLOAD, 0},
    {ST_OPTIONS, MT_OPTIONS, 0},
-   {ST_SET_TIME, MT_SET_TIME, 0},
+   {ST_SET_TIME, MT_SET_TIME, MenuSetTime},
    {ST_CALIBRATE, MT_CALIBRATE, 0},
    {ST_FORMAT_SD, MT_FORMAT_SD, 0},
    {ST_RESET, MT_RESET, Reset},
@@ -182,14 +176,12 @@ const menu_data MenuData[] PROGMEM = {
    {ST_LCD_MODE, MT_LCD_MODE, MenuSetLCDMode},
    {ST_EXTRA_MODE, MT_EXTRA_MODE, 0},
    {ST_REC_NAME, MT_REC_NAME, 0},
-	{ST_CH_SETUP, MT_CH_SETUP, 0},
+	{ST_CH_SETUP, MT_CH_SETUP, ChannelSettings},
 	{ST_SAMPLNG_RATE, MT_SAMPLNG_RATE, SetSamplingRate},
 	{ST_SAMPLE_SETUP, MT_SAMPLE_SETUP, 0},
-	{ST_REC_START, MT_REC_START, 0},
-	{ST_SAMP_MILLISECONDS, MT_SET_MILLISECONDS, 0},
-	{ST_SAMP_SECONDS, MT_SET_SECONDS, 0},
-	{ST_SAMP_MINUTES, MT_SET_MINUTES, 0},
-	{ST_SAMP_HOURS, MT_SET_HOURS, 0},
+	{ST_REC_START, MT_REC_START, BeginRecording},
+	{ST_SAMP_SHORT, MT_SET_SHORT, SetShortRate},
+	{ST_SAMP_LONG, MT_SET_LONG, SetLongRate},
    {0, 0, 0}
 };
 
@@ -315,13 +307,12 @@ void MenuUpdate(void)
 
    /* Only switch Menu input IF we are in a menu item which has NO associated
     * function */
-   /*
-   if( MenuData[ GetIndex(currentState) ].function == 0 )
+   if( (pgm_read_word(&MenuData[ GetIndex(currentState) ].function)) == 0 )
    {
       stateMachine( currentState ); 
-   } */
+   }
    
-   stateMachine( currentState );       
+   //stateMachine( currentState );       
 
    /* Run the associated function */      
    /* And run its function if it has one ? */   
@@ -451,6 +442,7 @@ void stateMachine(uint8_t state)
          selectedItem = SmallestSequence(currentState);
          upperLimit = WINDOW_SIZE;
          lowerLimit = 0;
+         firstEnter = 1; 
          
       break;
       
@@ -461,7 +453,8 @@ void stateMachine(uint8_t state)
           * executed on entering the associated sub-menu */
          firstEnter = 1;                
          parentIndex = GetParent(currentState);
-         
+         lowerLimit = 0;
+         upperLimit = WINDOW_SIZE;
          if(parentIndex != INVALID_STATE)
          {
             upperLimit = WINDOW_SIZE;

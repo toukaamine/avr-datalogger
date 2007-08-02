@@ -48,6 +48,7 @@
 
 /* Number of bytes in each alarm register */
 #define DS1305_SIZEOFALARM (0x04)
+#define DS1305_ALARMMASK	(0x80);
 
 /* Alarm 0 Registers */
 #define DS1305_A0_SECS     (0x07)
@@ -73,7 +74,9 @@
 extern uint8_t DS1305_TimeDate_config[];
 
 
-
+void DS1305_SetAlarm(uint8_t* alarmConfig, uint8_t alarmIndex);
+void DS1305_GetAlarm(uint8_t* alarmConfig, uint8_t alarmIndex);
+void DS1305_AlarmControl(uint8_t alarmIndex, uint8_t enable);
 
 void DS1305_GetTime(uint8_t* time);
 void DS1305_SetTime(uint8_t* DS1305_config);
