@@ -21,6 +21,11 @@
 #include "UI_LCD/UI_LCD.h"
 #include "MemMan/memman.h"
 #include "TinyFS/tff.h"
+#include "uartTerm/userFunctions.h"
+
+
+static const uint8_t SC_RTC0_CONFIG[] = {0x80, 0x80, 0x80, 0x80};
+
 
 /** These functions are accessed via the UART */
 
@@ -318,7 +323,6 @@ void ChannelSettings(void* data)
             
             break;
             
-         
          default:
             break;
       }
@@ -364,6 +368,83 @@ void ChannelSettings(void* data)
    MenuNewLine();
 }
 
+
+void BeginRecording(void* data)
+{
+	uint8_t outputString[10];
+	uint8_t* input = (uint8_t*)data;
+	
+	MenuPrint_P( PSTR("Press A to update") );
+	MenuNewLine();		
+	MenuPrint_P( PSTR("Press C to stop") );
+
+	
+	
+	if( firstEnter == 1)
+	{
+		/* Write file to SD Card */
+		
+		/* Take a sample */
+		SC_Sample();
+		
+		/* Reset Timers */
+		SC_INTLongDelay.timerCounter = 0;
+		SC_MasterTimer.timerCounter = 0;
+		
+		/* Enable the correct timers */
+		if( SC_GetMode() == SC_SAMPLE_EXTERNAL )
+		{
+			DS1305_AlarmControl(DS1305_RTC0, 1);
+			DS1305_SetAlarm(SC_RTC0_CONFIG , DS1305_RTC0);
+			SC_MasterTimer.timerEnable = TIMER_DISABLE;
+			SC_INTLongDelay.timerEnable = TIMER_ENABLE;
+		}
+		else
+		{
+			SC_MasterTimer.timerEnable = 1;
+			DS1305_AlarmControl(DS1305_RTC0, 0);
+			SC_MasterTimer.timerEnable = TIMER_ENABLE;
+			SC_INTLongDelay.timerEnable = TIMER_DISABLE;
+		}
+	}
+	
+	firstEnter = 0;
+
+	switch( *input )
+	{
+		case KP_A:
+			/* Print the number of samples and sample rate */
+			MenuNewLine();
+			MenuPrint_P( PSTR("Sample Count: ") );
+			ultoa(SC_SampleCount, outputString, 10);
+			MenuPrint(outputString);
+			MenuNewLine();
+			PrintSampleRate();
+		break;
+		
+		case KP_C:
+			/* Disable Timers */
+			SC_MasterTimer.timerEnable = TIMER_DISABLE;
+			SC_INTLongDelay.timerEnable = TIMER_DISABLE;
+			
+			/* Write rest of cached data */
+			
+			/* Go back up one menu */   
+   		MenuSetInput(KB_BACK);
+  			stateMachine(currentState);
+  			MenuSetInput(0);
+  			MenuReset();
+  			executeState(currentState);
+		break;
+		
+	}
+
+
+
+}
+
+
+
 #define SECONDS_MAX	59
 #define MINUTES_MAX	59
 #define HOURS_MAX		23
@@ -372,21 +453,73 @@ void ChannelSettings(void* data)
 #define MKTIME_MINUTES	1
 #define MKTIME_HOURS 	2
 
+#define MKTIME_CANCEL  0xFF
+#define MKTIME_PENDING 0xFE
+#define MKTIME_CONFIRMED 0xFD
+
+void MenuSetTime(void* data)
+{
+	static int8_t newTime[MKTIME_HOURS+1];
+	uint8_t returnVal;
+	
+	/* Get the time */
+	if( firstEnter == 1)
+	{
+		DS1305_GetTime(DS1305_TimeDate_config);
+		newTime[MKTIME_SECONDS] = BCD2DEC(DS1305_TimeDate_config[SECONDS]);
+		newTime[MKTIME_MINUTES] = BCD2DEC(DS1305_TimeDate_config[MINUTES]);	
+		newTime[MKTIME_HOURS] = BCD2DEC((DS1305_TimeDate_config[HOURS] & 0x3F));
+	}
+	firstEnter = 0;
+	returnVal = MakeTime(data, newTime);
+	
+	switch( returnVal )
+	{
+		case MKTIME_CANCEL:
+			/* Exit and cancel */
+			UI_LCD_ClearCursor();
+			MenuSetInput(KB_BACK);
+   		stateMachine(currentState);
+		break;			
+			
+		case MKTIME_PENDING:
+			return;
+		break;
+			
+		case MKTIME_CONFIRMED:
+			/* Exit and save */
+			DS1305_TimeDate_config[SECONDS] = DEC2BCD(newTime[MKTIME_SECONDS]);
+			DS1305_TimeDate_config[MINUTES] = DEC2BCD(newTime[MKTIME_MINUTES]);
+			DS1305_TimeDate_config[HOURS] = DEC2BCD(newTime[MKTIME_HOURS]) | (HOURS24 << 4);
+						
+			DS1305_SetTime(DS1305_TimeDate_config);
+			
+			
+			UI_LCD_ClearCursor();			
+			MenuSetInput(KB_BACK);
+   		stateMachine(currentState);
+			
+		break;
+
+		default:
+		break;
+	}
+}
+
+
 /** Allow the user to generate a time stamp based on user input */
-uint8_t* MakeTime(void* data)
+uint8_t MakeTime(void* data, int8_t* timeComponent )
 {
 	
    uint8_t outputString[11];
-   uint8_t buffer[3];
+   uint8_t buffer[4];
    uint8_t* input = (uint8_t*)data;
    int8_t i;
    
 	const uint8_t timeLimits[MKTIME_HOURS+1] = {SECONDS_MAX, MINUTES_MAX, HOURS_MAX};
-	static int8_t timeComponent[MKTIME_HOURS+1];
 	/* Either SECONDS, MINUTE or HOUR */
 	static int8_t selectedComponent;
 
-	
    if( firstEnter == 0 )
    {     
       switch( *input )
@@ -404,24 +537,29 @@ uint8_t* MakeTime(void* data)
          break;
   
          /* Time Component increment function */
-         case KB_ENTER:
-         case KP_ENTER:
-          	++selectedComponent;
+         case KB_BACK:
+         case KP_BACK:
+				if( ++selectedComponent > MKTIME_HOURS )
+				{
+					selectedComponent = 	MKTIME_HOURS;
+					return MKTIME_CANCEL;
+				}
+
          break;
          
          /* Time Component decrement function and exit*/
-         case KB_BACK:
-         case KP_BACK:
+         case KB_ENTER:
+         case KP_ENTER:
          	if(--selectedComponent < 0)
          	{
-					return 0;
+					selectedComponent = 0;
 				}
          break;
          
          case 'c':
          case KP_C:
                /* Return the time here */
-               return timeComponent;
+               return MKTIME_CONFIRMED;
          break;
                
          default:
@@ -445,8 +583,13 @@ uint8_t* MakeTime(void* data)
 		}
 		
 		/* Write them to a string */
-		uint8toa(timeComponent[i], &buffer[MKTIME_HOURS - i]);
-				
+		uint8toa(timeComponent[i], buffer);
+		
+		if( timeComponent[i] < 10)
+		{
+			strcat( outputString, "0" );	
+		}
+						
 		strcat( outputString, (const char*)buffer );
 		strcat( outputString, ":" );
 	}
@@ -461,6 +604,7 @@ uint8_t* MakeTime(void* data)
    
 	/* Print instructions */
 	MenuPrint_P( PSTR("Press 'C' to save") );
+	MenuNewLine();
 	MenuPrint_P( PSTR("24 Hour Mode") );	
 	MenuNewLine();
 	/* Move to centre of screen and print edited time */
@@ -468,31 +612,211 @@ uint8_t* MakeTime(void* data)
 	MenuPrint( outputString );
 	   
    /* Set position of cursor to the editing component */
-   UI_LCD_Pos(2, 13 - (3*selectedComponent) );
+   UI_LCD_Pos(2, 12 - (3*selectedComponent) );
+   
+   
+
+	return MKTIME_PENDING;
+   
 }
 
 
 void SetSamplingRate(void* data)
 {
-	MenuPrint_P( PSTR("S.Rate: HH:MM:SS ") );
+	uint8_t* input = (uint8_t*)data;
+	static uint8_t firstEnter = 1;
 	
+		
+	if( firstEnter != 1 )
+   {     
+		stateMachine( currentState );
+      switch( *input )
+      {
+			case KB_BACK:
+			case KP_BACK:
+				firstEnter = 1;
+				return;
+			break;
+				
+			case KB_ENTER:
+			case KP_ENTER:
+				MenuReset();
+		   	executeState(currentState);
+				firstEnter = 1;
+				return;	
+			break;
+
+			default:
+			break;
+		}	
+	}
 	
-	
-	
-	MenuNewLine();
+	MenuReset();
+	firstEnter = 0;
+   PrintSampleRate();
+   MenuNewLine(); 
 }
 
-void SetPrimarySamplingRate(void* data)
+
+void PrintSampleRate(void)
 {
-		
+	uint8_t outputString[6];
+	
+	MenuPrint_P( PSTR("S. Rate: ") );	
+   if( SC_GetMode() == SC_SAMPLE_INTERNAL)
+   {
+		uint8toa(SC_GetShortRate(), outputString);
+		MenuPrint(outputString);
+      MenuPrint_P( PSTR("0 ms"));
+   }
+   else
+   {
+		uint16toa(SC_GetLongRate(), outputString, 0);
+		MenuPrint(outputString);
+      MenuPrint_P( PSTR(" s"));      
+   }
+}
+
+void SetShortRate(void* data)
+{
+	uint8_t* input = (uint8_t*)data;
+	static uint8_t	tenMillisecDelay;
+	uint8_t outputString[4];
+	
+	if( firstEnter == 1)
+	{
+		tenMillisecDelay = SC_GetShortRate();
+	}
+	
+	
+   if( firstEnter == 0 )
+   {     
+      switch( *input )
+      {
+         /* Increment msec delay */
+         case 'q':
+         case KP_A:
+            ++tenMillisecDelay;   
+         break;
+            
+         /* Deccrement msec delay */  
+         case 'a':                   
+         case KP_B:
+            --tenMillisecDelay; 
+         break;
+  
+         /* Time Component increment function */
+         case KB_BACK:
+         case KP_BACK:
+				/* Go back up one menu */   
+   			MenuSetInput(KB_BACK);
+  				stateMachine(currentState);
+  				MenuSetInput(0);
+  				executeState(currentState);
+  				return;
+  				
+         break;
+                        
+         default:
+         break;     
+      }
+   }
+   
+   firstEnter = 0;
+   
+   MenuPrint_P( PSTR("Millisecond Delay:"));
+	MenuNewLine();
+	
+	uint8toa( tenMillisecDelay, outputString);
+	MenuPrint(outputString);
+	MenuPrint_P( PSTR("0 milliseconds") );
+	      
+	SC_SetSamplingRate( tenMillisecDelay );
+
+}
+
+/* Instead of get time, it is get Alarm */
+void SetLongRate(void* data)
+{
+	static int8_t newAlarm[DS1305_SIZEOFALARM];
+	uint16_t totalDelay;
+	uint8_t returnVal;
+	
+	/* Get the current alarm time */
+	MenuReset();
+	UI_LCD_Pos(3, 0);
+	MenuPrint_P( PSTR("Max Delay: 18 Hours") );
+	UI_LCD_Home();
+
+	firstEnter = 0;
+	returnVal = MakeTime(data, newAlarm);
+	
+	switch( returnVal )
+	{
+		case MKTIME_CANCEL:
+			/* Exit and cancel */
+			UI_LCD_ClearCursor();
+			MenuSetInput(KB_BACK);
+   		stateMachine(currentState);
+			MenuSetInput(0);
+			executeState(currentState);
+		break;			
+			
+		case MKTIME_PENDING:
+		break;
+			
+		case MKTIME_CONFIRMED:
+			/* Exit and save */
+			totalDelay = newAlarm[SECONDS] 
+							 + newAlarm[MINUTES] * 60
+							 + newAlarm[HOURS] * 3600;
+			
+			SC_SetSamplingRate_Long( totalDelay ); 
+			UI_LCD_ClearCursor();			
+			MenuSetInput(KB_BACK);
+   		stateMachine(currentState);
+			MenuSetInput(0);
+  			executeState(currentState);
+		break;
+
+		default:
+		break;
+	}	
 	
 }
 
 void MenuDisplayMode(void* data)
 {
+	uint8_t* input = (uint8_t*)data;
+	static uint8_t firstEnter = 1;
+	
+	if( firstEnter != 1 )
+   {     
+		stateMachine( currentState );	
+   	
+      switch( *input )
+      {
+			case KB_BACK:
+			case KP_BACK:
+				firstEnter = 1;
+				MenuReset();
+				return;
+			break;
+				
+			case KB_ENTER:
+			case KP_ENTER:
+		   	executeState(currentState);
+				firstEnter = 1;	
+			break;
+
+			default:
+			break;
+		}	
+	}
+	
+	firstEnter = 0;
    MenuPrint_P( PSTR("The current mode is:") );
-   MenuNewLine();
-   
+   MenuNewLine();		
    if( uartMenu == MENU_LCD)
    {
       MenuPrint_P(MT_LCD_MODE);
@@ -513,10 +837,6 @@ void MenuSetUartMode(void* data)
    /* Go back up one menu */   
    MenuSetInput(KB_BACK);
    stateMachine(currentState);
-   /* Update the menu again */   
-   MenuReset();
-   executeState(currentState);   
-
 }
 
 void MenuSetLCDMode(void* data)
@@ -527,10 +847,6 @@ void MenuSetLCDMode(void* data)
    /* Go back up one menu */
    MenuSetInput(KB_BACK); 
    stateMachine(currentState);
-   /* Update the menu again */
-   MenuReset();
-   executeState(currentState); 
-
 }
 
 /* Read ADS1213 CMR */

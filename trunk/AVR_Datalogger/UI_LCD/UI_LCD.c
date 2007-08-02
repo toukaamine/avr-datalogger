@@ -233,8 +233,7 @@ void UI_LCD_SetCursor(void)
 	/** Activates the display, cursor and cursor blink */
 	UI_LCD_Write( (1 << LCD_DISPLAY) 
 					| (1 << LCD_ON_DISPLAY) 
-					| (1 << LCD_ON_CURSOR)
-					| (1 << LCD_ON_BLINK) ); 
+					| (1 << LCD_ON_CURSOR) ); 
 }
 
 void UI_LCD_ClearCursor(void)
