@@ -52,12 +52,13 @@ WORD fsid;				/* File system mount ID */
 /* 15-11: Hour(0-23), 10-5: Minute(0-59), 4-0: Second(0-29 *2) */
 DWORD get_fattime (void)
 {
-	uint8_t time[4];
+	uint8_t time[8];
 	uint32_t FATtime;
 	
 	DS1305_GetTime(DS1305_TimeDate_config);
 	
 	RTC_ConvertTime(DS1305_TimeDate_config, time);
+	RTC_ConvertDate(DS1305_TimeDate_config, time);
 	
 	FATtime = ((time[SECONDS] / 2) & 0x1F) 
 				| ((uint32_t)time[MINUTES] << 5) 
@@ -1326,68 +1327,8 @@ FRESULT f_stat (
 
 
 #if !_FS_READONLY
-/*-----------------------------------------------------------------------*/
-/* Get Number of Free Clusters                                           */
-/*-----------------------------------------------------------------------*/
 
-FRESULT f_getfree (
-	const char *drv,	/* Logical drive number */
-	DWORD *nclust,		/* Pointer to the double word to return number of free clusters */
-	FATFS **fatfs		/* Pointer to pointer to the file system object to return */
-)
-{
-	DWORD n, sect;
-	CLUST clust;
-	BYTE fat, f, *p;
-	FRESULT res;
-	FATFS *fs;
-
-
-	/* Get drive number */
-	res = auto_mount(&drv, 0);
-	if (res != FR_OK) return res;
-	*fatfs = fs = FatFs;
-
-	/* If number of free cluster is valid, return it without cluster scan. */
-	if (fs->free_clust <= fs->max_clust - 2) {
-		*nclust = fs->free_clust;
-		return FR_OK;
-	}
-
-	/* Count number of free clusters */
-	fat = fs->fs_type;
-	n = 0;
-	if (fat == FS_FAT12) {
-		clust = 2;
-		do {
-			if ((WORD)get_cluster(clust) == 0) n++;
-		} while (++clust < fs->max_clust);
-	} else {
-		clust = fs->max_clust;
-		sect = fs->fatbase;
-		f = 0; p = 0;
-		do {
-			if (!f) {
-				if (!move_window(sect++)) return FR_RW_ERROR;
-				p = fs->win;
-			}
-			if (!_FAT32 || fat == FS_FAT16) {
-				if (LD_WORD(p) == 0) n++;
-				p += 2; f += 1;
-			} else {
-				if (LD_DWORD(p) == 0) n++;
-				p += 4; f += 2;
-			}
-		} while (--clust);
-	}
-	fs->free_clust = n;
-#if _USE_FSINFO
-	if (fat == FS_FAT32) fs->fsi_flag = 1;
-#endif
-
-	*nclust = n;
-	return FR_OK;
-}
+/* Removed f_getfree() Will want to keep this function */
 
 
 
@@ -1602,3 +1543,66 @@ FRESULT f_rename (
 #endif /* _FS_MINIMIZE <= 1 */
 #endif /* _FS_MINIMIZE <= 2 */
 
+
+/*-----------------------------------------------------------------------*/
+/* Get Number of Free Clusters                                           */
+/*-----------------------------------------------------------------------*/
+
+FRESULT f_getfree (
+	const char *drv,	/* Logical drive number */
+	DWORD *nclust,		/* Pointer to the double word to return number of free clusters */
+	FATFS **fatfs		/* Pointer to pointer to the file system object to return */
+)
+{
+	DWORD n, sect;
+	CLUST clust;
+	BYTE fat, f, *p;
+	FRESULT res;
+	FATFS *fs;
+
+
+	/* Get drive number */
+	res = auto_mount(&drv, 0);
+	if (res != FR_OK) return res;
+	*fatfs = fs = FatFs;
+
+	/* If number of free cluster is valid, return it without cluster scan. */
+	if (fs->free_clust <= fs->max_clust - 2) {
+		*nclust = fs->free_clust;
+		return FR_OK;
+	}
+
+	/* Count number of free clusters */
+	fat = fs->fs_type;
+	n = 0;
+	if (fat == FS_FAT12) {
+		clust = 2;
+		do {
+			if ((WORD)get_cluster(clust) == 0) n++;
+		} while (++clust < fs->max_clust);
+	} else {
+		clust = fs->max_clust;
+		sect = fs->fatbase;
+		f = 0; p = 0;
+		do {
+			if (!f) {
+				if (!move_window(sect++)) return FR_RW_ERROR;
+				p = fs->win;
+			}
+			if (!_FAT32 || fat == FS_FAT16) {
+				if (LD_WORD(p) == 0) n++;
+				p += 2; f += 1;
+			} else {
+				if (LD_DWORD(p) == 0) n++;
+				p += 4; f += 2;
+			}
+		} while (--clust);
+	}
+	fs->free_clust = n;
+#if _USE_FSINFO
+	if (fat == FS_FAT32) fs->fsi_flag = 1;
+#endif
+
+	*nclust = n;
+	return FR_OK;
+}

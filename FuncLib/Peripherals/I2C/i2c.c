@@ -23,7 +23,7 @@
 #include "hardUart/hardUart.h"
 
 
-#define I2C_DEBUG 1
+#define I2C_DEBUG 0
 
 
 

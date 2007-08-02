@@ -47,16 +47,16 @@
 
 /* The size of each block in bytes */
 
-#define	EE_HAS_BLOCKS				1
+#define	EE_HAS_BLOCKS				0
 
 /* Define EE_WORD_ADDRESS if the IC has a word address, some only have a byte
 	addresss */
 #define	EE_WORD_ADDRESS			0
 
-#define	EE_BLOCK_SIZE				(EE24AA16_BLOCK_SIZE)
-#define	EE_NUMBER_OF_BLOCKS	 	(EE24AA16_NUMBER_OF_BLOCKS)
-#define	EE_PAGE_SIZE				(EE24AA16_PAGE_SIZE)
-#define	EE_BLOCKSELECT(x)			(EE24AA16_BLOCK(x))
+#define	EE_BLOCK_SIZE				(EE24AA512_BLOCK_SIZE)
+#define	EE_NUMBER_OF_BLOCKS	 	(EE24AA512_NUMBER_OF_BLOCKS)
+#define	EE_PAGE_SIZE				(EE24AA512_PAGE_SIZE)
+#define	EE_BLOCKSELECT(x)			(EE24AA512_BLOCK(x))
 
 #define	EE_START_ADDRESS		(0x00)
 #define  EE_START_BLOCK			(0x00)

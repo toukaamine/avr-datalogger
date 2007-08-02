@@ -11,15 +11,14 @@
  
 
 #include <avr/io.h>
-#include <avr/iom8.h>
 
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../I2C/i2c.h"
-#include "../hardUart/hardUart.h"
-#include "../serial_ee/serial_ee.h"
-#include "../Pause/pause.h"
+#include "I2C/i2c.h"
+#include "hardUart/hardUart.h"
+#include "serial_ee/serial_ee.h"
+#include "Pause/pause.h"
 
 
 #define	DEBUG 0
@@ -30,6 +29,7 @@ static uint8_t		OutputString[5];
 /* printEEPointer:
  * Prints the location of the current position of the EEPROM Pointer
  */
+#if DEBUG 
 void printEEPointer(EE_AddressStruct* EE_AddressData)
 {
 	uartTxString("\n\rCurrent location of the EEPROM Pointer: \n\rBlock: ");
@@ -43,6 +43,7 @@ void printEEPointer(EE_AddressStruct* EE_AddressData)
 	uartTxString("\n\rAddress: ");
 	uartTxString(OutputString);
 }
+#endif
 
 
 #if EE_HAS_BLOCKS == 1
@@ -217,6 +218,7 @@ void serialEE_ReadBlock(uint8_t* data,
 	
 }
 
+#if DEBUG
 /* serialEE_PrintBlock:
  * Prints out the block data pointed by EE_AddressData.
  */
@@ -251,6 +253,6 @@ void serialEE_PrintBlock(uint8_t block, uint8_t datasize)
 
 
 
-
+#endif
 
 

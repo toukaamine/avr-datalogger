@@ -102,9 +102,6 @@ void switch_uart_input(uint8_t nextChar)
    static uint8_t charCounter = 0;
    static uint8_t inputBuffer[UART_COMPARE_MAX_LENGTH+1];
    
-
-
-   
    /** Ensure the maximum input length is not exceeded */
    if( charCounter > UART_COMPARE_MAX_LENGTH)
    {
@@ -134,8 +131,7 @@ void switch_uart_input(uint8_t nextChar)
       } 
       charCounter -= 1;
       return;
-   }  
-   
+   } 
 
    charCounter++;
    

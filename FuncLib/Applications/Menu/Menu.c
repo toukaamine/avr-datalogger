@@ -237,6 +237,7 @@ void MenuUart_Reset(void)
  * back to the main menu system. It is done like so.
  */
 /* All printf's should be changed to UI_LCD_String("x") */
+#if 0
 void message(void* data)
 {
    uint8_t* input = 0;
@@ -289,7 +290,7 @@ void message(void* data)
    firstEnter = 0;
    
 }
-
+#endif
 
 void MenuUpdate(void)
 {
@@ -298,8 +299,6 @@ void MenuUpdate(void)
    uint8_t sequenceParent;
    uint8_t MenuOffset;
    uint8_t MenuMax;
-   
-   
    
    char* outputString;
    
@@ -531,9 +530,7 @@ uint8_t GetParent(uint8_t state)
 
 void MenuSetInput(uint8_t NewInput)
 {
-
    MenuInput = NewInput;    
-   
 }
 
 void executeState(uint8_t state)
