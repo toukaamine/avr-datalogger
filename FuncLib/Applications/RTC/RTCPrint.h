@@ -21,6 +21,8 @@
 #define	DEC2BCD_LO(x)	((x)%10)
 #define	DEC2BCD(x)		(((DEC2BCD_HI(x)) << 4) + (DEC2BCD_LO(x)))
 
+#define	BCD2DEC(x)		((x >> 4)*10) + ((x & 0x0F))
+
 #define	BCD_SECONDS		DEC2BCD(TM_SECONDS)
 #define	BCD_MINUTES		DEC2BCD(TM_MINUTES)
 #define	BCD_HOURS		DEC2BCD(TM_HOURS)
