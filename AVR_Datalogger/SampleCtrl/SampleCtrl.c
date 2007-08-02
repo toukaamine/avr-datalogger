@@ -18,11 +18,16 @@
 #include "GainSensor/GainSensorFP.h"
 #include "hardUart/hardUart.h"
 #include "RTC/RTCPrint.h"
+#include "DS1305/ds1305.h"
 
 /* Disable Sampling Timer */
 SoftTimer_8	SC_MasterTimer = {0,0,0};
-uint8_t SampleMode;
-static uint8_t SC_RTC_Alarm[3];
+SoftTimer_16 SC_INTLongDelay;
+uint32_t SC_SampleCount = 0;
+static uint8_t SampleMode;
+static uint8_t SC_DelayedStart;
+
+
 
 void SC_Init(void)
 {
@@ -69,7 +74,7 @@ void SC_Sample(void)
          if( ADCValue != ADS1213_BUSY )
          {
             sample = SensorCondition(ADCValue, chGain); 
-
+				SC_SampleCount++;
             /* Debugging */
             uint8toa(i , outputString);
 				uartTxString_P("Channel: ");
@@ -86,19 +91,36 @@ void SC_Sample(void)
    }   
 }
 
+uint8_t SC_GetShortRate(void)
+{
+	return SC_MasterTimer.timeCompare;	
+}
+
+uint16_t SC_GetLongRate(void)
+{
+	return SC_INTLongDelay.timeCompare;
+}
+
 /* Valid up to 2 seconds */
 void SC_SetSamplingRate(uint8_t tensMilliseconds)
 {
-	
 	SC_MasterTimer.timeCompare = tensMilliseconds;
-	SC_MasterTimer.timerEnable = TIMER_ENABLE;	
+	//SC_MasterTimer.timerEnable = TIMER_ENABLE;
+	SampleMode = SC_SAMPLE_INTERNAL;
 }
 
 /* This function uses the RTC to provide sampling interrupts */
-void SC_SetSamplingRate_Long(uint8_t seconds, uint8_t minutes, uint8_t hours)
+/** The interrupt will clock each second, and the 1 second interrupt
+ * is only activated if long delays are used */
+void SC_SetSamplingRate_Long(uint16_t seconds)
 {
-	SC_MasterTimer.timerEnable = TIMER_DISABLE;
-	SC_RTC_Alarm[SECONDS] = seconds;
-	SC_RTC_Alarm[MINUTES] = minutes;	
-	SC_RTC_Alarm[HOURS] = hours;	
+	//SC_MasterTimer.timerEnable = TIMER_DISABLE;
+	SampleMode = SC_SAMPLE_EXTERNAL;
+	SC_INTLongDelay.timeCompare = seconds;
+}
+
+
+uint8_t SC_GetMode(void)
+{
+	return SampleMode;
 }

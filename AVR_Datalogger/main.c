@@ -268,7 +268,9 @@ ISR(INT2_vect)
    /* Should have a debounce counter... */
    cli();
 
-   static uint8_t IntResult;   
+   uint8_t IntResult;
+	uint8_t outputString[4];
+	 
    IntResult = ~(UI_ReadRegister(MAX7300_PORTINT) >> UI_RTC_INT0) & (0x03); 
    /* Need to reset Interrupt */   
    UI_SetRegister(UI_INTERRUPT, 0);   
@@ -281,8 +283,19 @@ ISR(INT2_vect)
       /* RTC_INT0 Triggered */
       case 1:
          /* INT0 Handler */
+         /* Reset the RTC0 IRQ Flag */
+         DS1305_ReadByte(DS1305_A0_SECS);
          uartTxString((uint8_t*)"RTC INT0 Triggered!");
+         uint16toa( SC_INTLongDelay.timerCounter, outputString, 0);
+         uartTxString(outputString);
          
+         if( (SC_INTLongDelay.timerEnable && 
+				 ++SC_INTLongDelay.timerCounter == SC_INTLongDelay.timeCompare))
+         {
+				/* Take a sample */
+				SC_Sample();
+				SC_INTLongDelay.timerCounter = 0;				
+			}
          break;
          
       /* RTC_INT1 Triggered */         
