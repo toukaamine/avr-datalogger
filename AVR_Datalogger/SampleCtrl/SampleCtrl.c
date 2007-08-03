@@ -77,8 +77,7 @@ void SC_Sample(void)
 				SC_SampleCount++;
             /* Debugging */
             uint8toa(i , outputString);
-				uartTxString_P("Channel: ");
-				uartNewLine();
+				uartTxString_P( PSTR("Channel: ") );
 				uartTxString(outputString);
 				uartNewLine();       
             printFloat(sample.FP);

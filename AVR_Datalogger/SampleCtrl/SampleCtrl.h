@@ -2,6 +2,8 @@
 #define _SAMPLE_CTRL
 
 
+
+
 #define SC_COMPARE_RATE 250
 
 #define SC_PRESCALER 32
@@ -50,6 +52,8 @@ typedef struct _softTimer32
 	uint32_t timerCounter;
 	uint8_t timerEnable;	
 } SoftTimer_32;
+
+
 
 
 extern SoftTimer_8 SC_MasterTimer;
