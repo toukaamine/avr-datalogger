@@ -136,8 +136,6 @@ int main(void)
    }
   
 
-   
-   MM_CreateRecording(0);
    Channel_Setup();
    sei();
 

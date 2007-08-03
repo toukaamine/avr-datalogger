@@ -22,6 +22,7 @@
 #include "MemMan/memman.h"
 #include "TinyFS/tff.h"
 #include "uartTerm/userFunctions.h"
+#include "Serial_EE/serial_ee.h"
 
 
 static const uint8_t SC_RTC0_CONFIG[] = {0x80, 0x80, 0x80, 0x80};
@@ -379,10 +380,16 @@ void BeginRecording(void* data)
 	MenuPrint_P( PSTR("Press C to stop") );
 
 	
-	
 	if( firstEnter == 1)
 	{
 		/* Write file to SD Card */
+		MM_CreateRecording("NewFile");
+		
+		/* reset the data file name to prevent overwriting */
+		
+		/* Write the sensor states */
+		MM_Write32( SensorState );
+		MM_Write32( SensorType );
 		
 		/* Take a sample */
 		SC_Sample();
@@ -427,7 +434,12 @@ void BeginRecording(void* data)
 			SC_MasterTimer.timerEnable = TIMER_DISABLE;
 			SC_INTLongDelay.timerEnable = TIMER_DISABLE;
 			
+			/* Write the stop byte */
+			MM_Write(0xFF);
 			/* Write rest of cached data */
+			MM_Sync();
+			
+			
 			
 			/* Go back up one menu */   
    		MenuSetInput(KB_BACK);
@@ -879,10 +891,6 @@ void ADS1213_Status(void* data)
 void MountSD(void* data)
 {
 
-	if( f_mount(0, &filesys) )
-	{
-		uartTxString_P( PSTR("Mount Failed!") );	
-	}
 }
 
 static FIL hellotxt;
@@ -915,52 +923,71 @@ void WriteSD(void* data)
 	}
 }
 
-void ReadSD(void* data)
+/** Just Perform a data dump in relation to the number of samples... */
+void ReadRecording(void* data)
 {
 	uint16_t cnt;
 	uint32_t i;
-	uint8_t buffer[129];
+	uint8_t remainingBytes;
+	uint8_t buffer[MM_BUFFER_SIZE + 1]; /// +1 for NULL byte 
 	uint16_t fileSize;
+	FIL inFile;
+	EE_AddressStruct inData = {0, 0};
 
-	if( f_open(&hellotxt, "hah.txt", FA_READ) )
+	if( MM_GetMemoryType() == MM_SDCARD )
 	{
-		uartTxString_P( PSTR("Open Failed!") );	
-	}	
-	fileSize = hellotxt.fsize;
-	
-	uartTxString_P( PSTR("File Size = ") );	
-	uint16toa(fileSize, buffer, 0);
-	uartTxString(buffer);
-	
-	for( i = 0; i < (uint16_t)(fileSize / 128); i++ )
-	{
-		//if(f_lseek(&hellotxt, i*128))
-		//{
-			//uartTxString_P( PSTR("End of File!") );		
-		//}
-			
-		if( f_read(&hellotxt, buffer, 128, &cnt) )
+		if( f_open(&inFile, MasterDataRecord.FileName, FA_READ) )
+		{
+			uartTxString_P( PSTR("Open Failed!") );	
+		}	
+		fileSize = inFile.fsize;
+				
+		uartTxString_P( PSTR("File Size = ") );	
+		uint16toa(fileSize, buffer, 0);
+		uartTxString(buffer);
+		
+		for( i = 0; i < (uint16_t)(fileSize / MM_BUFFER_SIZE); i++ )
+		{
+			if( f_read(&hellotxt, buffer, MM_BUFFER_SIZE, &cnt) )
+			{
+				uartTxString_P( PSTR("Read Failed!") );			
+			}
+			buffer[MM_BUFFER_SIZE] = 0;
+			uartTxString(buffer);
+		}
+		
+		remainingBytes = fileSize - (i * MM_BUFFER_SIZE);
+		
+		if( f_read(&hellotxt, buffer, remainingBytes, &cnt) )
 		{
 			uartTxString_P( PSTR("Read Failed!") );			
 		}
-		buffer[128] = 0;
+		buffer[remainingBytes] = 0;
 		uartTxString(buffer);
 	}
-
-//	if(f_lseek(&hellotxt, i*128))
-//	{
-//			uartTxString_P( PSTR("End of File!") );		
-//	}	
-	
-	
-	if( f_read(&hellotxt, buffer, fileSize % 128, &cnt) )
+	else /// EEPROM Mode 
 	{
-		uartTxString_P( PSTR("Read Failed!") );			
+		
+		for( i = 0; 
+			  i < (MasterDataRecord.EE_Address / MM_BUFFER_SIZE);
+			  i++)
+		{
+			/** EEPROM Write */
+			serialEE_ReadBlock( buffer, MM_BUFFER_SIZE, &inData);
+			/* Update the eeprom address */
+			inData.EE_Address += MM_BUFFER_SIZE;
+			
+			buffer[MM_BUFFER_SIZE] = 0;
+			uartTxString(buffer);
+		}
+		
+		remainingBytes = MasterDataRecord.EE_Address - (i * MM_BUFFER_SIZE);
+		
+		serialEE_ReadBlock(  buffer, remainingBytes, &inData);
+		/* Update the eeprom address */		
+		buffer[remainingBytes] = 0;
+		uartTxString(buffer);
 	}
-	buffer[(fileSize % 128)] = 0;
-	uartTxString(buffer);
-	
-
 }
 
 void UnMountSD(void* data)

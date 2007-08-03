@@ -125,6 +125,9 @@ typedef union _GS_float
 } float32_t;
 
 
+extern uint32_t SensorType;
+extern uint32_t SensorState;
+
 extern const uint8_t GS_GAIN[];
 extern const float SENSOR_GAIN[];
 

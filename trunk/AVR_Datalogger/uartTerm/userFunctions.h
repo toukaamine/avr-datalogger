@@ -41,5 +41,5 @@ void MountSD(void* data);
 void OpenSD(void* data);
 void CloseSD(void* data);
 void WriteSD(void* data);
-void ReadSD(void* data);
+void ReadRecording(void* data);
 void UnMountSD(void* data);

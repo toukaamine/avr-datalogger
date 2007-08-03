@@ -69,7 +69,7 @@ static const UartCompare UartFunctions[] PROGMEM= {
    {uartFAT16Open, 1, OpenSD},
    {uartFAT16Close, 1, CloseSD},	   
    {uartFAT16Write, 1, WriteSD},
-   {uartFAT16Read, 1, ReadSD},   
+   {uartFAT16Read, 1, ReadRecording},   
    {0,0,0}
 };
 

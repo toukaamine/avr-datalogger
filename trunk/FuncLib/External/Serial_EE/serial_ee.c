@@ -136,7 +136,7 @@ void serialEE_WriteBlock(uint8_t* data,
 #if	EE_WORD_ADDRESS == 1
 					i2cTransmit(((EE_AddressData->EE_Address)+ i) / EE_BLOCK_SIZE);
 #endif			
-					i2cTransmit(((EE_AddressData->EE_Address)+ i) % EE_BLOCK_SIZE);				
+					i2cTransmit(((EE_AddressData->EE_Address)+ i) );				
 					
 									
 					for( ; 
@@ -206,7 +206,7 @@ void serialEE_ReadBlock(uint8_t* data,
 #if	EE_WORD_ADDRESS == 1
 		i2cTransmit(((EE_AddressData->EE_Address)) / EE_BLOCK_SIZE);
 #endif							
-		i2cTransmit( (EE_AddressData->EE_Address) % EE_BLOCK_SIZE );
+		i2cTransmit( (EE_AddressData->EE_Address) );
 	
 		/* Begin reading */
 		i2cAddress( (EE_I2C_ADDRESS) 
