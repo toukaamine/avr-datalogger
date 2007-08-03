@@ -41,7 +41,7 @@ uint16_t sampleSetting;
 uint8_t channel = 1;
 uint8_t gain = 0;
 uint8_t uartMenu = 0;
-
+FATFS filesys;
 
 
 void printSample(void);
@@ -123,7 +123,11 @@ int main(void)
    /** Initialise SD Card */
    if( SD_Init() == SD_SUCCESS )
    {
+      /* Mount the drive */
+      f_mount(0, &filesys);		
       uartTxString_P( PSTR("SD Card Initialised!") );
+
+      
    }
    else
    {

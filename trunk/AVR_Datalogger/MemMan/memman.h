@@ -2,11 +2,24 @@
 #define	_MEMMAN_ROUTINES
 
 #include <stdint.h>
-
+#include "Serial_EE/serial_ee.h"
+#include "TinyFS/tff.h"
 
 #define MM_SECTOR_START 1
 #define MM_SECTOR_END 0
 
+#define MM_FILENAME_MAX	10
+
+typedef struct _dataRecord
+{
+	uint8_t FileName[MM_FILENAME_MAX];
+	EE_AddressStruct	eepromFile;
+	FIL	sdFile;
+	uint32_t sampleCount;
+	
+} DataRecord_t;
+
+extern DataRecord_t MasterDataRecord;
 extern uint8_t MM_Buffer[];
 
 /** Returns the current sector */

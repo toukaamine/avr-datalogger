@@ -874,7 +874,7 @@ void ADS1213_Status(void* data)
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
 }
 
-FATFS filesys;
+
 
 void MountSD(void* data)
 {
@@ -918,13 +918,49 @@ void WriteSD(void* data)
 void ReadSD(void* data)
 {
 	uint16_t cnt;
-	uint8_t buffer[10];
-	if( f_read(&hellotxt, buffer, 8, &cnt) )
+	uint32_t i;
+	uint8_t buffer[129];
+	uint16_t fileSize;
+
+	if( f_open(&hellotxt, "hah.txt", FA_READ) )
+	{
+		uartTxString_P( PSTR("Open Failed!") );	
+	}	
+	fileSize = hellotxt.fsize;
+	
+	uartTxString_P( PSTR("File Size = ") );	
+	uint16toa(fileSize, buffer, 0);
+	uartTxString(buffer);
+	
+	for( i = 0; i < (uint16_t)(fileSize / 128); i++ )
+	{
+		//if(f_lseek(&hellotxt, i*128))
+		//{
+			//uartTxString_P( PSTR("End of File!") );		
+		//}
+			
+		if( f_read(&hellotxt, buffer, 128, &cnt) )
+		{
+			uartTxString_P( PSTR("Read Failed!") );			
+		}
+		buffer[128] = 0;
+		uartTxString(buffer);
+	}
+
+//	if(f_lseek(&hellotxt, i*128))
+//	{
+//			uartTxString_P( PSTR("End of File!") );		
+//	}	
+	
+	
+	if( f_read(&hellotxt, buffer, fileSize % 128, &cnt) )
 	{
 		uartTxString_P( PSTR("Read Failed!") );			
 	}
-	
+	buffer[(fileSize % 128)] = 0;
 	uartTxString(buffer);
+	
+
 }
 
 void UnMountSD(void* data)
