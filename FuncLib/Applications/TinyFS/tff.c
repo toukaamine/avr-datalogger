@@ -52,20 +52,21 @@ WORD fsid;				/* File system mount ID */
 /* 15-11: Hour(0-23), 10-5: Minute(0-59), 4-0: Second(0-29 *2) */
 DWORD get_fattime (void)
 {
-	uint8_t time[8];
+	uint8_t time[3];
+	uint8_t date[4];
 	uint32_t FATtime;
 	
 	DS1305_GetTime(DS1305_TimeDate_config);
 	
 	RTC_ConvertTime(DS1305_TimeDate_config, time);
-	RTC_ConvertDate(DS1305_TimeDate_config, time);
+	RTC_ConvertDate(DS1305_TimeDate_config, date);
 	
-	FATtime = ((time[SECONDS] / 2) & 0x1F) 
-				| ((uint32_t)time[MINUTES] << 5) 
-				| ((uint32_t)time[HOURS] << 11)
-				| ((uint32_t)time[DATE] << 16)
-				| ((uint32_t)time[MONTH] << 21)
-				| ((uint32_t)(time[YEAR] + 20) << 25);
+	FATtime = (((time[SECONDS]) / 2) & 0x1F) 
+				| ((uint32_t)(time[MINUTES]) << 5) 
+				| ((uint32_t)(time[HOURS]) << 11)
+				| ((uint32_t)(date[DATE-DAY]) << 16)
+				| ((uint32_t)(date[MONTH-DAY]) << 21)
+				| ((uint32_t)((date[YEAR-DAY]) + 20) << 25);
 	
 	return (DWORD)FATtime;
 }
@@ -1136,81 +1137,7 @@ FRESULT f_close (
 
 
 #if _FS_MINIMIZE <= 2
-/*-----------------------------------------------------------------------*/
-/* Seek File Pointer                                                     */
-/*-----------------------------------------------------------------------*/
 
-FRESULT f_lseek (
-	FIL *fp,		/* Pointer to the file object */
-	DWORD ofs		/* File pointer from top of file */
-)
-{
-	CLUST clust;
-	DWORD csize;
-	BYTE csect;
-	FRESULT res;
-	FATFS *fs = fp->fs;
-
-
-	res = validate(fs, fp->id);			/* Check validity of the object */
-	if (res) return res;
-
-	if (fp->flag & FA__ERROR) return FR_RW_ERROR;
-#if !_FS_READONLY
-	if (ofs > fp->fsize && !(fp->flag & FA_WRITE))
-#else
-	if (ofs > fp->fsize)
-#endif
-		ofs = fp->fsize;
-	fp->fptr = 0; fp->sect_clust = 1;		/* Set file R/W pointer to top of the file */
-
-	/* Move file R/W pointer if needed */
-	if (ofs) {
-		clust = fp->org_clust;	/* Get start cluster */
-#if !_FS_READONLY
-		if (!clust) {			/* If the file does not have a cluster chain, create new cluster chain */
-			clust = create_chain(0);
-			if (clust == 1) goto fk_error;
-			fp->org_clust = clust;
-		}
-#endif
-		if (clust) {			/* If the file has a cluster chain, it can be followed */
-			csize = (DWORD)fs->sects_clust * 512;		/* Cluster size in unit of byte */
-			for (;;) {									/* Loop to skip leading clusters */
-				fp->curr_clust = clust;					/* Update current cluster */
-				if (ofs <= csize) break;
-#if !_FS_READONLY
-				if (fp->flag & FA_WRITE)				/* Check if in write mode or not */
-					clust = create_chain(clust);		/* Force streached if in write mode */
-				else
-#endif
-					clust = get_cluster(clust);			/* Only follow cluster chain if not in write mode */
-				if (clust == 0) {						/* Stop if could not follow the cluster chain */
-					ofs = csize; break;
-				}
-				if (clust == 1 || clust >= fs->max_clust) goto fk_error;
-				fp->fptr += csize;						/* Update R/W pointer */
-				ofs -= csize;
-			}
-			csect = (BYTE)((ofs - 1) / 512);			/* Sector offset in the cluster */
-			fp->curr_sect = clust2sect(clust) + csect;	/* Current sector */
-			fp->sect_clust = fs->sects_clust - csect;	/* Left sector counter in the cluster */
-			fp->fptr += ofs;							/* Update file R/W pointer */
-		}
-	}
-#if !_FS_READONLY
-	if ((fp->flag & FA_WRITE) && fp->fptr > fp->fsize) {	/* Set updated flag if in write mode */
-		fp->fsize = fp->fptr;
-		fp->flag |= FA__WRITTEN;
-	}
-#endif
-
-	return FR_OK;
-
-fk_error:	/* Abort this function due to an unrecoverable error */
-	fp->flag |= FA__ERROR;
-	return FR_RW_ERROR;
-}
 
 
 
@@ -1605,4 +1532,81 @@ FRESULT f_getfree (
 
 	*nclust = n;
 	return FR_OK;
+}
+
+
+/*-----------------------------------------------------------------------*/
+/* Seek File Pointer                                                     */
+/*-----------------------------------------------------------------------*/
+
+FRESULT f_lseek (
+	FIL *fp,		/* Pointer to the file object */
+	DWORD ofs		/* File pointer from top of file */
+)
+{
+	CLUST clust;
+	DWORD csize;
+	BYTE csect;
+	FRESULT res;
+	FATFS *fs = fp->fs;
+
+
+	res = validate(fs, fp->id);			/* Check validity of the object */
+	if (res) return res;
+
+	if (fp->flag & FA__ERROR) return FR_RW_ERROR;
+#if !_FS_READONLY
+	if (ofs > fp->fsize && !(fp->flag & FA_WRITE))
+#else
+	if (ofs > fp->fsize)
+#endif
+		ofs = fp->fsize;
+	fp->fptr = 0; fp->sect_clust = 1;		/* Set file R/W pointer to top of the file */
+
+	/* Move file R/W pointer if needed */
+	if (ofs) {
+		clust = fp->org_clust;	/* Get start cluster */
+#if !_FS_READONLY
+		if (!clust) {			/* If the file does not have a cluster chain, create new cluster chain */
+			clust = create_chain(0);
+			if (clust == 1) goto fk_error;
+			fp->org_clust = clust;
+		}
+#endif
+		if (clust) {			/* If the file has a cluster chain, it can be followed */
+			csize = (DWORD)fs->sects_clust * 512;		/* Cluster size in unit of byte */
+			for (;;) {									/* Loop to skip leading clusters */
+				fp->curr_clust = clust;					/* Update current cluster */
+				if (ofs <= csize) break;
+#if !_FS_READONLY
+				if (fp->flag & FA_WRITE)				/* Check if in write mode or not */
+					clust = create_chain(clust);		/* Force streached if in write mode */
+				else
+#endif
+					clust = get_cluster(clust);			/* Only follow cluster chain if not in write mode */
+				if (clust == 0) {						/* Stop if could not follow the cluster chain */
+					ofs = csize; break;
+				}
+				if (clust == 1 || clust >= fs->max_clust) goto fk_error;
+				fp->fptr += csize;						/* Update R/W pointer */
+				ofs -= csize;
+			}
+			csect = (BYTE)((ofs - 1) / 512);			/* Sector offset in the cluster */
+			fp->curr_sect = clust2sect(clust) + csect;	/* Current sector */
+			fp->sect_clust = fs->sects_clust - csect;	/* Left sector counter in the cluster */
+			fp->fptr += ofs;							/* Update file R/W pointer */
+		}
+	}
+#if !_FS_READONLY
+	if ((fp->flag & FA_WRITE) && fp->fptr > fp->fsize) {	/* Set updated flag if in write mode */
+		fp->fsize = fp->fptr;
+		fp->flag |= FA__WRITTEN;
+	}
+#endif
+
+	return FR_OK;
+
+fk_error:	/* Abort this function due to an unrecoverable error */
+	fp->flag |= FA__ERROR;
+	return FR_RW_ERROR;
 }
