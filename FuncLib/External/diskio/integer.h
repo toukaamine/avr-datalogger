@@ -1,5 +1,8 @@
 #ifndef _INTEGER
 
+#include <stdint.h>
+
+
 typedef signed int		INT;
 typedef unsigned int	UINT;
 
@@ -11,7 +14,7 @@ typedef unsigned char	BYTE;
 /* These types are assumed as 16-bit integer */
 typedef signed short	SHORT;
 typedef unsigned short	USHORT;
-typedef unsigned short	WORD;
+typedef uint16_t	WORD;
 
 /* These types are assumed as 32-bit integer */
 typedef signed long		LONG;

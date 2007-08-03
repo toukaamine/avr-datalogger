@@ -5,10 +5,17 @@
 #include "Serial_EE/serial_ee.h"
 #include "TinyFS/tff.h"
 
+
+/* Buffer size should not exceed that of either the SD or EEPROM mediums */
+#define MM_BUFFER_SIZE  128
+#define MAX_DATA_SETS   5
+
 #define MM_SECTOR_START 1
 #define MM_SECTOR_END 0
-
 #define MM_FILENAME_MAX	10
+
+#define MM_SDCARD 0
+#define MM_EEPROM 1
 
 typedef struct _dataRecord
 {
@@ -22,31 +29,28 @@ typedef struct _dataRecord
 extern DataRecord_t MasterDataRecord;
 extern uint8_t MM_Buffer[];
 
-/** Returns the current sector */
-uint32_t MM_GetSector(void);
-
-uint32_t MM_GetDataSector(uint8_t index, uint8_t endOption);
 
 
 /** Memory Type is either MM_SDCARD or MM_EEPROM */
-void MM_SetMemory(uint8_t memoryType);
-
+void MM_SetMemoryType(uint8_t memoryType);
+uint8_t MM_GetMemoryType(void);
 
 void MM_Write32(uint32_t data);
 
 /** Requests to write a byte to the buffer */
 void MM_Write(uint8_t data);
 
-/** Reads out the whole recording */
-void MM_Read(uint8_t recordingIndex, uint8_t* dataBuffer);
+/** Reads out nbytes from the Master record and increments
+ * the address pointer */
+void MM_Read(uint8_t* buffer, uint8_t nbytes);
 
+/** Will create a new recording with the passed file name */
+void MM_CreateRecording(uint8_t* name);
 
-/** Will create a new recording and returns the start sector / address */
-uint32_t MM_CreateRecording(uint8_t index);
-
+void MM_Sync(void);
 
 /** Internal functions */
-void MM_WriteBuffer(void);
+void WriteMasterRecord(uint8_t* data, uint8_t nbytes);
 
 
 

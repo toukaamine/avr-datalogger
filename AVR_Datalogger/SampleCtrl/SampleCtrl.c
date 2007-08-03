@@ -19,6 +19,8 @@
 #include "hardUart/hardUart.h"
 #include "RTC/RTCPrint.h"
 #include "DS1305/ds1305.h"
+#include "MemMan/memman.h"
+#include "DS1305/ds1305.h"
 
 /* Disable Sampling Timer */
 SoftTimer_8	SC_MasterTimer = {0,0,0};
@@ -50,20 +52,20 @@ void SC_Sample(void)
    float32_t sample;
    uint8_t outputString[10];
 
+	/* Write Timestamp */
+	DS1305_GetTime(DS1305_TimeDate_config);
+	MM_Write( DS1305_TimeDate_config[SECONDS] );
+	MM_Write( DS1305_TimeDate_config[MINUTES] );
+	MM_Write( DS1305_TimeDate_config[HOURS] );		
+	
+
    for( i = 0; i < SENSOR_COUNT; i++)
    {
       if( SensorGetState(i) )
-      {
-         /*
-         uartNewLine();         
-         uartTxString_P( PSTR("Channel: ") );
-         uint8toa(i, outputString);
-         uartTxString( outputString );
-         uartNewLine(); */
-         
+      {        
          /* Set the channel */
          GS_Channel( i + 1 );
-         
+      
          /** Get the corresponding CH Gain and set it */
          chGain = SensorGetGain(i);
          GS_GainSel( pgm_read_byte( &GS_GAIN[chGain]) );
@@ -74,18 +76,23 @@ void SC_Sample(void)
          if( ADCValue != ADS1213_BUSY )
          {
             sample = SensorCondition(ADCValue, chGain); 
-				SC_SampleCount++;
+
             /* Debugging */
             uint8toa(i , outputString);
 				uartTxString_P( PSTR("Channel: ") );
 				uartTxString(outputString);
 				uartNewLine();       
             printFloat(sample.FP);
-            uartNewLine();   
+            uartNewLine();
+				
+				MasterDataRecord.sampleCount++;				
+				/** Write data to buffer */
+				MM_Write(sample.byteField[0]);
+				MM_Write(sample.byteField[1]);
+				MM_Write(sample.byteField[2]);
+				MM_Write(sample.byteField[3]);								
          }
          /* End of Debugging */
-         
-         /** Write data to buffer */
       }  
    }   
 }

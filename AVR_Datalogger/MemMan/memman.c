@@ -4,61 +4,34 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <avr/pgmspace.h>
 /** Time Functions */
 #include "DS1305/ds1305.h"
 #include "RTC/RTCPrint.h"
 #include "SD_MMC/sd.h"
 #include "TinyFS/tff.h"
 #include "memman.h"
+#include "hardUart/hardUart.h"
 
-#define MM_SDCARD 0
-#define MM_EEPROM 1
 
-/* Buffer size should not exceed that of either the SD or EEPROM mediums */
-#define BUFFER_SIZE  128
-#define MAX_DATA_SETS   5
-
-/* 512 bytes */
-/** As there is only one buffer, reading will overwrite any
- * previously buffered data and reset the write buffer ptr. */
-uint8_t MM_Buffer[BUFFER_SIZE];
-static uint32_t MM_Sector = 0;
-static uint32_t MM_DataSetStartSector[MAX_DATA_SETS];
-static uint32_t MM_DataSetEndSector[MAX_DATA_SETS];
-static uint8_t  MM_CurrentDataSet;
-static uint16_t BlockAddress = 0; /// Byte position within a sector.
+/* 128 bytes */
+uint8_t MM_Buffer[MM_MM_BUFFER_SIZE];
+static uint16_t MM_BuffPtr = 0; /// Byte position within the buffer.
 
 static uint8_t MM_MemoryMode;
 DataRecord_t MasterDataRecord;
-
-/** endOption is either MM_SECTOR_START or MM_SECTOR_END
- * which corresponds the index's start/end sector address */
-uint32_t MM_GetDataSector(uint8_t index, uint8_t endOption)
-{
-   if( index >= MAX_DATA_SETS )
-   {
-      return -1;  
-   }
-   
-   if( endOption == MM_SECTOR_START )
-   {
-      return MM_DataSetStartSector[index];
-   }
-   else
-   {
-      return MM_DataSetEndSector[index];      
-   }
-  
-}
-   
-/** Returns the current sector */
-uint32_t MM_GetSector(void)
-{
-   return MM_Sector;  
-}
+EE_AddressStruct MM_ReadAddress;
 
 /** Memory Type is either MM_SDCARD or MM_EEPROM */
-void MM_SetMemory(uint8_t memoryType);
+void MM_SetMemoryType(uint8_t memoryType)
+{
+	MM_MemoryMode = memoryType;	
+}
+
+uint8_t MM_GetMemoryType(void)
+{
+	return MM_MemoryMode;	
+}
 
 
 /* Writes 32 bytes to the buffer */
@@ -73,41 +46,58 @@ void MM_Write32(uint32_t data)
 /** Requests to write a byte to the buffer */
 void MM_Write(uint8_t data)
 {
-	uint16_t counter;
-	
-   MM_Buffer[ BlockAddress ] = data;
-  
-   BlockAddress++;
+
+   MM_Buffer[ MM_BuffPtr ] = data;  
    /** Write the data to the memory once the buffer is full */
-   if( BlockAddress = BUFFER_SIZE )
-   {
-		
-		if( method == MM_SDCARD)
-		{
-	      /* Write the data */
-	      f_write(&MasterDataRecord.sdFile, MM_Buffer, BUFFER_SIZE, &counter);
-		}
-		else
-		{
-			/** EEPROM Write */
-			serialEE_WriteBlock( MM_Buffer, BUFFER_SIZE, MasterDataRecord.eepromFile);
-			/* Update the eeprom address */
-			MasterDataRecord.eepromFile.EE_Address += BUFFER_SIZE;
-		}
-		
-      BlockAddress = 0;
-   }
+   if( ++MM_BuffPtr == MM_BUFFER_SIZE )
+   {	
+		WriteMasterRecord(MM_Buffer, MM_BuffPtr);
+	}
 }
 
 /** Write the cached data in the buffer to memory */
-void MM_Sync(void);
-
-/** Reads out the whole recording */
-void MM_Read(uint8_t recordingIndex, uint8_t* dataBuffer)
+void MM_Sync(void)
 {
-   SD_Read( dataBuffer, recordingIndex, 1);
-   /* Reset the write block address buffer */
-   BlockAddress = 0;
+	WriteMasterRecord(MM_Buffer, MM_BuffPtr);
+	if( MM_MemoryMode == MM_SDCARD)
+	{	
+		f_sync( &MasterDataRecord.sdFile );
+	}
+}
+
+/** Just Perform a data dump ... */
+void MM_Read(uint8_t* buffer, uint8_t nbytes)
+{
+	uint16_t counter;
+
+	if( MM_MemoryMode == MM_SDCARD)
+	{
+      /* Read the data in nbyte blocks */
+      f_read(&MasterDataRecord.sdFile, buffer, nbytes, (uint16_t*)&counter);
+	}
+	else
+	{
+		/** EEPROM Read */
+		serialEE_ReadBlock( buffer, nbytes, &MM_ReadAddress);
+		/* Update the eeprom address */
+		MM_ReadAddress.EE_Address += nbytes;
+	}	
+}
+
+/** TODO: once read, the write pointer is destroyed... */
+void MM_Rewind(void)
+{
+	
+	if( MM_MemoryMode == MM_SDCARD)
+	{
+      /* Rewind file */
+      f_lseek(&MasterDataRecord.sdFile, 0);
+	}
+	else
+	{
+		/** EEPROM Address Reset */
+		MM_ReadAddress.EE_Address = 0;
+	}
 }
 
 /** Will create a new recording with the passed file name */
@@ -117,11 +107,11 @@ void MM_CreateRecording(uint8_t* name)
    uint8_t i;
    
 
-   strcpy(MasterDataRecord.FileName, name);
+   strcpy( (char*)MasterDataRecord.FileName, (const char*)name);
 	/* Attempt to open a new file in the SD card if one exists */
 	if( MM_MemoryMode == MM_SDCARD )
 	{
-		if( f_open(&hellotxt, MasterDataRecord.FileName, FA_CREATE_ALWAYS | FA_WRITE) )
+		if( f_open(&MasterDataRecord.sdFile, (const char*)MasterDataRecord.FileName, FA_CREATE_ALWAYS | FA_WRITE) )
 		{
 			uartTxString_P( PSTR("Open Failed!") );	
 		}
@@ -148,3 +138,26 @@ void MM_CreateRecording(uint8_t* name)
 }
 
 /** Internal functions */
+
+/** Writes nbytes of data to the respective medium */
+void WriteMasterRecord(uint8_t* data, uint8_t nbytes)
+{
+	uint16_t counter;
+
+	if( MM_MemoryMode == MM_SDCARD)
+	{
+      /* Write the data */
+      if( f_write(&MasterDataRecord.sdFile, data, nbytes, (uint16_t*)&counter) )
+      {
+			uartTxString_P( PSTR("Write Error!") );				
+		}
+	}
+	else
+	{
+		/** EEPROM Write */
+		serialEE_WriteBlock( data, nbytes, &MasterDataRecord.eepromFile);
+		/* Update the eeprom address */
+		MasterDataRecord.eepromFile.EE_Address += nbytes;
+	}	
+	MM_BuffPtr = 0;	
+}

@@ -142,8 +142,8 @@ void GS_GainSel(uint8_t gain)
 
 /* Sensor state is ON/OFF */
 /* Sensor Type is VOLTAGE / TEMPERATURE */
-static uint32_t SensorType;
-static uint32_t SensorState;
+uint32_t SensorType;
+uint32_t SensorState;
 
 /* The sensor gain selects which index of the SENSOR_GAIN array is used */
 /* Each sensor will use 4_bits thus there are 16 combo's of gains */
