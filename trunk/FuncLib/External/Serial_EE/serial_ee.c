@@ -18,7 +18,7 @@
 #include "I2C/i2c.h"
 #include "hardUart/hardUart.h"
 #include "serial_ee/serial_ee.h"
-#include "Pause/pause.h"
+//#include "Pause/pause.h"
 
 
 #define	DEBUG 0
@@ -150,7 +150,7 @@ void serialEE_WriteBlock(uint8_t* data,
 					}					
 					i2cStop();
 					newpage = 1;
-					pausems(10);
+					//pausems(10);
 
 				}
 
