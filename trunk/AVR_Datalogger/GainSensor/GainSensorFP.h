@@ -30,7 +30,6 @@
 
 /* Switch combinations which produce the given gain */
 #define GS_GAIN_76   ((1 << GS_GAIN_A) | (1 << GS_GAIN_F))
-
 /* Approximatley 32.2 31.5 -> 33*/
 #define GS_GAIN_30   ((1 << GS_GAIN_B) | (1 << GS_GAIN_C) | (1 << GS_GAIN_F))
 #define GS_GAIN_22   ((1 << GS_GAIN_B) | (1 << GS_GAIN_F))
@@ -40,10 +39,14 @@
 #define GS_GAIN_025  ((1 << GS_GAIN_B) | (1 << GS_GAIN_C) | (1 << GS_GAIN_D) | (1 << GS_GAIN_E) | (1 << GS_GAIN_F))
 #define GS_GAIN_02   ((1 << GS_GAIN_B) | (1 << GS_GAIN_E))
 #define GS_GAIN_01   ((1 << GS_GAIN_C) | (1 << GS_GAIN_D) | (1 << GS_GAIN_E) | (1 << GS_GAIN_F))
-
 /* Approximatley 0.0432 */
 #define GS_GAIN_005    ((1 << GS_GAIN_D) | (1 << GS_GAIN_E))
 
+#define GS_GAIN_9P6	( (1 << GS_GAIN_A) | (1 << GS_GAIN_B) | (1 << GS_GAIN_C) | (1 << GS_GAIN_F))
+#define GS_GAIN_2P5	( (1 << GS_GAIN_B) | (1 << GS_GAIN_C) | (1 << GS_GAIN_F) )
+#define GS_GAIN_0P4	( (1 << GS_GAIN_D) | (1 << GS_GAIN_F))
+#define GS_GAIN_0P09	( (1 << GS_GAIN_C) | (1 << GS_GAIN_E) | (1 << GS_GAIN_F))
+#define GS_GAIN_0P04	( (1 << GS_GAIN_D) | (1 << GS_GAIN_E))
 
 enum {
    GAIN76X = 0, GAIN30X, GAIN22X, GAIN11X,
@@ -51,6 +54,17 @@ enum {
    GAIN02X, GAIN01X, GAIN005X
 } Gains;   
 
+
+enum {
+   GAIN9P6X = 0, GAIN2P5X, GAIN0P4X,
+   GAIN0P09X, GAIN0P04
+} GainsM;   
+
+#define GAIN_9P6FP	9.615
+#define GAIN_2P5FP	2.472
+#define GAIN_0P4FP	0.4167
+#define GAIN_0P09FP	0.0866
+#define GAIN_0P04FP	0.0417
 
 /* All gains below are multiplied by the Gain Resolution */
 /* This means that floats will not need to be used */
@@ -81,7 +95,7 @@ enum {
 #define SENSOR_VOLTAGE (1)
 
 #define SENSOR_COUNT (32)
-#define GAIN_COUNT (10)
+#define GAIN_COUNT (5)
 
 /* 22-bits resolution */
 #define SENSOR_ENOB	(ADS1213_ENOB)
