@@ -110,7 +110,7 @@ SRC = $(TARGET).c \
 		UI_LCD/UI_LCD.c \
 		SampleCtrl/SampleCtrl.c \
 		uartTerm/uartInput.c \
-		uartTerm/userFunctions.c \
+		UserFunctions/userFunctions.c \
 		MemMan/memman.c \
 		$(APPLICATIONS_DIR)/TinyFS/tff.c \
 		$(EXTERNALS_DIR)/Serial_EE/serial_ee.c

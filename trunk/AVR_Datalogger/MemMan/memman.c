@@ -15,7 +15,7 @@
 
 
 /* 128 bytes */
-uint8_t MM_Buffer[MM_MM_BUFFER_SIZE];
+uint8_t MM_Buffer[MM_BUFFER_SIZE];
 static uint16_t MM_BuffPtr = 0; /// Byte position within the buffer.
 
 static uint8_t MM_MemoryMode;

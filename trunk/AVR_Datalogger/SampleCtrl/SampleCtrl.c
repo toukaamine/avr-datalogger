@@ -54,9 +54,11 @@ void SC_Sample(void)
 
 	/* Write Timestamp */
 	DS1305_GetTime(DS1305_TimeDate_config);
+	MM_Write( DS1305_TimeDate_config[HOURS] );
+	MM_Write( DS1305_TimeDate_config[MINUTES] );		
 	MM_Write( DS1305_TimeDate_config[SECONDS] );
-	MM_Write( DS1305_TimeDate_config[MINUTES] );
-	MM_Write( DS1305_TimeDate_config[HOURS] );		
+
+		
 	
 
    for( i = 0; i < SENSOR_COUNT; i++)

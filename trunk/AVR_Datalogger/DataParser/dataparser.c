@@ -1,8 +1,7 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
+#include "stdint.h"
 
 #define DATE_ELEMENTS	4
 #define TIME_ELEMENTS	4
@@ -18,11 +17,12 @@
 #define SECOND 2
 
 #define CHANNEL_COUNT 32
+#define HOURBIT_24	6
 
 #define CHANNEL_ON 	1
 #define CHANNEL_OFF 	0
-#define TYPE_VOLTAGE 		0
-#define TYPE_TEMPERATURE 	1
+#define TYPE_VOLTAGE 		1
+#define TYPE_TEMPERATURE 	0
 /* BCD to Decimal macro */
 /* These are used to convert the tm structure values to 
  * the format accepted by the Dallas RTCs */
@@ -89,6 +89,9 @@ int main(void)
 	date_t dataStartDate;	
 	FILE* dataFile;
 	FILE* outputFile;
+	TimeStamp_t timestamp;	
+	float32_t channelResult;
+	
 	char	inputFileName[20];
 	char  inputBuffer[0x200];
 	int	i;
@@ -146,7 +149,7 @@ int main(void)
 	/* Determine which channels are voltages / temperature */
 	for( i = 0 ; i < 4; i++)
 	{
-		channelType.byte[3-i] = inputBuffer[i];
+		channelType.byte[i] = inputBuffer[i];
 	}
 	
 	/* Print the time stamp heading */
@@ -157,9 +160,9 @@ int main(void)
 	{
 		if( channelState.data & (1 << (CHANNEL_COUNT - i)) )
 		{
-			fprintf(outputFile, "Channel %d ", i );	
+			fprintf(outputFile, "Channel %d ", (CHANNEL_COUNT - i + 1) );	
 				
-			if( channelType.data & (1 << (CHANNEL_COUNT - i) ) )
+			if( (channelType.data & (1 << (CHANNEL_COUNT - i) )) == TYPE_TEMPERATURE )
 			{
 				fprintf(outputFile, "Temperature, ");					
 			}
@@ -175,20 +178,19 @@ int main(void)
 
 	
 
-	TimeStamp_t timestamp;	
-	float32_t channelResult;
+
 
 	/* Read the timestamp data */	
 	fread(inputBuffer, sizeof(char), 3, dataFile);
 
-	timestamp.hour = BCD2DEC(inputBuffer[HOUR]);
+	timestamp.hour = BCD2DEC( (inputBuffer[HOUR] & ~(1 << HOURBIT_24)) );
 	timestamp.minute = BCD2DEC(inputBuffer[MINUTE]);	
 	timestamp.second = BCD2DEC(inputBuffer[SECOND]);	
 	
 	printf("Outputing floating point data...\n");
 	
 	/* File is considered finished when received hour > 150 (ie. 0xFF)*/
-	while( ( timestamp.hour < 150 ) )
+	while( ( timestamp.hour < 24 ) )
 	{		
 		/* Print Time stamp data */
 		fprintf(outputFile, "%d:%d:%d, ", 
@@ -214,9 +216,9 @@ int main(void)
 		/* Read the timestamp data */	
 		fread(inputBuffer, sizeof(char), 3, dataFile);
 
-		timestamp.hour = BCD2DEC(inputBuffer[HOUR]);
+		timestamp.hour = BCD2DEC( (inputBuffer[HOUR] & ~(1 << HOURBIT_24)) );
 		timestamp.minute = BCD2DEC(inputBuffer[MINUTE]);	
-		timestamp.second = BCD2DEC(inputBuffer[SECOND]);	
+		timestamp.second = BCD2DEC(inputBuffer[SECOND]);		
 		sampleCount++;	
 	}
 	
