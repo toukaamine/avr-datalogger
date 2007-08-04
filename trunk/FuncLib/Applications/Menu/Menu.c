@@ -2,7 +2,7 @@
 
 #include "Menu.h"
 #include "hardUart/hardUart.h"
-#include "uartTerm/userFunctions.h"
+#include "UserFunctions/userFunctions.h"
 
 #if MENU_DEBUG == 1
 #include <stdio.h>
@@ -44,7 +44,10 @@ enum {
 	ST_SAMPLE_SETUP,
 	ST_REC_START,
 	ST_SAMP_SHORT,
-	ST_SAMP_LONG
+	ST_SAMP_LONG,
+	ST_MEDIUM_SELECT,
+	ST_EEPROM,
+	ST_SDCARD
 } menuIds;
 
 uint8_t currentState = ST_MAIN;
@@ -79,6 +82,9 @@ const MENU_TEXT  MT_SAMPLE_SETUP[] = "Recording Options";
 const MENU_TEXT  MT_REC_START[] = "Start Logging";
 const MENU_TEXT  MT_SET_SHORT[] = "Fast < 100ms";
 const MENU_TEXT  MT_SET_LONG[] =  "Slow > 5s";
+const MENU_TEXT  MT_MEDIUM_SELECT[] = "Select Media";
+const MENU_TEXT  MT_EEPROM[] = "64kB EEPROM";
+const MENU_TEXT  MT_SDCARD[] = "Secure Digital Card";
 
 void MenuSetDisplay(uint8_t display)
 {
@@ -127,6 +133,11 @@ const menu_list MenuState[] PROGMEM = {
    {ST_NEW_RECORDING, ST_SAMPLE_SETUP, 3},   	   
    {ST_NEW_RECORDING, ST_REC_START, 4},   
    
+   {ST_SAMPLE_SETUP, ST_MEDIUM_SELECT, 0}, 
+
+   {ST_MEDIUM_SELECT, ST_SDCARD, 2},   
+   {ST_MEDIUM_SELECT, ST_EEPROM, 3},
+
    {ST_SAMPLNG_RATE, ST_SAMP_SHORT, 1},
    {ST_SAMPLNG_RATE, ST_SAMP_LONG, 2},
    
@@ -164,7 +175,7 @@ const menu_data MenuData[] PROGMEM = {
    {ST_SD_CARD_SIZE, MT_SD_CARD_SIZE, 0},
    {ST_TOTAL_SAMPLES, MT_TOTAL_SAMPLES, 0},
    {ST_UPTIME, MT_UPTIME, 0},
-   {ST_DATA_DOWNLOAD, MT_DATA_DOWNLOAD, 0},
+   {ST_DATA_DOWNLOAD, MT_DATA_DOWNLOAD, ReadRecording},
    {ST_OPTIONS, MT_OPTIONS, 0},
    {ST_SET_TIME, MT_SET_TIME, MenuSetTime},
    {ST_CALIBRATE, MT_CALIBRATE, 0},
@@ -182,6 +193,9 @@ const menu_data MenuData[] PROGMEM = {
 	{ST_REC_START, MT_REC_START, BeginRecording},
 	{ST_SAMP_SHORT, MT_SET_SHORT, SetShortRate},
 	{ST_SAMP_LONG, MT_SET_LONG, SetLongRate},
+	{ST_MEDIUM_SELECT, MT_MEDIUM_SELECT, MediumSelect},
+	{ST_EEPROM, MT_EEPROM, MediumEEPROM},
+	{ST_SDCARD, MT_SDCARD, MediumSDCard},
    {0, 0, 0}
 };
 

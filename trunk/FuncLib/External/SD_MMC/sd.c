@@ -8,6 +8,8 @@
 #include "hardUart/hardUart.h"
 #include "diskio/diskio.h"
 
+#define SD_DEBUG  0
+
 
 DSTATUS MMC_Stat = STA_NOINIT;
 
@@ -135,15 +137,15 @@ uint8_t SD_Command(uint8_t cmd, uint32_t arg)
 	while( (r1 = SPI_RxByte() ) == 0xFF)
 		if(retry++ > MMC_MAX_RETRIES) break;
 	// return response
-	
+#if SD_DEBUG	
 	uint8_t outputString[5];
-	
+
    uartNewLine();
    uartTxString("R1 Response: ");
    uint8toa(r1, outputString);
    uartTxString(outputString);
-   
    uartNewLine();   
+#endif
 
 	return r1;
 }
@@ -240,14 +242,14 @@ uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token)
 	// read data response token
 	if( (r1 & MMC_DR_MASK) != MMC_DR_ACCEPT)
 	{
-		uint8_t outputString[5];
-	
+#if SD_DEBUG		
+		uint8_t outputString[5];	
    	uartNewLine();
    	uartTxString("R1 Response: ");
    	uint8toa(r1, outputString);
    	uartTxString(outputString);
-   
    	uartNewLine();  
+#endif   	
 		return SD_ERROR;	
 	}
 		

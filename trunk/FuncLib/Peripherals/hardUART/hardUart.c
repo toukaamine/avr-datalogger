@@ -79,9 +79,18 @@ void uartTx(uint8_t outbyte)
 		
 	/*Send byte to output buffer*/
 	UDR	= outbyte;
-
-
 }
+
+/** Writes nbytes of buffer to the UART */
+void uartTxDump(uint8_t* buffer, uint8_t nbytes )
+{
+	uint16_t i = 0;
+	while( i++ < nbytes )
+	{
+		uartTx(*buffer++);
+	}
+}
+
 
 /* uartTxString:
  * Outputs the passed string to the UART.Tx pin

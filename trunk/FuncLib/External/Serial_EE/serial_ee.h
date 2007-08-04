@@ -51,7 +51,7 @@
 
 /* Define EE_WORD_ADDRESS if the IC has a word address, some only have a byte
 	addresss */
-#define	EE_WORD_ADDRESS			0
+#define	EE_WORD_ADDRESS			1
 
 #define	EE_BLOCK_SIZE				(EE24AA512_BLOCK_SIZE)
 #define	EE_NUMBER_OF_BLOCKS	 	(EE24AA512_NUMBER_OF_BLOCKS)
