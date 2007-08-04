@@ -74,15 +74,20 @@ float pgm_read_float(uint16_t* address_short)
 
 /* TODO: Ensure that AVR Signed is done using two's comp */
 
-const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_76, GS_GAIN_30, GS_GAIN_22, GS_GAIN_11, GS_GAIN_5,
-                      GS_GAIN_05, GS_GAIN_025, GS_GAIN_02, GS_GAIN_01, GS_GAIN_005, 0}; 
+const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_9P6, GS_GAIN_2P5, GS_GAIN_0P4, 
+											  GS_GAIN_0P09, GS_GAIN_0P04, 0}; 
 
 
 /* Still to finish this off */
+//const float SENSOR_GAIN[] PROGMEM = { 
+//   GAIN_76FP, GAIN_30FP, GAIN_22FP, GAIN_11FP, 
+//   GAIN_5FP, GAIN_05FP, GAIN_025FP, GAIN_02FP, 
+//   GAIN_01FP, GAIN_005FP};
+
 const float SENSOR_GAIN[] PROGMEM = { 
-   GAIN_76FP, GAIN_30FP, GAIN_22FP, GAIN_11FP, 
-   GAIN_5FP, GAIN_05FP, GAIN_025FP, GAIN_02FP, 
-   GAIN_01FP, GAIN_005FP};
+   GAIN_9P6FP, GAIN_2P5FP, GAIN_0P4FP, 
+	GAIN_0P09FP, GAIN_0P04FP};
+
 
 void GS_Init(void)
 {

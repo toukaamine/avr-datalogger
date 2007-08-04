@@ -22,6 +22,8 @@
 #include "MemMan/memman.h"
 #include "DS1305/ds1305.h"
 
+#define SENSOR_DEBUG 0
+
 /* Disable Sampling Timer */
 SoftTimer_8	SC_MasterTimer = {0,0,0};
 SoftTimer_16 SC_INTLongDelay;
@@ -71,22 +73,28 @@ void SC_Sample(void)
          /** Get the corresponding CH Gain and set it */
          chGain = SensorGetGain(i);
          GS_GainSel( pgm_read_byte( &GS_GAIN[chGain]) );
-         
+                 
          /** Condition the data from the ADC */
          ADCValue = ADS1213_GetResult();
          
          if( ADCValue != ADS1213_BUSY )
          {
+				if( chGain == GAIN9P6X )
+         	{
+					ADCValue -= 450e3;	
+				}
+				
             sample = SensorCondition(ADCValue, chGain); 
 
             /* Debugging */
+#if SENSOR_DEBUG            
             uint8toa(i , outputString);
 				uartTxString_P( PSTR("Channel: ") );
 				uartTxString(outputString);
 				uartNewLine();       
             printFloat(sample.FP);
             uartNewLine();
-				
+#endif 				
 				MasterDataRecord.sampleCount++;				
 				/** Write data to buffer */
 				MM_Write(sample.byteField[0]);

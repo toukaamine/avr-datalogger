@@ -116,8 +116,7 @@ int main(void)
 	/* Write to the DS1305 The time and date */
 	/* Max frequency is 600kHz */
    DS1305_Init();
-   DS1305_SetTime(DS1305_TimeDate_config);
-
+   
    UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
  
  
@@ -223,15 +222,6 @@ ISR(TIMER2_COMP_vect)
          /* Reset the timer */
 			SC_MasterTimer.timerCounter = 0;
 		}
-		
-      if( RestartEvent.timerCounter == RestartEvent.timeCompare 
-          && RestartEvent.timerEnable)
-      {
-         uartTxString("STOP THE CLOCK!!!");
-         SC_MasterTimer.timerEnable = 0;  
-      }	
-		
-      
    } 
    
    /* Functions occuring between 1 to 99msecs occur here */
@@ -327,7 +317,6 @@ ISR(INT2_vect)
             LCD_BL_PORT ^= (1 << LCD_BL_PIN);  
          }
    
-         uartTx(IntResult);
          if( IntResult != KP_INVALID)
          {
             MenuSetInput(IntResult);   
@@ -349,11 +338,7 @@ void Channel_Setup(void)
    SensorOn(1); // Sine Wave
 //   SensorOn(2); // SHORT
 //   SensorOn(3); // OPEN
-   
-   SensorSetGain(0, GAIN01X);
-   SensorSetGain(1, GAIN5X);
-   SensorSetGain(2, GAIN01X);      
-   SensorSetGain(3, GAIN05X);
+
    
 }
 

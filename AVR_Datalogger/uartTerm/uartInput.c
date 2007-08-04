@@ -20,13 +20,6 @@ static const char uartADCReset[] PROGMEM = "Reset ADC";
 static const char uartGetResult[] PROGMEM = "Get Sample";
 static const char uartGetSample[] PROGMEM = "G";
 
-static const char uartFAT16Mount[] PROGMEM = "Mount SD";
-static const char uartFAT16UnMount[] PROGMEM = "Unmount";
-static const char uartFAT16Open[] PROGMEM = "Open";
-static const char uartFAT16Close[] PROGMEM = "Close";
-static const char uartWrite[] PROGMEM = "Write";
-static const char uartRead[] PROGMEM = "Read";
-
 static const char uartTestMenuUart[] PROGMEM = "Set UART";
 static const char uartHelp[] PROGMEM = "Help";
 
@@ -52,9 +45,7 @@ static const UartCompare UartFunctions[] PROGMEM= {
    {uartGaindec, 1, GainDown},      
     
    {uartTestMenuUart, 1, MenuSetUartMode},       
-   {uartHelp, 1, uartTermHelp}, 
-   {uartWrite, 1, WriteEE},
-   {uartRead, 1, ReadEE},   
+   {uartHelp, 1, uartTermHelp},  
 
    {0,0,0}
 };

@@ -149,7 +149,7 @@ int main(void)
 	/* Determine which channels are voltages / temperature */
 	for( i = 0 ; i < 4; i++)
 	{
-		channelType.byte[i] = inputBuffer[i];
+		channelType.byte[3-i] = inputBuffer[i];
 	}
 	
 	/* Print the time stamp heading */
