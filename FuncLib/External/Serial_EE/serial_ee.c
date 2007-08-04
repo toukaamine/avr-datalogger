@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <util/delay.h>
 
 #include "I2C/i2c.h"
 #include "hardUart/hardUart.h"
@@ -134,9 +135,10 @@ void serialEE_WriteBlock(uint8_t* data,
 									, TW_WRITE );
 									
 #if	EE_WORD_ADDRESS == 1
-					i2cTransmit(((EE_AddressData->EE_Address)+ i) / EE_BLOCK_SIZE);
+					i2cTransmit( (uint16_t)((EE_AddressData->EE_Address)+ i) >> 8);
 #endif			
-					i2cTransmit(((EE_AddressData->EE_Address)+ i) );				
+					i2cTransmit(((EE_AddressData->EE_Address)+ i)& 0xFF);				
+
 					
 									
 					for( ; 
@@ -150,7 +152,7 @@ void serialEE_WriteBlock(uint8_t* data,
 					}					
 					i2cStop();
 					newpage = 1;
-					//pausems(10);
+					_delay_ms(5);
 
 				}
 
@@ -204,9 +206,10 @@ void serialEE_ReadBlock(uint8_t* data,
 						| (EE_BLOCKSELECT(EE_AddressData->EE_Block))
 						, TW_WRITE );
 #if	EE_WORD_ADDRESS == 1
-		i2cTransmit(((EE_AddressData->EE_Address)) / EE_BLOCK_SIZE);
+		i2cTransmit((uint16_t)(EE_AddressData->EE_Address) >> 8);
 #endif							
-		i2cTransmit( (EE_AddressData->EE_Address) );
+		i2cTransmit( (EE_AddressData->EE_Address) & 0xFF );
+
 	
 		/* Begin reading */
 		i2cAddress( (EE_I2C_ADDRESS) 

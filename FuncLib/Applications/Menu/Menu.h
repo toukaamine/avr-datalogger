@@ -97,6 +97,8 @@ extern const MENU_TEXT  MT_VERSION_INFO[];
 extern const MENU_TEXT  MT_DISPLAY_MODE[];
 extern const MENU_TEXT  MT_UART_MODE[];
 extern const MENU_TEXT  MT_LCD_MODE[];
+extern const MENU_TEXT  MT_EEPROM[];
+extern const MENU_TEXT  MT_SDCARD[];
 
 
 extern uint8_t currentState;

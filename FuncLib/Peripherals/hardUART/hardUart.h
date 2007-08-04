@@ -125,6 +125,8 @@ void uartTxString_P(const char* outString_P);
 void uartTx(uint8_t outbyte);
 
 
+void uartTxDump(uint8_t* buffer, uint8_t nbytes );
+
 /* ISR(SIG_UART_RECV)
  *
  * The interrupt routine for when a receive is complete
