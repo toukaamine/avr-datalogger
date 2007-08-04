@@ -41,6 +41,7 @@ uint16_t sampleSetting;
 uint8_t channel = 1;
 uint8_t gain = 0;
 uint8_t uartMenu = 0;
+uint8_t hasSDCard;
 FATFS filesys;
 
 
@@ -67,7 +68,7 @@ int main(void)
 
    UCSRB |= (1 << RXCIE);
    
-	i2cInit(3 , 0);
+	i2cInit(10 , 0);
 
    GS_Init(); 
 
@@ -126,16 +127,18 @@ int main(void)
       /* Mount the drive */
       f_mount(0, &filesys);		
       uartTxString_P( PSTR("SD Card Initialised!") );
-
-      
+      hasSDCard = 1;
    }
    else
    {
-      uartTxString_P( PSTR("SD Card Failed!") ); 
-      MMC_CS_PORT |= (1 << MMC_CS_PIN);     
+		/* Release and return clock phase and speed back to default */
+   	MMC_CS_PORT |= (1 << MMC_CS_PIN);
+   	SPCR |= (1 << CPHA) | (1 << SPR1);
+		
+      uartTxString_P( PSTR("SD Card Failed!") );      
+      hasSDCard = 0;
    }
   
-
    Channel_Setup();
    sei();
 

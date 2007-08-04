@@ -2,7 +2,7 @@
 
 #include <avr/pgmspace.h>
 #include "uartInput.h"
-#include "userFunctions.h"
+#include "UserFunctions/userFunctions.h"
 #include "hardUart/hardUart.h"
 #include "main.h"
 
@@ -19,18 +19,13 @@ static const char uartADCReset[] PROGMEM = "Reset ADC";
 /* Time Functions */
 static const char uartGetResult[] PROGMEM = "Get Sample";
 static const char uartGetSample[] PROGMEM = "G";
-static const char uartGetTime[] PROGMEM = "Get Time";
-
-static const char uartReadTime[] PROGMEM = "Read Time";
-static const char uartTestMMCRead[] PROGMEM = "Read MMC";
-static const char uartTestMMCWrite[] PROGMEM = "Write MMC";
 
 static const char uartFAT16Mount[] PROGMEM = "Mount SD";
 static const char uartFAT16UnMount[] PROGMEM = "Unmount";
 static const char uartFAT16Open[] PROGMEM = "Open";
 static const char uartFAT16Close[] PROGMEM = "Close";
-static const char uartFAT16Write[] PROGMEM = "Write";
-static const char uartFAT16Read[] PROGMEM = "Read";
+static const char uartWrite[] PROGMEM = "Write";
+static const char uartRead[] PROGMEM = "Read";
 
 static const char uartTestMenuUart[] PROGMEM = "Set UART";
 static const char uartHelp[] PROGMEM = "Help";
@@ -51,11 +46,6 @@ static const UartCompare UartFunctions[] PROGMEM= {
    {uartADCCalibP, 1, ADS1213_PsuedoCalib},
    {uartADCReset, 1, ADS1213_Reset},
    
-   {uartTestMMCRead, 1, MMC_ReadTimeTest},
-   {uartTestMMCWrite, 1, MMC_WriteTest},   
-   {uartReadTime, 1, ReadData},
-   
-   {uartGetTime, 1, GetTime},
    {uartCHinc, 1, ChannelUp},
    {uartCHdec, 1, ChannelDown},   
    {uartGaininc, 1, GainUp},
@@ -63,13 +53,9 @@ static const UartCompare UartFunctions[] PROGMEM= {
     
    {uartTestMenuUart, 1, MenuSetUartMode},       
    {uartHelp, 1, uartTermHelp}, 
+   {uartWrite, 1, WriteEE},
+   {uartRead, 1, ReadEE},   
 
-   {uartFAT16UnMount, 1, UnMountSD},   
-   {uartFAT16Mount, 1, MountSD},
-   {uartFAT16Open, 1, OpenSD},
-   {uartFAT16Close, 1, CloseSD},	   
-   {uartFAT16Write, 1, WriteSD},
-   {uartFAT16Read, 1, ReadRecording},   
    {0,0,0}
 };
 
