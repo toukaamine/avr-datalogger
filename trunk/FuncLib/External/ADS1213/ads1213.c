@@ -111,10 +111,10 @@ void ADS1213_Init(void)
    /* Always use Turbo 16 as it offers better performance */
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte( (1<<ADS1213_SF2) |  0x1 );
+   ADS1213_TxByte( (1<<ADS1213_SF2) |  0x0 );
 
    /* Have a data rate of 2kHz */
-   ADS1213_TxByte( 0x20 );
+   ADS1213_TxByte( 0x50 );
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
 }
