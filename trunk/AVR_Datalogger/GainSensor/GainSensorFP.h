@@ -58,13 +58,20 @@ enum {
 enum {
    GAIN9P6X = 0, GAIN2P5X, GAIN0P4X,
    GAIN0P09X, GAIN0P04
-} GainsM;   
+} GainsM;
+
 
 #define GAIN_9P6FP	9.615
 #define GAIN_2P5FP	2.472
 #define GAIN_0P4FP	0.4167
-#define GAIN_0P09FP	0.0866
+#define GAIN_0P09FP	0.0649
 #define GAIN_0P04FP	0.0417
+
+#define GAIN_9P6O		450e3
+#define GAIN_2P5O		115e3
+#define GAIN_0P4O		20e3
+#define GAIN_0P09O	2500
+#define GAIN_0P04O	500
 
 /* All gains below are multiplied by the Gain Resolution */
 /* This means that floats will not need to be used */
@@ -144,6 +151,7 @@ extern uint32_t SensorState;
 
 extern const uint8_t GS_GAIN[];
 extern const float SENSOR_GAIN[];
+extern const uint32_t GAIN_OFFSETS[];
 
 void GS_Init(void);
 void GS_Channel(uint8_t channel);

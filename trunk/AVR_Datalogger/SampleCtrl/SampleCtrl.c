@@ -21,6 +21,7 @@
 #include "DS1305/ds1305.h"
 #include "MemMan/memman.h"
 #include "DS1305/ds1305.h"
+#include "main.h"
 
 #define SENSOR_DEBUG 0
 
@@ -69,23 +70,19 @@ void SC_Sample(void)
       {        
          /* Set the channel */
          GS_Channel( i + 1 );
-      
+
          /** Get the corresponding CH Gain and set it */
          chGain = SensorGetGain(i);
          GS_GainSel( pgm_read_byte( &GS_GAIN[chGain]) );
-                 
+
+			ADS1213_Reset();                 
          /** Condition the data from the ADC */
          ADCValue = ADS1213_GetResult();
          
-         if( ADCValue != ADS1213_BUSY )
+         if( 1 )
          {
-				if( chGain == GAIN9P6X )
-         	{
-					ADCValue -= 450e3;	
-				}
-				
+				ADCValue -= GAIN_OFFSETS[chGain];	
             sample = SensorCondition(ADCValue, chGain); 
-
             /* Debugging */
 #if SENSOR_DEBUG            
             uint8toa(i , outputString);
@@ -94,13 +91,21 @@ void SC_Sample(void)
 				uartNewLine();       
             printFloat(sample.FP);
             uartNewLine();
-#endif 				
+#endif		
+				if( SensorGetType(i) == SENSOR_TEMP )
+				{
+					sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
+					/* Ambient Temperature */
+					sample.FP = sample.FP + ambientTemperature;
+				}
+ 				
+		
 				MasterDataRecord.sampleCount++;				
 				/** Write data to buffer */
-				MM_Write(sample.byteField[0]);
-				MM_Write(sample.byteField[1]);
+				MM_Write(sample.byteField[3]);
 				MM_Write(sample.byteField[2]);
-				MM_Write(sample.byteField[3]);								
+				MM_Write(sample.byteField[1]);
+				MM_Write(sample.byteField[0]);			
          }
          /* End of Debugging */
       }  

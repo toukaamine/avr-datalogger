@@ -35,13 +35,13 @@
 
 
 const char outputFileName[] = "Output.csv";
-const char* WEEKDAYS[] = { "Sunday",
-									"Monday",
+const char* WEEKDAYS[] = { "Monday",
 									"Tuesday",
 									"Wednesday",
 									"Thursday",
 									"Friday",
-									"Saturday"
+									"Saturday",
+									"Sunday"
 								};
 
 
@@ -158,11 +158,11 @@ int main(void)
 	/* Print the headings of the channels which are on */
 	for( i = 1; i <= CHANNEL_COUNT; i++)
 	{
-		if( channelState.data & (1 << (CHANNEL_COUNT - i)) )
+		if( channelState.data & (1 << (i - 1)) )
 		{
-			fprintf(outputFile, "Channel %d ", (CHANNEL_COUNT - i + 1) );	
+			fprintf(outputFile, "Channel %d ", (i) );	
 				
-			if( (channelType.data & (1 << (CHANNEL_COUNT - i) )) == TYPE_TEMPERATURE )
+			if( (channelType.data & (1 << (i - 1) )) == TYPE_TEMPERATURE )
 			{
 				fprintf(outputFile, "Temperature, ");					
 			}
@@ -202,10 +202,10 @@ int main(void)
 			/* For each channel, read in one float */
 			fread(inputBuffer, sizeof(float), 1, dataFile);			
 			
-			channelResult.byte[0] = inputBuffer[0];
-			channelResult.byte[1] = inputBuffer[1];
-			channelResult.byte[2] = inputBuffer[2];
-			channelResult.byte[3] = inputBuffer[3];
+			channelResult.byte[3] = inputBuffer[0];
+			channelResult.byte[2] = inputBuffer[1];
+			channelResult.byte[1] = inputBuffer[2];
+			channelResult.byte[0] = inputBuffer[3];
 			
 			fprintf(outputFile, "%f, ", channelResult.FP);
 			
