@@ -113,7 +113,9 @@ SRC = $(TARGET).c \
 		UserFunctions/userFunctions.c \
 		MemMan/memman.c \
 		$(APPLICATIONS_DIR)/TinyFS/tff.c \
-		$(EXTERNALS_DIR)/Serial_EE/serial_ee.c
+		$(EXTERNALS_DIR)/Serial_EE/serial_ee.c \
+		$(EXTERNALS_DIR)/TMP123/tmp123.c
+		
       
 #		GainSensor/GainSensor.c
 

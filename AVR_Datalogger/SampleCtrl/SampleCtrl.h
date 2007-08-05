@@ -29,6 +29,10 @@
 /* RTC 0 will be used for long delays it will be setup as a 1 second interrupt */
 #define SC_LONG_DELAY_INTERRUPT		DS1305_RTC0
 
+/* Ktype coefficient , volts per degree */
+#define SC_K_SEEBECK_COEFF			40e-6
+#define SC_K_SEEBECK_COEFF_INV	850
+
 typedef struct _softTimer8
 {
 	uint8_t timeCompare;

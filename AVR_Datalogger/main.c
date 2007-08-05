@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <stdlib.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <Util/delay.h>
@@ -21,6 +22,7 @@
 #include "SD_MMC/sd.h"
 #include "uartTerm/uartInput.h"
 #include "MemMan/memman.h"
+#include "TMP123/tmp123.h"
 
 #define UART_PORT PORTD
 #define UART_DDR  DDRD
@@ -37,6 +39,7 @@
 extern uint8_t currentState;
 
 /* Waking up from Power Down requires 6Clock Cycles */ 
+int16_t ambientTemperature;
 uint16_t sampleSetting;
 uint8_t channel = 1;
 uint8_t gain = 0;
@@ -71,7 +74,7 @@ int main(void)
 	i2cInit(10 , 0);
 
    GS_Init(); 
-
+	TMP123_Init();
    UI_Activate();    
    UI_KP_Init();
       
@@ -109,14 +112,14 @@ int main(void)
 //   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN01X]) );
 //   ADS1213_PsuedoCalib();
    
-   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN01X]) );
+   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN_COUNT - 1]) );
    ADS1213_PsuedoCalib();   
 
    
 	/* Write to the DS1305 The time and date */
 	/* Max frequency is 600kHz */
    DS1305_Init();
-   
+   ambientTemperature = TMP123_GetTemp();
    UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
  
  
@@ -198,11 +201,11 @@ ISR(TIMER2_COMP_vect)
  * Although we can use a uint16_t variable to obtain a 6502.5 sec max */
 	
 	/* Restart after 2 seconds */
-	static SoftTimer_16 RestartEvent = {10000, 0, 1};
+	static SoftTimer_16 temperatureUpdate = {1000, 0, 1};
 		
    float32_t conditionedResult;
    static uint32_t SD_Sector = 0;
-   
+      
    counter_ms++;   
    
    if( counter_ms == 10*SC_MILLISECOND)
@@ -210,7 +213,7 @@ ISR(TIMER2_COMP_vect)
 		counter_ms = 0;
 		
 		/* Clock the Master Timer at a 10ms Resolution */
-      RestartEvent.timerCounter++;	
+      temperatureUpdate.timerCounter++;	
    	SC_MasterTimer.timerCounter++;   	
    	
 		/* Functions which occur every xx*10msecs happen here */
@@ -222,35 +225,14 @@ ISR(TIMER2_COMP_vect)
          /* Reset the timer */
 			SC_MasterTimer.timerCounter = 0;
 		}
-   } 
-   
-   /* Functions occuring between 1 to 99msecs occur here */
-//   uint32_t lastestResult;
-//
-//         uint8_t temp_time[3];
-//         static uint16_t sampleCnt = 0;
-//         uint8_t i;
-//         uint8_t outputString[10];
-//      
-//         if( sampleCnt < 512 )
-//         {
-//            /* Update the time */
-//            DS1305_GetTime( DS1305_TimeDate_config );
-//            RTC_ConvertTime(DS1305_TimeDate_config, temp_time);
-//            
-//            for( i = SECONDS; i <= HOURS; i++)
-//            {
-//               MM_Write( temp_time[i] );                  
-//               uartTxString_P( PSTR("Sample #:") );            
-//               uint16toa(sampleCnt, outputString, 0);
-//               uartTxString(outputString);
-//               uartNewLine();
-//               sampleCnt++;                    
-//            }
-//         }		
-
-
-		  
+		
+		if( temperatureUpdate.timerCounter == temperatureUpdate.timeCompare )
+		{
+			ambientTemperature =	TMP123_GetTemp();		
+			temperatureUpdate.timerCounter = 0;
+		}
+		
+   } 		  
 }
 
 

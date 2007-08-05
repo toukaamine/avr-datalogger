@@ -20,6 +20,8 @@ static const char uartADCReset[] PROGMEM = "Reset ADC";
 static const char uartGetResult[] PROGMEM = "Get Sample";
 static const char uartGetSample[] PROGMEM = "G";
 
+static const char uartTime[] PROGMEM = "Time";
+
 static const char uartTestMenuUart[] PROGMEM = "Set UART";
 static const char uartHelp[] PROGMEM = "Help";
 
@@ -43,6 +45,8 @@ static const UartCompare UartFunctions[] PROGMEM= {
    {uartCHdec, 1, ChannelDown},   
    {uartGaininc, 1, GainUp},
    {uartGaindec, 1, GainDown},      
+   
+	{uartTime, 1, showTime}, 
     
    {uartTestMenuUart, 1, MenuSetUartMode},       
    {uartHelp, 1, uartTermHelp},  
