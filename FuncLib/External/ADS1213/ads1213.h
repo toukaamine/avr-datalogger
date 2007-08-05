@@ -73,7 +73,9 @@
 #define ADS1213_SLEEP      (0x06) << (ADS1213_MD0)
 #define ADS1213_NORMAL     (0x00) << (ADS1213_MD0)
 
-
+/* Maximum Decimation Ratio */
+#define ADS1213_MAX_DCR		(8000)
+#define ADS1213_MIN_DCR		(20)
 
 /* Byte 1 */
 #define ADS1213_SF2        (7)
@@ -92,6 +94,7 @@ typedef union ADS1213_data
    float    FPresult;  
 } ADS1213Data_t;
 
+extern int16_t ADS1213_DecimationRatio;
 
 
 #define ADS1213_RxByte() ADS1213_TxByte(0xFF)
