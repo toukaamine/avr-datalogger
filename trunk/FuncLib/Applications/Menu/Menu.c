@@ -47,7 +47,8 @@ enum {
 	ST_SAMP_LONG,
 	ST_MEDIUM_SELECT,
 	ST_EEPROM,
-	ST_SDCARD
+	ST_SDCARD,
+	ST_DECIMATION
 } menuIds;
 
 uint8_t currentState = ST_MAIN;
@@ -85,6 +86,7 @@ const MENU_TEXT  MT_SET_LONG[] =  "Slow > 5s";
 const MENU_TEXT  MT_MEDIUM_SELECT[] = "Select Media";
 const MENU_TEXT  MT_EEPROM[] = "64kB EEPROM";
 const MENU_TEXT  MT_SDCARD[] = "Secure Digital Card";
+const MENU_TEXT  MT_DECIMATION[] = "Decimation Ratio";
 
 void MenuSetDisplay(uint8_t display)
 {
@@ -134,6 +136,7 @@ const menu_list MenuState[] PROGMEM = {
    {ST_NEW_RECORDING, ST_REC_START, 4},   
    
    {ST_SAMPLE_SETUP, ST_MEDIUM_SELECT, 0}, 
+   {ST_SAMPLE_SETUP, ST_DECIMATION, 1},
 
    {ST_MEDIUM_SELECT, ST_SDCARD, 2},   
    {ST_MEDIUM_SELECT, ST_EEPROM, 3},
@@ -196,6 +199,7 @@ const menu_data MenuData[] PROGMEM = {
 	{ST_MEDIUM_SELECT, MT_MEDIUM_SELECT, MediumSelect},
 	{ST_EEPROM, MT_EEPROM, MediumEEPROM},
 	{ST_SDCARD, MT_SDCARD, MediumSDCard},
+	{ST_DECIMATION, MT_DECIMATION, SetDecimation},	
    {0, 0, 0}
 };
 

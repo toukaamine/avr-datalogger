@@ -9,9 +9,10 @@
 
 #include "SPI/spi.h"
 #include "ads1213.h"
-
-
 #include "hardUart/hardUart.h"
+
+
+int16_t ADS1213_DecimationRatio = 0x1FF;
 
 /* Internal function */
 uint8_t ADS1213_TxByte(uint8_t data)
@@ -23,67 +24,15 @@ uint8_t ADS1213_TxByte(uint8_t data)
 	return inputByte;
 }
 
+/* Resets the modulator count to zero */
 void ADS1213_Reset(void)
 {
-	SPCR &= ~(1 << SPE);
-	
-   SPI_PORT &= ~(1 << SCK);
-	_delay_us(100);
-	/* Perform a reset */
-	SPI_PORT |= (1 << SCK);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);         
-	_delay_us(60);
-            	
-	SPI_PORT &= ~(1 << SCK);
-	_delay_us(6);
-   
-   	
-	SPI_PORT |= (1 << SCK);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-               	
-	SPI_PORT &= ~(1 << SCK);
-	_delay_us(6);
-   
-   	
-	SPI_PORT |= (1 << SCK);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);
-	_delay_us(60);         
-	_delay_us(60);
-   	
-	SPI_PORT &= ~(1 << SCK);
-	_delay_us(6);
-   
-   		
-	SPI_PORT |= (1 << SCK);
-	_delay_ms(1);
-	_delay_us(60);
-         	
-	SPI_PORT &= ~(1 << SCK);
-	_delay_ms(30);   
-
-    
-	
-	SPCR |= (1 << SPE); 
-   
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);     
+   ADS1213_TxByte((1 << ADS1213_A2) );  
+   /* Need to set SDL to SDOUT and reset data */
+   ADS1213_TxByte( (1 << ADS1213_SDL) | (1 << ADS1213_DSYNC));
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);        
+   _delay_us(10);
 }
 
 /* Note SPI_Init() must be called prior */
@@ -111,10 +60,10 @@ void ADS1213_Init(void)
    /* Always use Turbo 16 as it offers better performance */
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte( (1<<ADS1213_SF2) |  0x0 );
+   ADS1213_TxByte( (1<<ADS1213_SF2) |  (ADS1213_DecimationRatio >> 8) );
 
    /* Have a data rate of 2kHz */
-   ADS1213_TxByte( 0x50 );
+   ADS1213_TxByte( ADS1213_DecimationRatio & 0xFF);
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
 }
@@ -137,9 +86,8 @@ uint32_t ADS1213_GetResult(void)
     * if nDRDY is LOW */
    
    BusyFlag = 1;
-     
-    
-   for( retry = 0; retry < 32; retry++)
+	 
+   for( retry = 0; retry < 255; retry++)
    {    
       ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);  
       _delay_us(10);
