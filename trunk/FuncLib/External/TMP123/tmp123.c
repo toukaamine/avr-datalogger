@@ -35,7 +35,6 @@ int16_t TMP123_GetTemp(void)
 		}		
 	
 		TMP123_PORT &= ~(1 << TMP123_SCK);
-
 	}
 	
 	TMP123_PORT |= (1 << TMP123_nCS);

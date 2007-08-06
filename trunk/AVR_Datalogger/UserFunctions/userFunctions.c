@@ -10,7 +10,8 @@
 #include "SPI/spi.h"
 #include "hardUart/hardUart.h"
 #include "SampleCtrl/SampleCtrl.h"
-#include "GainSensor/GainSensorFP.h"
+#include "GainSensor/GainControl.h"
+#include "GainSensor/SensorControl.h"
 #include "ADS1213/ads1213.h"
 #include "DS1305/ds1305.h"
 #include "RTC/RTCPrint.h"
@@ -23,179 +24,83 @@
 #include "TinyFS/tff.h"
 #include "UserFunctions/userFunctions.h"
 #include "Serial_EE/serial_ee.h"
-
+#include "mmculib/uint16toa.h"
+#include "mmculib/uint8toa.h"
 
 static const uint8_t SC_RTC0_CONFIG[] = {0x80, 0x80, 0x80, 0x80};
 
 
-/** These functions are accessed via the UART */
+
+
 void Reset(void* data)
 {
    asm volatile("jmp 0"::);
 }
 
-void GetResult(void* data)
+
+
+#if 0
+/* Read ADS1213 CMR */
+void ADS1213_Status(void* data)
 {
-   uint32_t lastestResult;
+   uint8_t ADS1213Byte;
    
-   lastestResult = ADS1213_GetResult();
-   SensorCondition(lastestResult, gain);  
-}
-
-
-void GetTime(void* data)
-{
-   SPCR |= (1 << CPHA);
-   DS1305_GetTime(DS1305_TimeDate_config);
-   printTime(DS1305_TimeDate_config);
-   uartNewLine();
-   printDate(DS1305_TimeDate_config);
-   uartNewLine();   
-  
-   _delay_ms(10);
-   SD_Write( DS1305_TimeDate_config, 512 , 1);
-   MMC_CS_PORT |= (1 << MMC_CS_PIN);    
+   /* Read 4 byte, that is 4 bytes of CMR */
    
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
+   
+   ADS1213_TxByte( (1 << ADS1213_RW) 
+                   | (1 << ADS1213_A2) 
+                   | (1 << ADS1213_MB0)
+                   | (1 << ADS1213_MB1) );  
+   
+   ADS1213Byte = ADS1213_RxByte();
+   uartTx(ADS1213Byte);
+   ADS1213Byte = ADS1213_RxByte();
+   uartTx(ADS1213Byte);
+   ADS1213Byte = ADS1213_RxByte();
+   uartTx(ADS1213Byte);
+   ADS1213Byte = ADS1213_RxByte();
+   uartTx(ADS1213Byte);                        
+   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
 }
-
-
-void ChannelUp(void* data)
-{
-   if( channel == 32 )
-   {
-      channel = 31;  
-   }      
-   channel = channel + 1;    
-   GS_Channel(channel);
-   //uartTx(channel);
-}
-
-
-void ChannelDown(void* data)
-{
-   if( channel == 1 )
-   {
-      channel = 2;  
-   }      
-   channel = channel - 1;    
-   GS_Channel(channel);
-   //uartTx(channel); 
-}
+#endif
 
 
 
-void GainUp(void* data)
-{
-   if( ++gain == GAIN_COUNT )
-   {
-      gain = GAIN_COUNT - 1;  
-   }      
-   GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
-   //uartTx(gain);
-}
-
-void GainDown(void* data)
-{
-   if( gain == 0 )
-   {
-      gain = 1;  
-   }      
-   gain = gain - 1;
-   GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
-   //uartTx(gain);   
-}
-
-
-/* Prints out which channels are gains are selected */
+/* Prints out which channels are gains are selected 
+ * and also the relevant voltage / temperature*/
 void GS_Status(void* data)
 {
-   uint8_t outputString[11];
-   uint8_t* input = (uint8_t*)data;
-   int32_t signedData;
-   uint32_t lastestResult;      
-   
-   if( firstEnter == 0 )
-   {     
-      switch( *input )
-      {
-         /* Channel Up */
-         case 'q':
-         case KP_A:
-            ChannelUp(0);   
-         break;
-            
-         /* Channel Down */  
-         case 'a':                   
-         case KP_B:
-            ChannelDown(0);
-         break;
-
-        /* Gain Up */
-        /// case 'w':
-         case KP_2:
-            GainUp(0);   
-         break;
-            
-         /* Gain Down */  
-         case 's':                   
-         case KP_5:
-            GainDown(0);
-         break;         
-         
-         /* Print raw ADC number */
-         case 'g':
-         case KP_C:
-
-            lastestResult = ADS1213_GetResult();             
-          	signedData = uint24_tSign( (ADS1213Data_t) lastestResult );           
-            
-         break;
-         
-         /* Exiting function */
-         case KB_BACK:
-         case KP_BACK:
-          
-            MenuSetInput(KP_BACK);
-            stateMachine(currentState);
-            MenuSetInput(0);
-            return;
-            
-            break;
-               
-         default:
-         break;     
-         
-      }
-   }
-
-   MenuPrint_P( PSTR("Channel: ") );
-   uint8toa(channel, outputString);
-   MenuPrint(outputString);
-   
-   MenuNewLine();   
-
-   MenuPrint_P( PSTR("Gain: ") );
-   uint8toa(gain, outputString);
-   MenuPrint(outputString);   
-   MenuNewLine(); 
-
-
-   ltoa(signedData, outputString, 10);    
-   MenuPrint(outputString);         
-   MenuNewLine();    
-   
-   firstEnter = 0;   
+	uint8_t passedData[2];
+	uint8_t* input;
+	
+	input = (uint8_t*)data;
+		
+	passedData[0] = (*input);
+	passedData[1] = 0xFF;
+	
+   ChannelSettings(passedData);
 }
 
 /** Function to setup each individual channel */
 void ChannelSettings(void* data)
 {
    uint8_t* input = 0;
+   uint8_t	printReading = 0;
    uint8_t outputString[21];
+	float32_t sample; 
+	uint8_t chGain;
+   uint32_t ADCValue;
    static int8_t SelectedChannel = 0;
    static int8_t SelectedGain = 0;
    
    input = data;
+   
+   if( input[1] == 0xFF )
+   {
+		printReading = 1;	
+	}
 
    if( firstEnter == 0 )
    {      
@@ -263,17 +168,53 @@ void ChannelSettings(void* data)
 	MenuPrint(outputString);          
    MenuNewLine();	
    
-   /* Print the status */
-	MenuPrint_P(PSTR("Status: "));   
-	if( SensorGetState(SelectedChannel) == SENSOR_ON )
-	{
-		MenuPrint_P( PSTR("On") );
+   /* Print the status (only if we aren't going to print the reading)*/
+   if( printReading == 1)
+   {
+		MenuPrint_P(PSTR("Status: "));   
+		if( SensorGetState(SelectedChannel) == SENSOR_ON )
+		{
+			MenuPrint_P( PSTR("On") );
+		}
+		else
+		{
+			MenuPrint_P( PSTR("Off") );		
+		}
+		MenuNewLine();	
 	}
 	else
 	{
-		MenuPrint_P( PSTR("Off") );		
+		MenuPrint_P(PSTR("= "));   
+		
+  		chGain = SensorGetGain(SelectedChannel);
+		ADS1213_Reset();                 
+   	/** Condition the data from the ADC */
+		ADCValue = ADS1213_GetResult();
+		ADCValue -= GAIN_OFFSETS[chGain];	
+	   sample = SensorCondition(ADCValue, chGain); 
+		/* Print out the Voltage / Temperature */
+		if( SensorGetType(SelectedChannel) == SENSOR_TEMP )
+		{
+			sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
+			/** Ambient Temperature */
+			sample.FP = sample.FP + ambientTemperature;
+		}	
+		
+		printFloat(sample.FP, outputString);
+		MenuPrint(outputString);
+		
+		if( SensorGetType(SelectedChannel) == SENSOR_TEMP )
+		{
+			MenuPrint_P(PSTR(" ßC")); 	
+		}
+		else
+		{
+			MenuPrint_P(PSTR(" V")); 	
+		}
+		
+		MenuNewLine();			
+		
 	}
-	MenuNewLine();	
 
    /* Indicate the Channel Type */
 	MenuPrint_P(PSTR("Input: "));   
@@ -308,7 +249,7 @@ void BeginRecording(void* data)
 	if( firstEnter == 1)
 	{
 		/* Write file to SD Card */
-		MM_CreateRecording("NewFile");
+		MM_CreateRecording((uint8_t*)"NewFile");
 		
 		/* reset the data file name to prevent overwriting */
 		
@@ -327,7 +268,7 @@ void BeginRecording(void* data)
 		if( SC_GetMode() == SC_SAMPLE_EXTERNAL )
 		{
 			DS1305_AlarmControl(DS1305_RTC0, 1);
-			DS1305_SetAlarm(SC_RTC0_CONFIG , DS1305_RTC0);
+			DS1305_SetAlarm( (uint8_t*)SC_RTC0_CONFIG , DS1305_RTC0);
 			SC_MasterTimer.timerEnable = TIMER_DISABLE;
 			SC_INTLongDelay.timerEnable = TIMER_ENABLE;
 		}
@@ -348,7 +289,7 @@ void BeginRecording(void* data)
 			/* Print the number of samples and sample rate */
 			MenuNewLine();
 			MenuPrint_P( PSTR("Sample Count: ") );
-			ultoa(MasterDataRecord.sampleCount, outputString, 10);
+			ultoa(MasterDataRecord.sampleCount, (char*)outputString, 10);
 			MenuPrint(outputString);
 			MenuNewLine();
 			PrintSampleRate();
@@ -377,9 +318,6 @@ void BeginRecording(void* data)
 		break;
 		
 	}
-
-
-
 }
 
 
@@ -516,11 +454,11 @@ uint8_t MakeTime(void* data, int8_t* timeComponent )
 		
 		if( timeComponent[i] < 10)
 		{
-			strcat( outputString, "0" );	
+			strcat( (char*)outputString, "0" );	
 		}
 						
-		strcat( outputString, (const char*)buffer );
-		strcat( outputString, ":" );
+		strcat( (char*)outputString, (const char*)buffer );
+		strcat( (char*)outputString, ":" );
 	}
 	
    firstEnter = 0;
@@ -594,13 +532,13 @@ void PrintSampleRate(void)
 	MenuPrint_P( PSTR("S. Rate: ") );	
    if( SC_GetMode() == SC_SAMPLE_INTERNAL)
    {
-		uint8toa(SC_GetShortRate(), outputString);
+		uint8toa( SC_GetShortRate(), outputString);
 		MenuPrint(outputString);
       MenuPrint_P( PSTR("0 ms"));
    }
    else
    {
-		uint16toa(SC_GetLongRate(), outputString, 0);
+		uint16toa(SC_GetLongRate(), (char*)outputString, 0);
 		MenuPrint(outputString);
       MenuPrint_P( PSTR(" s"));      
    }
@@ -778,30 +716,6 @@ void MenuSetLCDMode(void* data)
    stateMachine(currentState);
 }
 
-/* Read ADS1213 CMR */
-void ADS1213_Status(void* data)
-{
-   uint8_t ADS1213Byte;
-   
-   /* Read 4 byte, that is 4 bytes of CMR */
-   
-   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
-   
-   ADS1213_TxByte( (1 << ADS1213_RW) 
-                   | (1 << ADS1213_A2) 
-                   | (1 << ADS1213_MB0)
-                   | (1 << ADS1213_MB1) );  
-   
-   ADS1213Byte = ADS1213_RxByte();
-   uartTx(ADS1213Byte);
-   ADS1213Byte = ADS1213_RxByte();
-   uartTx(ADS1213Byte);
-   ADS1213Byte = ADS1213_RxByte();
-   uartTx(ADS1213Byte);
-   ADS1213Byte = ADS1213_RxByte();
-   uartTx(ADS1213Byte);                        
-   ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);      
-}
 
 void MediumSelect(void* data)
 {
@@ -879,7 +793,6 @@ void ReadRecording(void* data)
 {
 	uint16_t cnt;
 	uint32_t i;
-	uint8_t j;
 	uint8_t remainingBytes;
 	uint8_t buffer[MM_BUFFER_SIZE + 1]; /// +1 for NULL byte 
 	uint16_t fileSize;
@@ -888,7 +801,7 @@ void ReadRecording(void* data)
 
 	if( MM_GetMemoryType() == MM_SDCARD )
 	{
-		if( f_open(&inFile, MasterDataRecord.FileName, FA_READ) )
+		if( f_open(&inFile, (char*)MasterDataRecord.FileName, FA_READ) )
 		{
 			uartTxString_P( PSTR("Open Failed!") );	
 		}	
@@ -971,19 +884,6 @@ void Calibrate(void* data)
 
 
 
-
-
-void showTime(void* data)
-{
-	uint8_t i;
-	DS1305_GetTime(DS1305_TimeDate_config);
-	
-	for( i = 0; i <= YEAR; i++)
-	{
-		uartTx( 	DS1305_TimeDate_config[i] );
-	}
-}
-
 void SetDecimation(void* data)
 {
 	uint8_t* input = (uint8_t*)data;
@@ -1046,7 +946,7 @@ void SetDecimation(void* data)
    MenuPrint_P( PSTR("Decimation Ratio:"));
 	MenuNewLine();
 	
-	uint16toa( ADS1213_DecimationRatio, outputString, 0);
+	uint16toa( ADS1213_DecimationRatio, (char*)outputString, 0);
 	MenuPrint(outputString);
 	      
 	

@@ -15,7 +15,8 @@
 #include "UI_LCD/UI_LCD.h"
 #include "UI/UI.h"
 #include "Menu/Menu.h"
-#include "GainSensor/GainSensorFP.h"
+#include "GainSensor/SensorControl.h"
+#include "GainSensor/GainControl.h"
 #include "ADS1213/ads1213.h"
 #include "DS1305/ds1305.h"
 #include "RTC/RTCPrint.h"
@@ -23,6 +24,7 @@
 #include "uartTerm/uartInput.h"
 #include "MemMan/memman.h"
 #include "TMP123/tmp123.h"
+#include "mmculib/uint16toa.h"
 
 #define UART_PORT PORTD
 #define UART_DDR  DDRD
@@ -203,8 +205,6 @@ ISR(TIMER2_COMP_vect)
 	/* Restart after 2 seconds */
 	static SoftTimer_16 temperatureUpdate = {1000, 0, 1};
 		
-   float32_t conditionedResult;
-   static uint32_t SD_Sector = 0;
       
    counter_ms++;   
    
@@ -263,7 +263,7 @@ ISR(INT2_vect)
          /* Reset the RTC0 IRQ Flag */
          DS1305_ReadByte(DS1305_A0_SECS);
          uartTxString((uint8_t*)"RTC INT0 Triggered!");
-         uint16toa( SC_INTLongDelay.timerCounter, outputString, 0);
+         uint16toa( SC_INTLongDelay.timerCounter, (char*)outputString, 0);
          uartTxString(outputString);
          
          if( (SC_INTLongDelay.timerEnable && 

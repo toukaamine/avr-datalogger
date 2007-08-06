@@ -222,7 +222,6 @@ uint8_t SD_Read(uint8_t* buffer, uint32_t sector, uint8_t secCount )
 /* Token is the data token to send */
 uint8_t SD_WriteSector(uint8_t* buffer, uint8_t token)
 {
-	uint8_t retry = 0;	
 	uint16_t i;
 
 	/* Send Dummy Byte */

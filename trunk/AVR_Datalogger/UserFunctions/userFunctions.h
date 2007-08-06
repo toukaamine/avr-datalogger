@@ -42,22 +42,13 @@ void SetLongRate(void* data);
 void SetShortRate(void* data);
 
 void Reset(void* data);
-void GetResult(void* data);
-void GetTime(void* data);
 void MenuSetTime(void* data);
 uint8_t MakeTime(void* data, int8_t* timeComponent );
 
-void ReadData(void* data);
-void MMC_ReadTimeTest(void* data);
-void MMC_WriteTest(void* data);
 void ADS1213_Status(void* data);
 
 void PrintSampleRate(void);
 
-void ChannelUp(void* data);
-void ChannelDown(void* data);
-void GainUp(void* data);
-void GainDown(void* data);
 
 void GS_Status(void* data);
 
@@ -69,15 +60,11 @@ void MediumSelect(void* data);
 void MediumEEPROM(void* data);
 void MediumSDCard(void* data);
 
-void MountSD(void* data);
-void OpenSD(void* data);
-void WriteEE(void* data);
-void ReadEE(void* data);
+
 void ReadRecording(void* data);
-void UnMountSD(void* data);
+
 
 void Calibrate(void* data);
 
-void showTime(void* data);
 
 void SetDecimation(void* data);

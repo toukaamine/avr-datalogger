@@ -254,7 +254,6 @@ void MenuUpdate(void)
 {
    uint8_t i;   
    uint8_t sequenceIndex = 0;
-   uint8_t sequenceParent;
    uint8_t MenuOffset;
    uint8_t MenuMax;
    
