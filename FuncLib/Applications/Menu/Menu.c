@@ -249,67 +249,7 @@ void MenuUart_Reset(void)
    
 }
 
-
-
-/* Example of a menu function. Each menu function needs a way of 'getting'
- * back to the main menu system. It is done like so.
- */
-/* All printf's should be changed to UI_LCD_String("x") */
-#if 0
-void message(void* data)
-{
-   uint8_t* input = 0;
-   char haha = 0;
-   
-    
-   MenuPrint_P( PSTR("Hello!"));
-   MenuNewLine();  
-   input = data;
-
-   if( firstEnter == 0 )
-   {      
-      switch( *input )
-      {
-         case KP_6:
-            MenuPrint_P(PSTR("You typed 6!"));
-            MenuNewLine();
-            
-         break;
-         
-         case 'a':
-            MenuPrint_P(PSTR("Yo WTF is up?"));
-            MenuNewLine();
-         break;
-         
-         case 'e':
-            MenuPrint_P(PSTR("Exiting UART Mode..."));
-            MenuSetLCDMode(0);
-            break;
-         
-         
-         /* Menu Function exit routine */
-         case KB_BACK:
-         case KP_BACK:
-          
-            MenuSetInput(KP_BACK);
-            stateMachine(currentState);
-            MenuSetInput(0);
-            return;
-            
-            break;
-            
-         
-         default:
-            break;
-      }
-      
-   }
-   
-   firstEnter = 0;
-   
-}
-#endif
-
+/** Updates the state of the menu */
 void MenuUpdate(void)
 {
    uint8_t i;   
@@ -322,17 +262,14 @@ void MenuUpdate(void)
    
    MenuReset();
 
-   /* Only switch Menu input IF we are in a menu item which has NO associated
+   /** Only switch Menu input IF we are in a menu item which has NO associated
     * function */
    if( (pgm_read_word(&MenuData[ GetIndex(currentState) ].function)) == 0 )
    {
       stateMachine( currentState ); 
    }
-   
-   //stateMachine( currentState );       
-
-   /* Run the associated function */      
-   /* And run its function if it has one ? */   
+        
+   /** Run the associated function if it has one */   
    executeState(currentState);    
 
    MenuOffset = SmallestSequence(currentState);
@@ -410,18 +347,10 @@ void MenuUpdate(void)
          }
       }  
    }
-      
-   //UI_LCD_Char('\r');
-   
-   /* Make input a global function/variable which is changed by the button parser */
-        
-   //scanf("%c", &MenuInput);
-   
-    
 }
 
 
-/* Determines the new state depending on the user input and passed state */
+/** Determines the new state depending on the user input and passed state */
 void stateMachine(uint8_t state)
 {
    uint8_t maxStateItems;
@@ -546,11 +475,13 @@ uint8_t GetParent(uint8_t state)
    return INVALID_STATE;
 }
 
+/* Updates the input last received by the menu */
 void MenuSetInput(uint8_t NewInput)
 {
    MenuInput = NewInput;    
 }
 
+/** Calls the associated menu's function */
 void executeState(uint8_t state)
 {
    uint8_t index;
@@ -570,7 +501,7 @@ void executeState(uint8_t state)
    
 }
 
-/* Get the element in MenuData which has 'parent' */
+/*& Get the element in MenuData which has 'parent' */
 uint8_t GetIndex(uint8_t parent)
 {
    uint8_t i;
@@ -586,7 +517,7 @@ uint8_t GetIndex(uint8_t parent)
    
 }
 
-/* Get the number of sub items in the passed state */
+/** Get the number of sub items in the passed state */
 uint8_t SubItems(uint8_t state)
 {
    int i;
@@ -601,7 +532,7 @@ uint8_t SubItems(uint8_t state)
    return (StateItems - 1);
 }
 
-/* Get the maximum sequence of the the passed state */
+/** Get the maximum sequence of the the passed state */
 uint8_t LargestSequence(uint8_t state)
 {
    int i;

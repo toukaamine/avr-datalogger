@@ -10,7 +10,7 @@
 // Target MCU	: Atmel AVR Series
 // Editor Tabs	: 4
 //
-///	\ingroup driver_hw
+///	\ingroup avr_external
 /// \defgroup mmc MultiMedia and SD Flash Card Interface (mmc.c)
 /// \code #include "mmc.h" \endcode
 /// \par Description

@@ -4,6 +4,23 @@
  *
  */
 
+/** \file ds1305.h
+	 \brief Dallas DS1305 RTC Drivers
+*/
+
+/**	 
+
+	\ingroup avr_external
+ 	\defgroup ds1305 Dallas DS1305 RTC Drivers
+ 	\code #include "ds1305.h" \endcode
+
+ 	 
+	 \par Description
+	Drivers for the DS1305 RTC over SPI bus.
+ 	 
+*/
+//@{
+
 #ifndef	_DS1305_ROUTINES
 #define	_DS1305_ROUTINES
 
