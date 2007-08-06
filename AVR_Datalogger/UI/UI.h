@@ -1,3 +1,19 @@
+/** \file UI.h
+	 \brief User Interface Routines
+*/
+
+/**	 
+
+	\ingroup avr_datalogger
+ 	\defgroup UI User Interface Module
+ 	\code #include "UI.h" \endcode
+
+ 	 
+	 \par Description
+    Sets up the User Interface Module for interrupts
+*/
+//@{
+
 #ifndef	_UI_ROUTINES
 #define	_UI_ROUTINES
 

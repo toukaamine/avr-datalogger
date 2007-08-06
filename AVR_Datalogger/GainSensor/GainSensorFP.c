@@ -73,16 +73,9 @@ float pgm_read_float(uint16_t* address_short)
 
 
 /* TODO: Ensure that AVR Signed is done using two's comp */
-
 const uint8_t GS_GAIN[] PROGMEM = {GS_GAIN_9P6, GS_GAIN_2P5, GS_GAIN_0P4, 
 											  GS_GAIN_0P09, GS_GAIN_0P04, 0}; 
 
-
-/* Still to finish this off */
-//const float SENSOR_GAIN[] PROGMEM = { 
-//   GAIN_76FP, GAIN_30FP, GAIN_22FP, GAIN_11FP, 
-//   GAIN_5FP, GAIN_05FP, GAIN_025FP, GAIN_02FP, 
-//   GAIN_01FP, GAIN_005FP};
 
 const float SENSOR_GAIN[] PROGMEM = { 
    GAIN_9P6FP, GAIN_2P5FP, GAIN_0P4FP, 
@@ -95,7 +88,7 @@ const uint32_t GAIN_OFFSETS[] = {
 
 void GS_Init(void)
 {
-   /* Set all pins to outputs except for NC pins which are set to inputs*/
+   /** Set all pins to outputs except for NC pins which are set to inputs*/
 	i2cAddress(GS_MAX7300_ADDRESS, TW_WRITE);     
 
  	i2cTransmit(MAX7300_DDRA1);
@@ -105,8 +98,6 @@ void GS_Init(void)
 	i2cStop();   
 	
 	GS_SetRegister( MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) );
-	
-
 }
 
 /* Channel 1 <= 32 */

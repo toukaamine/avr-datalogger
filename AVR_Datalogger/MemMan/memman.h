@@ -1,3 +1,23 @@
+/** \file memman.h
+	 \brief Memory Manager for SD Card /EEPROM
+*/
+
+/**	 
+
+	\ingroup avr_datalogger
+ 	\defgroup memman Memory Management
+ 	\code #include "memman.h" \endcode
+
+ 	 
+	 \par Description
+	Interfaces with the EEPROM and/or SD Card. Logged data
+	is written to these mediums via the following functions.
+ 	 
+*/
+//@{
+
+
+
 #ifndef	_MEMMAN_ROUTINES
 #define	_MEMMAN_ROUTINES
 
@@ -6,7 +26,7 @@
 #include "TinyFS/tff.h"
 
 
-/* Buffer size should not exceed that of either the SD or EEPROM mediums */
+/** Buffer size should not exceed that of either the SD or EEPROM mediums */
 #define MM_BUFFER_SIZE  128
 #define MAX_DATA_SETS   5
 
@@ -47,6 +67,7 @@ void MM_Read(uint8_t* buffer, uint8_t nbytes);
 /** Will create a new recording with the passed file name */
 void MM_CreateRecording(uint8_t* name);
 
+/** Writes the remaining bytes of the buffer to the medium */
 void MM_Sync(void);
 
 /** Internal functions */

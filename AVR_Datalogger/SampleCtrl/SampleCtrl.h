@@ -1,8 +1,27 @@
+/** \file SampleCtrl.h
+	 \brief Sample control for the AVR datalogger
+*/
+
+/**	 
+
+	\ingroup avr_datalogger
+ 	\defgroup SampleCtrl Sample Control routines
+ 	\code #include "SampleCtrl.h" \endcode
+
+ 	 
+	 \par Description
+	Regulates and contols the sampling technique of the datalogger.
+ 	Either a short rate or a long rate can be selected as the sampling rates.
+    A short rate is less than 2.5 seconds and a long rate can be up to 18 hours 
+    
+    This function also ensures the data is written to the memory media in the correct
+    and assumed format for reading.
+*/
+//@{
+
+
 #ifndef _SAMPLE_CTRL
 #define _SAMPLE_CTRL
-
-
-
 
 #define SC_COMPARE_RATE 250
 
