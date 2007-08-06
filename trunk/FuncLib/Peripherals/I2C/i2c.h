@@ -1,12 +1,29 @@
 /* Filename: 				i2c.h
  * Author:   				Adrian Gin (amg94@student.canterbury.ac.nz)
- * Created/Modified: 		21-06-06
+ * Created/Modified: 		21-06-07
  *
  * Description:
  *		These functions utilise the hardware TWIregisters
  * 	I2C / TWI serial routines for the AVR mpu's.
  * 	For AVR Core
  */
+
+/** \file i2c.h
+	 \brief TWI / I2C Drivers for the AVR Core.
+*/
+
+/**	 
+
+	\ingroup avr_peripheral
+ 	\defgroup i2c I2C Hardware Driver.
+ 	\code #include "i2c.h" \endcode
+
+ 	 
+	 \par Description
+	 I2C Communications protocol for the AVR core.
+ 	 
+*/
+//@{
 
 #ifndef	_I2C_ROUTINES
 #define	_I2C_ROUTINES
@@ -28,9 +45,11 @@
 
 #define	TWI_STATUS_MASK		0xF8
 
-/* A write corresponds to SDA being pulled low */ 
-/* A read corresponds to SDA being pulled high */ 
+
+/** A read corresponds to SDA being pulled high */ 
 #define	READ	1
+
+/** A write corresponds to SDA being pulled low */ 
 #define	WRITE 0 
 
 #define	ACK_BIT		1
@@ -40,7 +59,7 @@
 #define	I2C_RECEIVE_MASK 		((1<<TWINT) | (1<<TWSTO) | (1<<TWEA))
 
 
-/* i2cSetBitRate:
+/** i2cSetBitRate:
  * Sets up the i2c bitrate generator
  *
  * SCL Frequncy = F_CPU / (16 + 2*(bitrate) * 4^(prescale) ) 
@@ -54,7 +73,7 @@
 void i2cSetBitRate(uint8_t bitrate, uint8_t prescale);
 
 
-/* i2cInit:
+/** i2cInit:
  * Initialise the TWI modules by enabling the 
  * ACKnowledge bit and the TWI Enable bit
  *
@@ -63,35 +82,35 @@ void i2cSetBitRate(uint8_t bitrate, uint8_t prescale);
 
 void i2cInit(uint8_t bitrate, uint8_t prescale);
 
-/* i2cDisable:
+/** i2cDisable:
  * Disables the TWI Module access to the SDA and SCL pins
  *
  */
 void i2cDisable(void);
 
 
-/* i2cStart:
+/** i2cStart:
  * Place a start bit on the TWI Bus 
  *
  */	
-/* TWINT is cleared when a 1 is written to it*/
-/* TWI Operations take place when TWINT is cleared (set to 1) */
+/** TWINT is cleared when a 1 is written to it*/
+/** TWI Operations take place when TWINT is cleared (set to 1) */
 void i2cStart(void);
 
 
-/* i2cStop:
+/** i2cStop:
  * Place a start bit on the TWI Bus 
  *
  */	
-/* TWINT is cleared when a 1 is written to it*/
-/* TWI Operations take place when TWINT is cleared (set to 1) */
+/** TWINT is cleared when a 1 is written to it*/
+/** TWI Operations take place when TWINT is cleared (set to 1) */
 void i2cStop(void);
 
 
 
 
 
-/* i2cError:
+/** i2cError:
  * This is called when there is unexpected action on the TWI interface.
  * 
  * This function prints out the expected status code
@@ -102,31 +121,31 @@ void i2cError(uint8_t expected_status);
 
 
 
-/* i2cTransmit:
+/** i2cTransmit:
  * The value in outbyte	is sent to the device 
  * The device should have already been addressed using
  * i2cAddress(...);
  */
 void i2cTransmit(uint8_t outbyte);
 
-/* i2cTransmitBlock:
+/** i2cTransmitBlock:
  * Outputs n number of bytes onto the TWI Bus.
  */
 void i2cTransmitBlock(uint8_t* data_ptr, uint8_t n);
 
 
-/* i2cAdrress:
+/** i2cAdrress:
  * Tranmits the passed address and RW bit to the TWI Bus lines
  */
 void i2cAddress(uint8_t address, uint8_t rw_bit);
 
 
-/* i2cRead:
+/** i2cRead:
  * The value in receiver buffer is returned.
  * This function should only be called after SLA+R+ACK has been sent */
 
 
-/* Pass a 0 (LAST_BYTE) to the acknowledge bit to end the read
+/** Pass a 0 (LAST_BYTE) to the acknowledge bit to end the read
  * operation. 
  * Most I2C devices require the last byte to be read to end
  * with a NACK.
@@ -136,7 +155,7 @@ uint8_t i2cRead(uint8_t acknowledge_bit);
 
 
 
-/* i2cReadBlock:
+/** i2cReadBlock:
  * Reads 'size' number of bytes to the passed pointer
  *
  */

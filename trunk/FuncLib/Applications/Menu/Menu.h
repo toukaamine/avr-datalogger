@@ -1,3 +1,20 @@
+/** \file Menu.h
+	 \brief Menu Machine for AVR
+*/
+
+/**	 
+
+	\ingroup avr_datalogger
+ 	\defgroup menu Menu State Machine
+ 	\code #include "menu.h" \endcode
+
+ 	 
+	 \par Description
+	Implements a menu function.
+ 	 
+*/
+//@{
+
 
 #ifndef	_MENU_ROUTINES
 #define	_MENU_ROUTINES
@@ -54,9 +71,6 @@
 #define KP_DOWN KP_8
 #define KP_ENTER KP_6
 #define KP_BACK  KP_4
-
-
-void message(void* data);
 
 typedef struct
 {
