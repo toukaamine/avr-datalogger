@@ -1,3 +1,20 @@
+/** \file UI_KP.h
+	 \brief UART Commands Interface
+*/
+
+/**	 
+
+	\ingroup avr_datalogger
+ 	\defgroup UI_KP Keypad Interface
+ 	\code #include "UI_KP.h" \endcode
+
+ 	 
+	 \par Description
+*/
+//@{
+   
+
+
 #ifndef	_UI_KP_ROUTINES
 #define	_UI_KP_ROUTINES
 
@@ -52,6 +69,8 @@
 
 
 void UI_KP_Init(void);
+
+/** Returns the KP button pressed */
 uint8_t UI_KP_GetPress(void);
 
 

@@ -148,6 +148,8 @@ void branch_input(uint8_t* inputStr)
    uartNewLine();   
 }
 
+
+/** Prints out all the possible commands available */
 void uartTermHelp(void)
 {
    uint8_t i = 0;

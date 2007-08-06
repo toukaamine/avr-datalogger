@@ -1,3 +1,21 @@
+/** \file UI_LCD.h
+	 \brief LCD Routines
+*/
+
+/**	 
+
+	\ingroup avr_external
+ 	\defgroup UI_LCD HD44780 LCD Interface
+ 	\code #include "uartInput.h" \endcode
+
+ 	 
+	 \par Description
+    This module utilises the MAX7300 Port Expander to interface with
+    a 20x4 Alphanumeric LCD.
+*/
+//@{
+   
+
 #ifndef	_UI_LCD_ROUTINES
 #define	_UI_LCD_ROUTINES
 

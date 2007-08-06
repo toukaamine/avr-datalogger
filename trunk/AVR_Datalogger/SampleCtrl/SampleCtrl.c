@@ -55,7 +55,7 @@ void SC_Sample(void)
    float32_t sample;
    uint8_t outputString[10];
 
-	/* Write Timestamp */
+	/** Write Timestamp */
 	DS1305_GetTime(DS1305_TimeDate_config);
 	MM_Write( DS1305_TimeDate_config[HOURS] );
 	MM_Write( DS1305_TimeDate_config[MINUTES] );		
@@ -95,7 +95,7 @@ void SC_Sample(void)
 				if( SensorGetType(i) == SENSOR_TEMP )
 				{
 					sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
-					/* Ambient Temperature */
+					/** Ambient Temperature */
 					sample.FP = sample.FP + ambientTemperature;
 				}
  				
@@ -122,11 +122,10 @@ uint16_t SC_GetLongRate(void)
 	return SC_INTLongDelay.timeCompare;
 }
 
-/* Valid up to 2 seconds */
+/** Valid up to 2 seconds */
 void SC_SetSamplingRate(uint8_t tensMilliseconds)
 {
 	SC_MasterTimer.timeCompare = tensMilliseconds;
-	//SC_MasterTimer.timerEnable = TIMER_ENABLE;
 	SampleMode = SC_SAMPLE_INTERNAL;
 }
 
