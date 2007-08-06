@@ -13,9 +13,13 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include <util/delay.h>
+#include <avr/pgmspace.h>
 
+#include "ADS1213/ads1213.h"
 #include "SampleCtrl.h"
-#include "GainSensor/GainSensorFP.h"
+#include "GainSensor/GainControl.h"
+#include "GainSensor/SensorControl.h"
+#include "mmculib/floatFunctions.h"
 #include "hardUart/hardUart.h"
 #include "RTC/RTCPrint.h"
 #include "DS1305/ds1305.h"
@@ -30,8 +34,6 @@ SoftTimer_8	SC_MasterTimer = {0,0,0};
 SoftTimer_16 SC_INTLongDelay;
 uint32_t SC_SampleCount = 0;
 static uint8_t SampleMode;
-static uint8_t SC_DelayedStart;
-
 
 
 void SC_Init(void)
@@ -43,6 +45,8 @@ void SC_Init(void)
    OCR2 = SC_COMPARE_RATE;
    TCNT2 = 0x00;
 }
+
+
 
 
 /** Samples the Activated Channels with their respective gains 
@@ -78,36 +82,34 @@ void SC_Sample(void)
 			ADS1213_Reset();                 
          /** Condition the data from the ADC */
          ADCValue = ADS1213_GetResult();
-         
-         if( 1 )
-         {
-				ADCValue -= GAIN_OFFSETS[chGain];	
-            sample = SensorCondition(ADCValue, chGain); 
+			ADCValue -= GAIN_OFFSETS[chGain];	
+         sample = SensorCondition(ADCValue, chGain); 
             /* Debugging */
 #if SENSOR_DEBUG            
-            uint8toa(i , outputString);
-				uartTxString_P( PSTR("Channel: ") );
-				uartTxString(outputString);
-				uartNewLine();       
-            printFloat(sample.FP);
-            uartNewLine();
+         uint8toa(i , outputString);
+			uartTxString_P( PSTR("Channel: ") );
+			uartTxString(outputString);
+			uartNewLine();       
+         printFloat(sample.FP, outputString);
+			uartTxString(outputString);            
+         uartNewLine();
 #endif		
-				if( SensorGetType(i) == SENSOR_TEMP )
-				{
-					sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
-					/** Ambient Temperature */
-					sample.FP = sample.FP + ambientTemperature;
-				}
+			if( SensorGetType(i) == SENSOR_TEMP )
+			{
+				sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
+				/** Ambient Temperature */
+				sample.FP = sample.FP + ambientTemperature;
+			}
  				
 		
-				MasterDataRecord.sampleCount++;				
-				/** Write data to buffer */
-				MM_Write(sample.byteField[3]);
-				MM_Write(sample.byteField[2]);
-				MM_Write(sample.byteField[1]);
-				MM_Write(sample.byteField[0]);			
-         }
-         /* End of Debugging */
+			MasterDataRecord.sampleCount++;				
+			/** Write data to buffer */
+			MM_Write(sample.byteField[3]);
+			MM_Write(sample.byteField[2]);
+			MM_Write(sample.byteField[1]);
+			MM_Write(sample.byteField[0]);			
+      
+       /* End of Debugging */
       }  
    }   
 }

@@ -38,8 +38,6 @@ uint8_t UI_KP_GetPress(void)
    uint8_t ColResult;
    uint8_t RowResult;
    uint8_t KPResult;
-   uint8_t i;
-   uint8_t button;
    
 	ColResult = (UI_ReadRegister(MAX7300_PORTINT) >> 1) & (0x0F);
    

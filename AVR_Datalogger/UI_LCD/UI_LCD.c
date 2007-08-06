@@ -31,10 +31,6 @@ void UI_LCD_SetRegister(uint8_t reg, uint8_t data)
       
       UI_SetRegister(reg, data);   
    }
-   else
-   {
-      uartTxString("OI LCD NOT ON!");  
-   }
 }
 
 

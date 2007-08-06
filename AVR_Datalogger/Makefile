@@ -94,11 +94,13 @@ SRC = $(TARGET).c \
 		$(EXTERNALS_DIR)/SD_MMC/sd.c \
 		$(MISC_DIR)/mmculib/uint8toa.c \
   		$(MISC_DIR)/mmculib/uint16toa.c \
+  		$(MISC_DIR)/mmculib/floatFunctions.c \
 		$(PERIPHERALS_DIR)/SPI/spi.c \
    	$(PERIPHERALS_DIR)/I2C/i2c.c \
 		$(EXTERNALS_DIR)/DS1305/ds1305.c \
 		$(APPLICATIONS_DIR)/RTC/RTCPrint.c \
-      GainSensor/GainSensorFP.c \
+      GainSensor/SensorControl.c \
+      GainSensor/GainControl.c \
 		$(EXTERNALS_DIR)/MAX7300/max7300.c \
 		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
 		$(UTIL_DIR)/MSB2LSB/MSB2LSB.c \
@@ -115,6 +117,7 @@ SRC = $(TARGET).c \
 		$(APPLICATIONS_DIR)/TinyFS/tff.c \
 		$(EXTERNALS_DIR)/Serial_EE/serial_ee.c \
 		$(EXTERNALS_DIR)/TMP123/tmp123.c
+
 		
       
 #		GainSensor/GainSensor.c
