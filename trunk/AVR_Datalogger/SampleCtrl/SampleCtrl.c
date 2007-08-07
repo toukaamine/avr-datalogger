@@ -98,7 +98,7 @@ void SC_Sample(void)
 			{
 				sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
 				/** Ambient Temperature */
-				sample.FP = sample.FP + ambientTemperature;
+				sample.FP = sample.FP + ambientTemperature + SC_K_TEMP_OFFSET;
 			}
  				
 		

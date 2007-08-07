@@ -51,6 +51,7 @@
 /* Ktype coefficient , volts per degree */
 #define SC_K_SEEBECK_COEFF			40e-6
 #define SC_K_SEEBECK_COEFF_INV	850
+#define SC_K_TEMP_OFFSET			(-2.25)
 
 typedef struct _softTimer8
 {

@@ -41,7 +41,7 @@
 extern uint8_t currentState;
 
 /* Waking up from Power Down requires 6Clock Cycles */ 
-int16_t ambientTemperature;
+float ambientTemperature;
 uint16_t sampleSetting;
 uint8_t channel = 1;
 uint8_t gain = 0;
@@ -228,7 +228,7 @@ ISR(TIMER2_COMP_vect)
 		
 		if( temperatureUpdate.timerCounter == temperatureUpdate.timeCompare )
 		{
-			ambientTemperature =	TMP123_GetTemp();		
+			ambientTemperature =	TMP123_GetTempFP( TMP123_GetTemp() );		
 			temperatureUpdate.timerCounter = 0;
 		}
 		
