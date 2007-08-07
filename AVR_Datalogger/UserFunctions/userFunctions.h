@@ -68,3 +68,8 @@ void Calibrate(void* data);
 
 
 void SetDecimation(void* data);
+
+
+void printAmbientTemperature(void* data);
+
+

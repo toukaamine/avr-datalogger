@@ -26,6 +26,7 @@
 #include "Serial_EE/serial_ee.h"
 #include "mmculib/uint16toa.h"
 #include "mmculib/uint8toa.h"
+#include "TMP123/tmp123.h"
 
 static const uint8_t SC_RTC0_CONFIG[] = {0x80, 0x80, 0x80, 0x80};
 
@@ -169,7 +170,7 @@ void ChannelSettings(void* data)
    MenuNewLine();	
    
    /* Print the status (only if we aren't going to print the reading)*/
-   if( printReading == 1)
+   if( printReading == 0)
    {
 		MenuPrint_P(PSTR("Status: "));   
 		if( SensorGetState(SelectedChannel) == SENSOR_ON )
@@ -186,7 +187,11 @@ void ChannelSettings(void* data)
 	{
 		MenuPrint_P(PSTR("= "));   
 		
+		GS_Channel(SelectedChannel + 1);
+		
   		chGain = SensorGetGain(SelectedChannel);
+      GS_GainSel( pgm_read_byte( &GS_GAIN[chGain]) );  		
+
 		ADS1213_Reset();                 
    	/** Condition the data from the ADC */
 		ADCValue = ADS1213_GetResult();
@@ -197,7 +202,7 @@ void ChannelSettings(void* data)
 		{
 			sample.FP = (sample.FP * SC_K_SEEBECK_COEFF_INV);
 			/** Ambient Temperature */
-			sample.FP = sample.FP + ambientTemperature;
+			sample.FP = sample.FP + ambientTemperature + SC_K_TEMP_OFFSET;
 		}	
 		
 		printFloat(sample.FP, outputString);
@@ -963,7 +968,34 @@ void SetDecimation(void* data)
 	
 }
 
+void printAmbientTemperature(void* data)
+{
+	uint8_t* input = (uint8_t*)data;
+	uint8_t outputString[10];
+	
+	MenuPrint_P( PSTR("Ambient Temperature:"));
+	MenuNewLine();
 
+	ambientTemperature =	TMP123_GetTempFP( TMP123_GetTemp() );
+			
+	printFloat(ambientTemperature, outputString);
+	MenuPrint( outputString );
+	MenuPrint_P(PSTR(" ßC")); 	
+	
+	
+	if( firstEnter == 0 )
+	{
+		if( *input == KP_BACK )
+		{
+   		/* Go back up one menu */   
+   		MenuSetInput(KB_BACK);
+   		stateMachine(currentState);				
+			MenuReset();	
+		}
+	}
+	
+	firstEnter = 0;
+}
 
 
 
