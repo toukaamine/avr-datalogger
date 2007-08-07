@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "tmp123.h"
-
+#include "mmculib/floatFunctions.h"
 
 void TMP123_Init(void)
 {
@@ -38,14 +38,31 @@ int16_t TMP123_GetTemp(void)
 	}
 	
 	TMP123_PORT |= (1 << TMP123_nCS);
-	
-	result = result / 128;
 	return result;
 }
 
 
 
-
+float	TMP123_GetTempFP(int16_t inWord)
+{
+	float32_t resultFP;
+	
+	resultFP.FP = (inWord / 128);
+	
+	inWord = ((inWord >> 3) & 0x0F);
+	
+	if( resultFP.byteField[3] & (FLOAT_SIGN_BIT) )
+	{
+		inWord = ~(inWord) + 1;
+		resultFP.FP = resultFP.FP - (inWord * TMP123_RESOULTION); 
+	}
+	else
+	{
+		resultFP.FP = resultFP.FP + (inWord * TMP123_RESOULTION);
+	}
+	
+	return resultFP.FP;
+}
 
 
 

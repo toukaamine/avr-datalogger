@@ -24,8 +24,10 @@
 #define TMP123_nCS	(4)
 #define TMP123_SCK	(3)
 
+#define TMP123_RESOULTION 	(0.0625)
+
 void TMP123_Init(void);
 int16_t TMP123_GetTemp(void);
-
+float	TMP123_GetTempFP(int16_t inWord);
 
 #endif
