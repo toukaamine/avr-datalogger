@@ -48,7 +48,8 @@ enum {
 	ST_MEDIUM_SELECT,
 	ST_EEPROM,
 	ST_SDCARD,
-	ST_DECIMATION
+	ST_DECIMATION,
+	ST_AMBIENT
 } menuIds;
 
 uint8_t currentState = ST_MAIN;
@@ -87,6 +88,7 @@ const MENU_TEXT  MT_MEDIUM_SELECT[] = "Select Media";
 const MENU_TEXT  MT_EEPROM[] = "64kB EEPROM";
 const MENU_TEXT  MT_SDCARD[] = "Secure Digital Card";
 const MENU_TEXT  MT_DECIMATION[] = "Decimation Ratio";
+const MENU_TEXT  MT_AMBIENT[] = "Air Temperature";
 
 void MenuSetDisplay(uint8_t display)
 {
@@ -147,6 +149,7 @@ const menu_list MenuState[] PROGMEM = {
    {ST_STATISTICS, ST_SD_CARD_SIZE,     0},
    {ST_STATISTICS, ST_TOTAL_SAMPLES,    1},
    {ST_STATISTICS, ST_UPTIME,    2},
+   {ST_STATISTICS, ST_AMBIENT,	3},
       
    {ST_OPTIONS, ST_SET_TIME,  0},
    {ST_OPTIONS, ST_CALIBRATE, 1},
@@ -199,7 +202,8 @@ const menu_data MenuData[] PROGMEM = {
 	{ST_MEDIUM_SELECT, MT_MEDIUM_SELECT, MediumSelect},
 	{ST_EEPROM, MT_EEPROM, MediumEEPROM},
 	{ST_SDCARD, MT_SDCARD, MediumSDCard},
-	{ST_DECIMATION, MT_DECIMATION, SetDecimation},	
+	{ST_DECIMATION, MT_DECIMATION, SetDecimation},
+	{ST_AMBIENT, MT_AMBIENT, printAmbientTemperature},
    {0, 0, 0}
 };
 
