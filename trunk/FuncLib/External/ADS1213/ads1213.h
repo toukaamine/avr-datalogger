@@ -104,6 +104,12 @@ extern int16_t ADS1213_DecimationRatio;
 
 uint8_t ADS1213_TxByte(uint8_t data);
 
+void ADS1213_POR(void);
+void ADS1213_PORt1(void);
+void ADS1213_PORt2(void);
+void ADS1213_PORt3(void);
+
+
 void ADS1213_Init(void);
 uint32_t ADS1213_GetResult(void);
 void ADS1213_CS_Pulse(void);

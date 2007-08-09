@@ -34,9 +34,9 @@ uint8_t SD_Init(void)
    MMC_CS_DDR |= (1 << MMC_CS_PIN);
    MMC_PWR_DDR |= (1 << MMC_PWR_PIN);
    
+   
    SD_Startup();
-   _delay_ms(30);   
-      
+   
     /* card needs 74 cycles minimum to start up */
    for(i = 0; i < MMC_MAX_RETRIES; ++i)
    {
@@ -47,12 +47,11 @@ uint8_t SD_Init(void)
     
    /* Select the card */
    MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
-    
    /* Reset the card */
    for( i = 0; ; i++)
    { 
       r1 = SD_Command(MMC_GO_IDLE_STATE, 0);
-      if(r1 == MMC_R1_IDLE_STATE){
+		if(r1 == MMC_R1_IDLE_STATE){
          break;
       }
             
@@ -61,13 +60,14 @@ uint8_t SD_Init(void)
          return SD_ERROR;
       }
    }
-   
 
    /* Initialise the card's activation sequence */
    for( i = 0; ; i++)
    { 
       r1 = SD_Command(MMC_SEND_OP_COND, 0);
-      if(r1 == MMC_R1_READY){
+      _delay_ms(10);
+		
+		if(r1 == MMC_R1_READY){
          break;
       }    
       if( i > 200 )
@@ -75,8 +75,9 @@ uint8_t SD_Init(void)
          return SD_ERROR;
       }
    }
-   
+  
    r1 = SD_Command(MMC_CRC_ON_OFF, 0);
+   
    r1 = SD_Command(MMC_SET_BLOCKLEN, 512);     
    
    /* Release and return clock phase and speed back to default */
@@ -93,7 +94,7 @@ void SD_Startup(void)
    MMC_PWR_PORT &= ~(1 << MMC_PWR_PIN);
   
    /* Set Clock Phase to sample on the rising edge */
-   SPCR &= ~(1 << CPHA);   
+   SPCR &= ~((1 << CPHA) | (1 << SPR1));	 
 }
 
 void SD_Shutdown(void)
@@ -102,7 +103,7 @@ void SD_Shutdown(void)
    SPCR &= ~(1 << SPE);
    
    SPI_PORT &= ~( (1<<MOSI) );
-   MMC_CS_PORT &= ~(1 << MMC_CS_PIN);
+   MMC_CS_PORT |= (1 << MMC_CS_PIN);
    
    /* Power down the SD Card */
    MMC_PWR_PORT |= (1 << MMC_PWR_PIN);
