@@ -187,7 +187,7 @@ const menu_data MenuData[] PROGMEM = {
    {ST_CALIBRATE, MT_CALIBRATE, Calibrate},
    {ST_FORMAT_SD, MT_FORMAT_SD, 0},
    {ST_RESET, MT_RESET, Reset},
-   {ST_VERSION_INFO, MT_VERSION_INFO, 0},
+   {ST_VERSION_INFO, MT_VERSION_INFO, GS_Status2},
    {ST_DISPLAY_MODE, MT_DISPLAY_MODE, MenuDisplayMode},
    {ST_UART_MODE, MT_UART_MODE, MenuSetUartMode},
    {ST_LCD_MODE, MT_LCD_MODE, MenuSetLCDMode},

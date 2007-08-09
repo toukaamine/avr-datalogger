@@ -18,10 +18,87 @@ int16_t ADS1213_DecimationRatio = 0x1FF;
 uint8_t ADS1213_TxByte(uint8_t data)
 {
 	uint8_t inputByte;
+	//SPCR |= ((1 << SPR1) );
+	
 	/* Set to a slower speed */	
 	inputByte = SPI_TxByte(data);
 
 	return inputByte;
+}
+
+
+
+/* Performs a Power on Reset */
+void ADS1213_POR(void)
+{
+	SPCR &= ~(1 << SPE);
+	
+	SPI_DDR |= (1 << SCK);
+	//SPI_DDR |= ((1 << MOSI) | ( 1<< MISO) );
+	//SPI_PORT &= ~((1 << MISO) | ( 1 << MOSI));
+	SPI_PORT &= ~(1 << SCK);
+	_delay_ms(30);
+	/* Perform a reset */
+	SPI_PORT |= (1 << SCK);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60); 
+	_delay_us(60);	        
+	_delay_us(60);
+	SPI_PORT |= ((1 << MISO) | ( 1 << MOSI));
+
+            	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_us(8);
+   
+   	
+	SPI_PORT |= (1 << SCK);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	SPI_PORT &= ~((1 << MISO) | ( 1 << MOSI));               	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_us(8);
+	SPI_PORT |= ((1 << MISO) | ( 1 << MOSI));   
+   	
+	SPI_PORT |= (1 << SCK);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);
+	_delay_us(60);         
+	_delay_us(60);
+	_delay_us(60);
+   	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_us(8);
+   
+	SPI_PORT |= ((1 << MISO) | ( 1 << MOSI));    		
+	SPI_PORT |= (1 << SCK);
+	_delay_ms(1);
+	_delay_us(90);
+         	
+	SPI_PORT &= ~(1 << SCK);
+	_delay_ms(30);   
+	SPI_PORT &= ~((1 << MISO) | ( 1 << MOSI));  
+    
+	
+	SPCR |= (1 << SPE); 
+   
 }
 
 /* Resets the modulator count to zero */
@@ -45,13 +122,16 @@ void ADS1213_Init(void)
     * CPHA = 1 required for the DS1305 as well (DONE IN SPIINIT)*/
    
    
-   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);     
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);
+	
+	_delay_ms(30);
+	     
    ADS1213_TxByte( (1 << ADS1213_MB1) 
                | (1 << ADS1213_MB0)
                | (1 << ADS1213_A2) );  
    	 
    /* Need to set SDL to SDOUT and turn on REFerence Ouput */
-   ADS1213_TxByte( (1 << ADS1213_SDL) );
+   ADS1213_TxByte( (1 << ADS1213_SDL) | (1 << ADS1213_DSYNC) );
 
 
    /* Perform a bkground calibration */
@@ -60,10 +140,10 @@ void ADS1213_Init(void)
    /* Always use Turbo 16 as it offers better performance */
    /* Set SF2 to 1 to enable Turbo 16 mode */
    /* Set decimation ratio to 500 which means fData ~=~ 500 Hz */
-   ADS1213_TxByte( (1<<ADS1213_SF2) |  (ADS1213_DecimationRatio >> 8) );
+   ADS1213_TxByte( (1<<ADS1213_SF2) | (ADS1213_DecimationRatio >> 8) );
 
    /* Have a data rate of 2kHz */
-   ADS1213_TxByte( ADS1213_DecimationRatio & 0xFF);
+   ADS1213_TxByte( (ADS1213_DecimationRatio & 0xFF) );
    
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);     
 }
@@ -115,7 +195,7 @@ uint32_t ADS1213_GetResult(void)
       return ADS1213_BUSY;  
    }
    
-   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);    
+   ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
    /* Ask to read three bytes from DOR(1) */
    ADS1213_TxByte((1 << ADS1213_RW) | (1 << ADS1213_MB1)); 
    Data.byte[2] = ADS1213_RxByte();
@@ -201,7 +281,6 @@ void ADS1213_PsuedoCalib(void)
 {
 
    ADS1213_CS_PORT &= ~(1 << ADS1213_CS_PIN);   
-   
    ADS1213_TxByte((1 << ADS1213_A2) | (1 << ADS1213_A0));
     
     /* Set to Psuedo Calib */
@@ -209,7 +288,6 @@ void ADS1213_PsuedoCalib(void)
    
    /* Release CS */
    ADS1213_CS_PORT |= (1 << ADS1213_CS_PIN);        
-   
    
 }
 
