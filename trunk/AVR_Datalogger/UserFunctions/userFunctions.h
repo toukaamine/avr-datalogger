@@ -31,6 +31,8 @@
 #define MKTIME_PENDING 0xFE
 #define MKTIME_CONFIRMED 0xFD
 
+#define CALIBRATION_CHANNEL	(3)
+#define CALIBRATION_GAIN		(GAIN_COUNT - 1)
 
 void BeginRecording(void* data);
 
@@ -72,4 +74,6 @@ void SetDecimation(void* data);
 
 void printAmbientTemperature(void* data);
 
+
+void GS_Status2(void* data);
 

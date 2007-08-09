@@ -134,6 +134,8 @@ float32_t SensorCondition(uint32_t data, uint8_t gainIndex)
 	/* Convert signed 24bit into signed 32bit */
 	ConvertedData.result = data;
 	signedData = uint24_tSign( ConvertedData );
+	
+	signedData -= GAIN_OFFSETS[gainIndex];
 		
 /** Debug only because the float output function can only handle 16bit */		   
 	dataFP.FP = (float)(signedData);

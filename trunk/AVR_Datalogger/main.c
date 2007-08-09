@@ -25,12 +25,7 @@
 #include "MemMan/memman.h"
 #include "TMP123/tmp123.h"
 #include "mmculib/uint16toa.h"
-
-#define UART_PORT PORTD
-#define UART_DDR  DDRD
-#define UART_TX_PIN   PD1
-#define UART_RX_PIN   PD0
-
+#include "UserFunctions/userFunctions.h"
 
 /* INT0 interrupt is connected to an Active High Interrupt 
  * Thus set MCUCR |= (0x03 << ISC00) */
@@ -58,22 +53,34 @@ void Channel_Setup(void);
  */
 int main(void)
 {
- 
+ 	uint8_t i;
    
-   /* Wait for power to resume */
-   for( uint8_t i = 0; i < 32; i++)
-   {
-      _delay_ms(30);
-   }    
+   for( i = 0; i < 50 ; i ++ )
+	{
+	   _delay_ms(30);  		
+  		_delay_ms(30);
+	} 
+
+	ADS1213_POR();
+
+	SPI_Init();	
+	SPI_RxByte();
+	SPI_RxByte();
    
+   //SPCR &= ~( 1 << SPR0 );
+   
+   
+   MMC_CS_DDR |= (1 << MMC_CS_PIN);
+	MMC_CS_PORT |= (1 << MMC_CS_PIN);   
+
    /* Good for 250kbit */
    uartInit(0, 1);
     
-   //SD_Shutdown();
+   SD_Shutdown();
 
    UCSRB |= (1 << RXCIE);
    
-	i2cInit(10 , 0);
+	i2cInit(2 , 0);
 
    GS_Init(); 
 	TMP123_Init();
@@ -104,33 +111,19 @@ int main(void)
    /* Reprint Menu */   
    MenuUpdate();
    
-   /* Set speed to 500kHz */
-   SPI_Init();
 
 
    /* Setup ADC, perform offset calibration */
    ADS1213_Init();
-   GS_Channel(3);
-//   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN01X]) );
-//   ADS1213_PsuedoCalib();
-   
-   GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN_COUNT - 1]) );
-   ADS1213_PsuedoCalib();   
-
-   
-	/* Write to the DS1305 The time and date */
-	/* Max frequency is 600kHz */
-   DS1305_Init();
-   ambientTemperature = TMP123_GetTemp();
-   UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));    
- 
- 
+	
    /** Initialise SD Card */
    if( SD_Init() == SD_SUCCESS )
    {
       /* Mount the drive */
       f_mount(0, &filesys);		
       uartTxString_P( PSTR("SD Card Initialised!") );
+     	MMC_CS_PORT |= (1 << MMC_CS_PIN);
+   	SPCR |= (1 << CPHA) | (1 << SPR1);
       hasSDCard = 1;
    }
    else
@@ -142,11 +135,25 @@ int main(void)
       uartTxString_P( PSTR("SD Card Failed!") );      
       hasSDCard = 0;
    }
-  
-   Channel_Setup();
-   sei();
 
- 
+
+
+	/* Write to the DS1305 The time and date */
+	/* Max frequency is 600kHz */
+   DS1305_Init();
+   
+   //DS1305_SetTime(DS1305_TimeDate_config);
+   
+   ambientTemperature = TMP123_GetTempFP(TMP123_GetTemp());
+   UI_SetRegister(MAX7300_CONFIG, (1 << MAX7300_SHUTDOWN_CONTROL) | (1 << MAX7300_TRANSITION_ENABLE));     
+				
+	GS_Channel(CALIBRATION_CHANNEL);
+	GS_GainSel( pgm_read_byte( &GS_GAIN[CALIBRATION_GAIN])  );
+	ADS1213_PsuedoCalib();
+
+ 	
+ 	sei();
+ 	
    while(1)
    {
       /* Need to reset Interrupt */     
@@ -311,17 +318,6 @@ ISR(INT2_vect)
    /* Set the M-bit in the UI Register */
    UI_Activate();
    sei();
-}
-
-
-void Channel_Setup(void)
-{
-//   SensorOn(2); // DC Voltages
-   SensorOn(1); // Sine Wave
-//   SensorOn(2); // SHORT
-//   SensorOn(3); // OPEN
-
-   
 }
 
 

@@ -82,7 +82,7 @@ void SC_Sample(void)
 			ADS1213_Reset();                 
          /** Condition the data from the ADC */
          ADCValue = ADS1213_GetResult();
-			ADCValue -= GAIN_OFFSETS[chGain];	
+	
          sample = SensorCondition(ADCValue, chGain); 
             /* Debugging */
 #if SENSOR_DEBUG            
@@ -102,7 +102,7 @@ void SC_Sample(void)
 			}
  				
 		
-			MasterDataRecord.sampleCount++;				
+			//MasterDataRecord.sampleCount++;				
 			/** Write data to buffer */
 			MM_Write(sample.byteField[3]);
 			MM_Write(sample.byteField[2]);
