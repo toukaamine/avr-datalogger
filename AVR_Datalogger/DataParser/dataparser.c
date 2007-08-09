@@ -35,13 +35,14 @@
 
 
 const char outputFileName[] = "Output.csv";
-const char* WEEKDAYS[] = { "Monday",
+const char* WEEKDAYS[] = { "Sunday",
+									"Monday",
 									"Tuesday",
 									"Wednesday",
 									"Thursday",
 									"Friday",
-									"Saturday",
-									"Sunday"
+									"Saturday"
+									
 								};
 
 
@@ -93,7 +94,7 @@ int main(void)
 	float32_t channelResult;
 	
 	char	inputFileName[20];
-	char  inputBuffer[0x200];
+	unsigned char  inputBuffer[5000];
 	int	i;
 	int	sampleCount = 0;
 	int numberOfChannels = 0;
@@ -123,7 +124,7 @@ int main(void)
 	printf("Reading Date..........\n");	
 
 	
-	rewind(dataFile);
+	//rewind(dataFile);
 	/* Read the first 4 bytes into the date struct */
 	fread(inputBuffer, sizeof(char), DATE_ELEMENTS, dataFile);
 	
@@ -135,7 +136,8 @@ int main(void)
 	fprintf(outputFile, "Recording started on: %s %d/%d/%d\n",
 		WEEKDAYS[dataStartDate.day - 1],
 		dataStartDate.date, dataStartDate.month, dataStartDate.year + 2000);
-			  	
+	
+				  	
 	/* Read the channel state config (4 bytes)  */
 	fread(inputBuffer, sizeof(char), 4, dataFile);	
 	/* Determine which channels are activated */
@@ -220,6 +222,8 @@ int main(void)
 		timestamp.minute = BCD2DEC(inputBuffer[MINUTE]);	
 		timestamp.second = BCD2DEC(inputBuffer[SECOND]);		
 		sampleCount++;	
+
+		
 	}
 	
 	printf("Read in %d samples from %d channels\n", sampleCount, numberOfChannels);	

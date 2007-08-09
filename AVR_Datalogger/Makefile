@@ -90,19 +90,19 @@ UTIL_DIR = ../FuncLib/Util
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
+		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
+		$(PERIPHERALS_DIR)/SPI/spi.c \
 		$(PERIPHERALS_DIR)/hardUart/hardUart.c \
 		$(EXTERNALS_DIR)/SD_MMC/sd.c \
 		$(MISC_DIR)/mmculib/uint8toa.c \
   		$(MISC_DIR)/mmculib/uint16toa.c \
   		$(MISC_DIR)/mmculib/floatFunctions.c \
-		$(PERIPHERALS_DIR)/SPI/spi.c \
-   	$(PERIPHERALS_DIR)/I2C/i2c.c \
+	  	$(PERIPHERALS_DIR)/I2C/i2c.c \
 		$(EXTERNALS_DIR)/DS1305/ds1305.c \
 		$(APPLICATIONS_DIR)/RTC/RTCPrint.c \
       GainSensor/SensorControl.c \
       GainSensor/GainControl.c \
 		$(EXTERNALS_DIR)/MAX7300/max7300.c \
-		$(EXTERNALS_DIR)/ADS1213/ads1213.c \
 		$(UTIL_DIR)/MSB2LSB/MSB2LSB.c \
 		$(PERIPHERALS_DIR)/pwm/pwm.c \
   		$(MISC_DIR)/mmculib/uint8toa.c \

@@ -17,7 +17,7 @@ static const char uartHelp[] PROGMEM = "Help";
 
 static const UartCompare UartFunctions[] PROGMEM= { 
    {uartReset, 1, Reset},    
-   {uartTestMenuUart, 1, MenuSetUartMode},       
+   {uartTestMenuUart, 1, MenuSetUartMode},      
    {uartHelp, 1, uartTermHelp},  
 
    {0,0,0}

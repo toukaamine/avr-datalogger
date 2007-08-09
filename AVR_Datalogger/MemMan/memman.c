@@ -70,6 +70,8 @@ void MM_Read(uint8_t* buffer, uint8_t nbytes)
 {
 	uint16_t counter;
 
+	f_open(&MasterDataRecord.sdFile, "NewFile", FA_READ);
+
 	if( MM_MemoryMode == MM_SDCARD)
 	{
       /* Read the data in nbyte blocks */

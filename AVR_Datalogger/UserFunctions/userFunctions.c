@@ -84,6 +84,146 @@ void GS_Status(void* data)
    ChannelSettings(passedData);
 }
 
+void ChannelUp(void* data)
+{
+   if( channel == 32 )
+   {
+      channel = 31;  
+   }      
+   channel = channel + 1;    
+   GS_Channel(channel);
+   //uartTx(channel);
+}
+
+
+void ChannelDown(void* data)
+{
+   if( channel == 1 )
+   {
+      channel = 2;  
+   }      
+   channel = channel - 1;    
+   GS_Channel(channel);
+   //uartTx(channel); 
+}
+
+
+
+uint8_t GainUp(void* data)
+{
+   if( gain == GAIN_COUNT )
+   {
+      gain = GAIN_COUNT - 2;  
+   }      
+   gain = gain + 1;
+   GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
+   
+   return gain;
+   //uartTx(gain);
+}
+
+uint8_t GainDown(void* data)
+{
+   if( gain == 0 )
+   {
+      gain = 1;  
+   }      
+   gain = gain - 1;
+   GS_GainSel( pgm_read_byte( &GS_GAIN[gain])  );
+   return gain;  
+}
+
+
+/* Prints out which channels are gains are selected */
+void GS_Status2(void* data)
+{
+   uint8_t outputString[11];
+   uint8_t* input = (uint8_t*)data;
+   int32_t signedData;
+   int32_t gainOffset;
+   uint32_t lastestResult;      
+   static uint8_t chGain;
+   
+   
+   if( firstEnter == 0 )
+   {     
+      switch( *input )
+      {
+         /* Channel Up */
+         case 'q':
+         case KP_A:
+            ChannelUp(0);   
+         break;
+            
+         /* Channel Down */  
+         case 'a':                   
+         case KP_B:
+            ChannelDown(0);
+         break;
+
+        /* Gain Up */
+        /// case 'w':
+         case KP_2:
+            chGain = GainUp(0);   
+         break;
+            
+         /* Gain Down */  
+         case 's':                   
+         case KP_5:
+            chGain = GainDown(0);
+         break;         
+         
+         /* Print raw ADC number */
+         case 'g':
+         case KP_C:
+
+            lastestResult = ADS1213_GetResult();             
+          	signedData = uint24_tSign( (ADS1213Data_t) lastestResult );           
+            gainOffset = GAIN_OFFSETS[chGain];
+         break;
+         
+         /* Exiting function */
+         case KB_BACK:
+         case KP_BACK:
+          
+            MenuSetInput(KP_BACK);
+            stateMachine(currentState);
+            MenuSetInput(0);
+            return;
+            
+            break;
+               
+         default:
+         break;     
+         
+      }
+   }
+
+   MenuPrint_P( PSTR("Channel: ") );
+   uint8toa(channel, outputString);
+   MenuPrint(outputString);
+   
+   MenuNewLine();   
+
+   MenuPrint_P( PSTR("Gain: ") );
+   uint8toa(gain, outputString);
+   MenuPrint(outputString);   
+   MenuNewLine(); 
+
+
+   ltoa(signedData, outputString, 10);    
+   MenuPrint(outputString);         
+   MenuNewLine();   
+
+   ltoa(gainOffset, outputString, 10);    
+   MenuPrint(outputString);         
+	
+	 
+   
+   firstEnter = 0;   
+}
+
+
 /** Function to setup each individual channel */
 void ChannelSettings(void* data)
 {
@@ -92,7 +232,7 @@ void ChannelSettings(void* data)
    uint8_t outputString[21];
 	float32_t sample; 
 	uint8_t chGain;
-   uint32_t ADCValue;
+   static uint32_t ADCValue;
    static int8_t SelectedChannel = 0;
    static int8_t SelectedGain = 0;
    
@@ -195,7 +335,7 @@ void ChannelSettings(void* data)
 		ADS1213_Reset();                 
    	/** Condition the data from the ADC */
 		ADCValue = ADS1213_GetResult();
-		ADCValue -= GAIN_OFFSETS[chGain];	
+		//ADCValue -= GAIN_OFFSETS[chGain];	
 	   sample = SensorCondition(ADCValue, chGain); 
 		/* Print out the Voltage / Temperature */
 		if( SensorGetType(SelectedChannel) == SENSOR_TEMP )
@@ -806,7 +946,7 @@ void ReadRecording(void* data)
 
 	if( MM_GetMemoryType() == MM_SDCARD )
 	{
-		if( f_open(&inFile, (char*)MasterDataRecord.FileName, FA_READ) )
+		if( f_open(&inFile, (char*)"newFile", FA_READ) )
 		{
 			uartTxString_P( PSTR("Open Failed!") );	
 		}	
@@ -873,8 +1013,8 @@ void Calibrate(void* data)
 	{
 		if( *input == KP_C )
 		{
-			GS_Channel(3);
-			GS_GainSel( pgm_read_byte( &GS_GAIN[GAIN_COUNT - 1])  );
+			GS_Channel(CALIBRATION_CHANNEL);
+			GS_GainSel( pgm_read_byte( &GS_GAIN[CALIBRATION_GAIN])  );
 			ADS1213_PsuedoCalib();
 			
    		/* Go back up one menu */   
@@ -996,6 +1136,4 @@ void printAmbientTemperature(void* data)
 	
 	firstEnter = 0;
 }
-
-
 
