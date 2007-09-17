@@ -1,0 +1,148 @@
+[Project]
+FileName=Card Classes.dev
+Name=Card Classes
+UnitCount=10
+Type=1
+Ver=1
+ObjFiles=
+Includes=
+Libs=
+PrivateResource=
+ResourceIncludes=
+MakeIncludes=
+Compiler=
+CppCompiler=
+Linker=
+IsCpp=1
+Icon=
+ExeOutput=
+ObjectOutput=
+OverrideOutput=0
+OverrideOutputName=
+HostApplication=
+Folders=Template
+CommandLine=
+UseCustomMakefile=0
+CustomMakefile=
+IncludeVersionInfo=0
+SupportXPThemes=0
+CompilerSet=0
+CompilerSettings=
+
+[Unit2]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\card.h
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit1]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\card.cpp
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit3]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\deck.cpp
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit4]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\deck.h
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[VersionInfo]
+Major=0
+Minor=1
+Release=1
+Build=1
+LanguageID=1033
+CharsetID=1252
+CompanyName=
+FileVersion=
+FileDescription=Developed using the Dev-C++ IDE
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=
+AutoIncBuildNr=0
+
+[Unit5]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\makefile
+Folder=Card Classes
+Compile=0
+Link=0
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit10]
+FileName=ClassTest.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit6]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\mem.cpp
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit7]
+FileName=\\rockhopper\amg94\ENEL428\Assignment 3\mem.h
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit8]
+FileName=\\rockhopper\amg94\ENEL428\amg94\p1b\src\Item.cpp
+CompileCpp=1
+Folder=Template
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit9]
+FileName=\\rockhopper\amg94\ENEL428\amg94\p1b\src\Item.h
+CompileCpp=1
+Folder=Template
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
