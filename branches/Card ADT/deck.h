@@ -15,11 +15,76 @@
 #ifndef _DECK_
 #define _DECK_
 
-#include "card.h"
-
 #define REMOVE_SUCCESS (0)
 #define REMOVE_FAIL (-1)
 #define EOA (-1)
+
+class Card;
+class DeckCard;
+
+typedef enum  { DECK_ERROR = 0, DECK_SUCCESS } DeckStatusCodes;
+
+class Deck{
+
+public:
+	Deck();
+	virtual ~Deck();
+	
+/* deck_addCard:
+ * 
+ * Parameters : deck: Deck Pointer for which the new cards will to place in.
+ *					 new_card: Card which is to be added to 'deck'.
+ *
+ * Returns : The size of the updated deck.
+ *
+ * Purpose: Adds the passed card to the top of the passed deck,
+ * the size of the deck is returned. The deck acts like a stack as in, a LIFO
+ */
+	virtual int AddCard(Card* new_card);
+	
+/* deck_getSize:
+ * 
+ * Parameters : None.
+ *
+ * Returns : The size of the passed deck.
+ *
+ * Purpose: Returns the number of cards in the passed deck, in an integer form.
+ *
+ */
+	virtual int GetSize(){return size;}
+
+
+/* GetTopCard:
+ * 
+ * Parameters : deck: The deck which the top card is to come off.
+ *
+ * Returns : Card Pointer to the top card on the passed deck.
+ *
+ * Purpose: Returns the card located on the top of the passed deck.
+ */
+	virtual Card* GetTopCard();
+	
+/* RemoveCard
+ * 
+ * Parameters : The card index to be removed.
+ *
+ * Returns : Deck Status Code
+ *
+ * Purpose: Deletes the 'n'th card of the deck. The topCard is card 1.
+ */
+	virtual int RemoveCard(int index);	
+	
+	
+protected:
+	DeckCard*	TopCard;
+	DeckCard*	BottomCard;
+	int size;	
+};
+
+
+#endif
+
+#if 0
 
 /* Deck Type Definition */
 /* deck_t */
@@ -29,32 +94,6 @@ typedef struct
    int size;      
 } deck_t;
 
-
-
-/* deck_make:
- * 
- * Parameters : None
- *
- * Returns : Pointer to the newly created deck.
- *
- * Purpose: Initialises a new empty deck.
- * The new deck structure address is returned
- */
-deck_t* deck_make(void);
-
-/* deck_delete:
- * 
- * Parameters : deck: The deck to be deleted.
- *
- * Returns : Nothing
- *
- * Purpose: To free all the memory associated with the passed deck.
- * If the deck does not exist, then the program exits with an error.
- *
- * To ensure proper operation, the deck passed to deck_delete should have been
- * made using the deck_make function.
- */
-void deck_delete(deck_t* deck);
 
 /* deck_setSize:
  * 
@@ -68,17 +107,6 @@ void deck_delete(deck_t* deck);
  *
  */
 void deck_setSize(deck_t* deck, int new_size);
-
-/* deck_getSize:
- * 
- * Parameters : deck: The deck whose size is to be returned.
- *
- * Returns : The size of the passed deck.
- *
- * Purpose: Returns the number of cards in the passed deck, in an integer form.
- *
- */
-int deck_getSize(deck_t* deck);
 
 
 /* deck_stdFill:
@@ -94,27 +122,9 @@ int deck_getSize(deck_t* deck);
 deck_t* deck_stdFill(deck_t* new_deck);
 
 
-/* deck_addCard:
- * 
- * Parameters : deck: Deck Pointer for which the new cards will to place in.
- *					 new_card: Card which is to be added to 'deck'.
- *
- * Returns : The size of the updated deck.
- *
- * Purpose: Adds the passed card to the top of the passed deck,
- * the size of the deck is returned. 
- */
-int deck_addCard(deck_t* deck, card_t* new_card);
 
-/* deck_topCard:
- * 
- * Parameters : deck: The deck which the top card is to come off.
- *
- * Returns : Card Pointer to the top card on the passed deck.
- *
- * Purpose: Returns the card located on the top of the passed deck.
- */
-card_t* deck_topCard(deck_t* deck);
+
+
 
 
 /* deck_findCard:

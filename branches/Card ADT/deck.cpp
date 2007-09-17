@@ -13,13 +13,112 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include "card.h"
-#include "deck.h"
 #include <time.h>
-#include "mem.h"
+#include "deck.h"
+#include "deckcard.h"
 
 #define RANDOM_ITERATIONS (2048)
 
+
+
+Deck::Deck(){
+	size = 0;
+	TopCard = NULL;
+	/* Has a BottomCard variable since determining the BottomCard can be computationally expensive */	
+	BottomCard = NULL;
+}
+
+
+Deck::~Deck(){
+	/* Delete all the 'new' cards */	
+	if( BottomCard != NULL ){
+		DeckCard* topCard;
+		topCard = BottomCard;
+		while( topCard->GetNextCard() != NULL )
+		{
+			topCard = topCard->GetNextCard();
+			delete topCard->GetPrevCard();		
+		}
+	}
+}
+
+int Deck::AddCard(Card* new_card){
+	DeckCard* newCard;
+	newCard = new DeckCard(new_card->GetValue(), new_card->GetSuit() );
+	if( size == 0 ){
+		TopCard = newCard;
+	}
+	else{
+		
+		DeckCard* lastCard;
+		/* Find the last card in the deck */
+		lastCard = TopCard;
+		while( lastCard->GetPrevCard() != NULL )
+		{
+			lastCard = lastCard->GetPrevCard();			
+		}
+		
+		lastCard->SetPrevCard(newCard);
+		newCard->SetNextCard(lastCard);
+	}
+	BottomCard = newCard;
+	return ++size;
+}
+
+
+Card* Deck::GetTopCard(){
+	if( BottomCard != NULL )
+	{
+		return BottomCard->GetCard();
+	}
+	return NULL;
+}
+
+
+int Deck::RemoveCard(int index){
+
+	if( index > size ){
+		return DECK_ERROR;
+	}
+	
+	/* For the removal of the only card in the deck */
+	if( size == 1 && index == 1 )
+	{
+		DeckCard* rmCard = TopCard;
+		delete	rmCard;
+		TopCard = NULL;
+		BottomCard = NULL;
+		size--;
+		return DECK_SUCCESS;	
+	}
+	
+	DeckCard* rmCard = TopCard;
+	for( int i = 1; i < index ; i++ ){
+		rmCard = rmCard->GetPrevCard();
+	}
+	
+	/* Update the (rmCard + 1) position card to point to (rmCard - 1) and vice versa */
+	/* Update the TopCards and BottomCards if they are to be deleted */
+	if( rmCard->GetPrevCard() != NULL){
+		rmCard->GetPrevCard()->SetNextCard( rmCard->GetNextCard() );	
+	}
+	else{
+		BottomCard = rmCard->GetNextCard();	
+	}
+	
+	if( rmCard->GetNextCard() != NULL){
+		rmCard->GetNextCard()->SetPrevCard( rmCard->GetPrevCard() );	
+	}	
+	else{
+		TopCard = rmCard->GetPrevCard();
+	}
+	
+	delete rmCard;
+	size--;
+	return DECK_SUCCESS;		
+}
+
+#if 0 
 /* deck_make:
  * 
  * Parameters : None
@@ -450,6 +549,6 @@ int deck_removeCard(deck_t* deck, card_t* rm_card)
 
 
 
-
+#endif
 
 

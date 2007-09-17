@@ -1,7 +1,7 @@
 [Project]
 FileName=Card Classes.dev
 Name=Card Classes
-UnitCount=10
+UnitCount=12
 Type=1
 Ver=1
 ObjFiles=
@@ -140,6 +140,26 @@ BuildCmd=
 FileName=\\rockhopper\amg94\ENEL428\amg94\p1b\src\Item.h
 CompileCpp=1
 Folder=Template
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit11]
+FileName=deckcard.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit12]
+FileName=deckcard.h
+CompileCpp=1
+Folder=
 Compile=1
 Link=1
 Priority=1000

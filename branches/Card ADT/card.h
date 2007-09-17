@@ -19,7 +19,7 @@ typedef enum {DIAMONDS = 0, CLUBS, HEARTS, SPADES, JOKER_RED, JOKER_BLACK} card_
 typedef enum  {JOKER = 0, ACE = 1, JACK = 11, QUEEN, KING} card_value;
 typedef enum  {RED = 0, BLACK, ERROR} card_colour;
 
-enum CardStatusCodes { CARD_ERROR = 0, CARD_SUCCESS };
+typedef enum  { CARD_ERROR = 0, CARD_SUCCESS } CardStatusCodes;
 
 class Card{
 	
@@ -38,7 +38,7 @@ public:
  * Purpose: If the value is not valid, then exit with an error.
  *
  */	
-	virtual int SetValue(int newValue);
+	virtual CardStatusCodes SetValue(int newValue);
 	
 /* card_SetSuit:
  * 
@@ -49,7 +49,7 @@ public:
  * Purpose: If the suit is not valid, then exit with an error.
  *
  */	
-	virtual int SetSuit(int newSuit);
+	virtual CardStatusCodes SetSuit(int newSuit);
 
 /* card_GetValue:
  * 
@@ -84,7 +84,7 @@ public:
  *
  * Purpose: To return the colour of a card in an integer format.
  */
-	virtual int GetColour();
+	virtual card_colour GetColour();
 
 
 /* card_value2string:

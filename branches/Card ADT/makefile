@@ -14,7 +14,7 @@ OUTPUT = -o
 # End of GCC Options
 
 # Linker options
-LD = gcc
+LD = g++
 LD_FLAGS = $(WARNINGS) $(DEBUG) $(OPTIMISE)
 # End of Linker options
 
@@ -25,7 +25,7 @@ LD_FLAGS = $(WARNINGS) $(DEBUG) $(OPTIMISE)
 MAIN_FILE = ClassTest.cpp
 MAIN_OBJECT = $(MAIN_FILE:.cpp=.o)
 
-SOURCE_FILES = card.cpp
+SOURCE_FILES = card.cpp deckcard.cpp deck.cpp
 INCLUDES = 
 					
 				
@@ -67,7 +67,7 @@ compile: $(OBJECTS) $(MAIN_OBJECT)
 #Compiling the source files	
 %.o : %.h %.c $(INCLUDES)
 	@echo "Now compiling" $?
-	$(CC) $(FLAGS) $(COMPILE) $*.c $(OUTPUT) $@
+	$(CC) $(FLAGS) $(COMPILE) $*.cpp $(OUTPUT) $@
 	
 #Compiling the main() file
 $(MAIN_OBJECT): $(MAIN_FILE) 
