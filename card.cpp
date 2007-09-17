@@ -34,7 +34,7 @@ const char* card_suitString[7] = {"DIAMONDS",
 const char* card_colourString[3] = {"RED",
                                    	"BLACK"};
 
-int Card::SetValue(int newValue){
+CardStatusCodes Card::SetValue(int newValue){
 	
 	if( newValue < JOKER || newValue > KING ){
 		ErrorCheck(__FILE__, __LINE__);
@@ -46,7 +46,7 @@ int Card::SetValue(int newValue){
 }
 
 
-int Card::SetSuit(int newSuit){
+CardStatusCodes Card::SetSuit(int newSuit){
 	
 	if( newSuit < DIAMONDS || newSuit > JOKER_BLACK ){
 		ErrorCheck(__FILE__, __LINE__);
@@ -59,7 +59,7 @@ int Card::SetSuit(int newSuit){
 
 
 
-int Card::GetColour()
+card_colour Card::GetColour()
 {
    if( ((suit) == DIAMONDS) ||
        ((suit) == HEARTS)   ||
