@@ -23,6 +23,7 @@ class Card;
 class DeckCard;
 
 typedef enum  { DECK_ERROR = 0, DECK_SUCCESS } DeckStatusCodes;
+typedef enum  { HAS_JOKERS = 0, NO_JOKERS } JokerStates;
 
 class Deck{
 
@@ -56,7 +57,7 @@ public:
 
 /* GetTopCard:
  * 
- * Parameters : deck: The deck which the top card is to come off.
+ * Parameters : None.
  *
  * Returns : Card Pointer to the top card on the passed deck.
  *
@@ -70,61 +71,92 @@ public:
  *
  * Returns : Deck Status Code
  *
- * Purpose: Deletes the 'n'th card of the deck. The topCard is card 1.
+ * Purpose: Deletes the 'n'th card of the deck. The TopCard is card is the size of the deck.
  */
 	virtual int RemoveCard(int index);	
-	
+
+/* GetTopCard:
+ * 
+ * Parameters : index: Which card in the linked list to return.
+ *
+ * Returns : Card Pointer to the card referred to by 'index'.
+ *
+ * Purpose: Returns 'n'th card in the deck. An index = 0 is the bottom card
+ * and an index of 'size' is the top card.
+ */	
+	virtual Card* GetCard(int index);
+		
+
+/* deck_stdFill:
+ * 
+ * Parameters : hasJokers, whether 2 (a red and black) jokers are added to the deck.
+ *
+ * Returns : 
+ *
+ * Purpose: Adds a standard deck of 52 cards, which includes
+ * ACE, 2, 3.... King of Diamonds, clubs, spades and hearts, to the passed deck.
+ *
+ */
+	virtual int StdFill(bool hasJokers);
+
+
+/* deck_shuffle:
+ * 
+ * Parameters : deck: The deck to have its card's shuffled
+ *
+ * Returns : Returns a 0 to signify a successful shuffle.
+ *
+ * Purpose: Shuffles the cards in the passed deck
+ * Uses the time functions to generate the random seed and random shuffle
+ * sequence.
+ *
+ * The deck is shuffled by constantly swapping two
+ * random cards of the deck.
+ */
+virtual void Shuffle();
+
+
+/* deck_findValue:
+ * 
+ * Parameters : pvalue: The face value to search for in 'pdeck'
+ *
+ * Returns : Returns an array holding the 'indexes' of
+ * cards which have the passed face value.
+ *		
+ * Purpose: To find cards with a particular value
+ * 
+ * The last element in the array is the EOA flag. 
+ */
+virtual int* FindCardValue(int value);
+
+/* deck_findSuit:
+ * 
+ * Parameters : suit: The suit to search for.
+ *
+ * Returns : Returns an array holding the 'indexes' of
+ * cards which have the passed suit.
+ *		
+ * Purpose: To find cards with 'suit' in the deck.
+ * 
+ * The last element in the array is the EOA flag. 
+ */
+//virtual int* FindSuit(int suit);
+
+
 	
 protected:
 	DeckCard*	TopCard;
 	DeckCard*	BottomCard;
 	int size;	
+	
+	void ErrorCheck(char* file, int line);
+	
 };
 
 
 #endif
 
 #if 0
-
-/* Deck Type Definition */
-/* deck_t */
-typedef struct
-{
-   card_t** card;
-   int size;      
-} deck_t;
-
-
-/* deck_setSize:
- * 
- * Parameters : deck: The deck whose deck size is to be set.
- *					 new_size: The size of the new deck.
- *
- * Returns : Nothing.
- *
- * Purpose: Sets the value of the passed deck to the given new_size value.
- * The size is the number of cards in the deck.
- *
- */
-void deck_setSize(deck_t* deck, int new_size);
-
-
-/* deck_stdFill:
- * 
- * Parameters : new_deck: Deck Pointer for which the new cards will to place in.
- *
- * Returns : Pointer to new_deck. (the input deck)
- *
- * Purpose: Adds a standard deck of 52 cards, which includes
- * ACE, 2, 3.... King of Diamonds, clubs, spades and hearts, to the passed deck.
- *
- */
-deck_t* deck_stdFill(deck_t* new_deck);
-
-
-
-
-
 
 
 /* deck_findCard:
@@ -145,72 +177,12 @@ deck_t* deck_stdFill(deck_t* new_deck);
  */
 int* deck_findCard(deck_t* pdeck, card_t* pcard);
 
-/* deck_findSuit:
- * 
- * Parameters : pdeck: The deck where 'psuit' is searched for.
- *					 psuit: The suit to search for in 'pdeck'
- *
- * Returns : Returns an array holding the 'indexes' of
- * cards which have the passed suit in the passed deck.
- *		
- * Purpose: To find cards with 'psuit' in the deck 'pdeck'
- * 
- * The last element in the array is the EOA flag. 
- */
-int* deck_findSuit(deck_t* pdeck, enum card_suit psuit);
-
-
-/* deck_findValue:
- * 
- * Parameters : pdeck: The deck where 'pvalue' is searched for.
- *					 pvalue: The face value to search for in 'pdeck'
- *
- * Returns : Returns an array holding the 'indexes' of
- * cards which have the passed face value in the passed deck.
- *		
- * Purpose: To find cards with a value of 'pvalue' in the deck 'pdeck'.
- * 
- * The last element in the array is the EOA flag. 
- */
-int* deck_findValue(deck_t* pdeck, enum card_value pvalue);
 
 
 
-/* deck_shuffle:
- * 
- * Parameters : deck: The deck to have its card's shuffled
- *
- * Returns : Returns a 0 to signify a successful shuffle.
- *
- * Purpose: Shuffles the cards in the passed deck
- * Uses the time functions to generate the random seed and random shuffle
- * sequence.
- *
- * The deck is shuffled by constantly swapping two
- * random cards of the deck.
- */
-int deck_shuffle(deck_t* deck);
 
 
-/* deck_removeCard:
- * 
- * Parameters : deck: The deck which the removed card is to be removed from.
- *					 rm_card: The card to be removed.
- *
- * Returns : The size of the passed deck after the passed card was removed.
- *
- * Purpose: Removes 'rm_card' from deck
- *
- * If the card does not exist, then a 'REMOVE_FAIL' is returned,
- * otherwise a 'REMOVE_SUCCESS' is returned.
- * 
- * The last card in the deck is moved from its
- * position to the position of the deleted card 
- *
- * If more than one instance of a card is found
- * the first instance is deleted.
- */
-int deck_removeCard(deck_t* deck, card_t* rm_card);
+
 
 
 
