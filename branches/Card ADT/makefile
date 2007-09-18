@@ -6,7 +6,7 @@ CC = gcc
 FLAGS = $(WARNINGS) $(DEBUG) $(OPTIMISE)
 
 WARNINGS = -Wall
-DEBUG = -g
+DEBUG = -gstabs
 OPTIMISE =
 
 COMPILE = -c

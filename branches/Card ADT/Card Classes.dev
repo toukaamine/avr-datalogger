@@ -1,7 +1,7 @@
 [Project]
 FileName=Card Classes.dev
 Name=Card Classes
-UnitCount=12
+UnitCount=8
 Type=1
 Ver=1
 ObjFiles=
@@ -18,29 +18,19 @@ Icon=
 ExeOutput=
 ObjectOutput=
 OverrideOutput=0
-OverrideOutputName=
+OverrideOutputName=Card Classes.exe
 HostApplication=
 Folders=Template
 CommandLine=
 UseCustomMakefile=0
-CustomMakefile=
+CustomMakefile=makefile
 IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=
+CompilerSettings=0000000000000001000000
 
 [Unit2]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\card.h
-CompileCpp=1
-Folder=Card Classes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit1]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\card.cpp
+FileName=card.h
 CompileCpp=1
 Folder=Card Classes
 Compile=1
@@ -50,7 +40,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\deck.cpp
+FileName=ClassTest.cpp
 CompileCpp=1
 Folder=Card Classes
 Compile=1
@@ -60,7 +50,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\deck.h
+FileName=deck.cpp
 CompileCpp=1
 Folder=Card Classes
 Compile=1
@@ -88,18 +78,19 @@ ProductVersion=
 AutoIncBuildNr=0
 
 [Unit5]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\makefile
+FileName=deck.h
 Folder=Card Classes
-Compile=0
-Link=0
+Compile=1
+Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
+CompileCpp=1
 
 [Unit10]
-FileName=ClassTest.cpp
+FileName=mem.h
 CompileCpp=1
-Folder=
+Folder=Card Classes
 Compile=1
 Link=1
 Priority=1000
@@ -107,7 +98,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\mem.cpp
+FileName=deckcard.cpp
 CompileCpp=1
 Folder=Card Classes
 Compile=1
@@ -117,7 +108,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=\\rockhopper\amg94\ENEL428\Assignment 3\mem.h
+FileName=deckcard.h
 CompileCpp=1
 Folder=Card Classes
 Compile=1
@@ -126,20 +117,10 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit8]
-FileName=\\rockhopper\amg94\ENEL428\amg94\p1b\src\Item.cpp
-CompileCpp=1
-Folder=Template
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
 [Unit9]
-FileName=\\rockhopper\amg94\ENEL428\amg94\p1b\src\Item.h
+FileName=mem.cpp
 CompileCpp=1
-Folder=Template
+Folder=Card Classes
 Compile=1
 Link=1
 Priority=1000
@@ -162,6 +143,25 @@ CompileCpp=1
 Folder=
 Compile=1
 Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit1]
+FileName=card.cpp
+CompileCpp=1
+Folder=Card Classes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit8]
+FileName=makefile
+Folder=Card Classes
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
