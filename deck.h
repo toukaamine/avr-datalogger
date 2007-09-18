@@ -82,7 +82,7 @@ public:
  * Returns : Card Pointer to the card referred to by 'index'.
  *
  * Purpose: Returns 'n'th card in the deck. An index = 0 is the bottom card
- * and an index of 'size' is the top card.
+ * and an index of 'size - 1' is the top card.
  */	
 	virtual Card* GetCard(int index);
 		
@@ -140,9 +140,35 @@ virtual int* FindCardValue(int value);
  * 
  * The last element in the array is the EOA flag. 
  */
-//virtual int* FindSuit(int suit);
+virtual int* FindCardSuit(int suit);
 
 
+/* FindColour:
+ * 
+ * Parameters : colour: The colour to search for.
+ *
+ * Returns : Returns an array holding the 'indexes' of
+ * cards which have the passed colour.
+ *		
+ * Purpose: To find cards with a particular colour
+ * 
+ * The last element in the array is the EOA flag. 
+ */
+virtual int* FindCardColour(int colour);
+
+
+/* FindCard:
+ * 
+ * Parameters : Card: The card whose parameters are to be matched
+ *
+ * Returns : An array holding index information where the card may be found.
+ * 
+ * Purpose: To find the card index where 'card' is found in the deck.
+ *
+ * If more than one instance of 'card' is found, the successive elements in the
+ * returning array hold the indexes of the other instances of pcard in pdeck.
+ */
+virtual int* FindCard(Card* card);
 	
 protected:
 	DeckCard*	TopCard;
@@ -159,23 +185,7 @@ protected:
 #if 0
 
 
-/* deck_findCard:
- * 
- * Parameters : pdeck: The deck where 'pcard' is searched for.
- *					 pcard: The card to find in 'pdeck'
- *
- * Returns : An array holding index information where pcard is found.
- * 
- *		
- * Purpose: To find the card index where 'pcard' is found in 'pdeck'
- * Returns the card index in the given deck where pcard is found.
- * If pcard is not found, then an EOA (-1) is returned in the 0th element of the 
- * returned array.
- *
- * If more than one instance of pcard is found, the successive elements in the
- * returning array hold the indexes of the other instances of pcard in pdeck.
- */
-int* deck_findCard(deck_t* pdeck, card_t* pcard);
+
 
 
 

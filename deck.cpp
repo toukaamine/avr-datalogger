@@ -18,7 +18,8 @@
 #include "deckcard.h"
 
 #define RANDOM_ITERATIONS (2048)
-
+#define DEFAULT_DECK_SIZE (52)
+#define MAX_CARD_ARRAY_SIZE	(4*DEFAULT_DECK_SIZE)
 
 
 Deck::Deck(){
@@ -67,19 +68,11 @@ int Deck::AddCard(Card* new_card){
 
 
 Card* Deck::GetTopCard(){
-//	if( BottomCard != NULL )
-//	{
-//		return BottomCard->GetCard();
-//	}
-//	return NULL;
-	
-	Card* returnCard;
-	if( (returnCard = GetCard(size)) == NULL ){
-		return NULL;
+	if( BottomCard != NULL )
+	{
+		return BottomCard->GetCard();
 	}
-	
-	return returnCard;
-	
+	return NULL;
 }
 
 
@@ -89,19 +82,19 @@ Card* Deck::GetCard(int index){
 	if( tempCard == NULL )
 	{
 		ErrorCheck(__FILE__, __LINE__);
-	}	
+	}
 	
-	for( int i = 1; i <= index; i++ ){
+	if( index >= size ){
+		ErrorCheck(__FILE__, __LINE__);
+	}
+	
+	for( int i = 1; i <= index; i++){
+		tempCard = tempCard->GetPrevCard(); 
 		if( tempCard == NULL )
 		{
+			/* Card out of bounds, place error here */
 			ErrorCheck(__FILE__, __LINE__);
 		}			
-		
-		tempCard = tempCard->GetPrevCard();
-		if( tempCard == NULL )
-		{
-			ErrorCheck(__FILE__, __LINE__);
-		}		
 	}
 	return tempCard->GetCard();
 }
@@ -224,30 +217,65 @@ void Deck::Shuffle(){
 }
 
 
-
-
-
-
 int* Deck::FindCardValue(int value){
    int i;
    int j = 0;
-   int deckSize;
-   static int valueIndexes[4*10];   
-
+   int deckSize = size;
+   static int valueIndexes[MAX_CARD_ARRAY_SIZE];   
 
 	for( int i = 0; i < deckSize ; i++ ){
 	
-		this->GetTopCard()->GetValue();
-		this->RemoveCard(this->size);		
-	}
-   
+		if( this->GetCard(i)->GetValue() == value )
+		valueIndexes[j++] = i;	
+	}  
    valueIndexes[j] = EOA;
+   return valueIndexes;
+}
 
+int* Deck::FindCardSuit(int suit){
+   int i;
+   int j = 0;
+   int deckSize = size;
+   static int valueIndexes[MAX_CARD_ARRAY_SIZE];   
+
+	for( int i = 0; i < deckSize ; i++ ){
+	
+		if( this->GetCard(i)->GetSuit() == suit )
+		valueIndexes[j++] = i;	
+	}  
+   valueIndexes[j] = EOA;
+   return valueIndexes;
+}
+
+int* Deck::FindCardColour(int colour){
+   int i;
+   int j = 0;
+   int deckSize = size;
+   static int valueIndexes[MAX_CARD_ARRAY_SIZE];   
+
+	for( int i = 0; i < deckSize ; i++ ){
+		if( this->GetCard(i)->GetColour() == colour )
+		valueIndexes[j++] = i;	
+	}  
+   valueIndexes[j] = EOA;
    return valueIndexes;
 }
 
 
+int* Deck::FindCard(Card* card){
+   int i;
+   int j = 0;
+   int deckSize = size;
+   static int valueIndexes[MAX_CARD_ARRAY_SIZE];   
 
+	for( int i = 0; i < deckSize ; i++ ){
+		if( this->GetCard(i)->GetValue() == card->GetValue() &&
+			 this->GetCard(i)->GetSuit() == card->GetSuit())
+		valueIndexes[j++] = i;	
+	}  
+   valueIndexes[j] = EOA;
+   return valueIndexes;
+}
 
 
 void Deck::ErrorCheck(char* file, int line){

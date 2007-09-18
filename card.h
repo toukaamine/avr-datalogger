@@ -13,6 +13,10 @@
 #ifndef _CARD_
 #define _CARD_
 
+extern const char* card_valueString[];
+extern const char* card_suitString[];
+extern const char* card_colourString[];
+
 
 typedef enum {DIAMONDS = 0, CLUBS, HEARTS, SPADES, JOKER_RED, JOKER_BLACK} card_suit;
 
