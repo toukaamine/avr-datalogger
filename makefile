@@ -25,7 +25,7 @@ LD_FLAGS = $(WARNINGS) $(DEBUG) $(OPTIMISE)
 MAIN_FILE = ClassTest.cpp
 MAIN_OBJECT = $(MAIN_FILE:.cpp=.o)
 
-SOURCE_FILES = card.cpp deckcard.cpp deck.cpp seekTest.cpp
+SOURCE_FILES = card.cpp deckcard.cpp deck.cpp seekTest.cpp player.cpp
 INCLUDES = 
 					
 				
