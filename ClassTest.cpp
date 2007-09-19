@@ -1,3 +1,14 @@
+/* ENEL428 Assignment #3
+ * Card/Deck/Player Class Test Routines
+ * Filename: ClassTest.cpp
+ * Last modification : 13/09/07
+ * Author: Adrian Gin
+ *
+ * Description: Routines and runtime program to test
+ * the class methods and error checking routines.
+ *	
+ */
+
 #include <stdio.h>
 #include "card.h"
 #include "deck.h"

@@ -1,3 +1,14 @@
+/* ENEL428 Assignment #3
+ * Deck Class Test Routines
+ * Filename: seekTest.cpp
+ * Last modification : 13/09/07
+ * Author: Adrian Gin
+ *
+ * Description: Routines to search for card parameters
+ * in a deck.
+ *	
+ */
+
 #include <stdio.h>
 #include "card.h"
 #include "deck.h"

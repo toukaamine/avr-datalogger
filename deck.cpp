@@ -1,16 +1,13 @@
-/* ENEL323 Assignment #3
- * BlackJack GGI Program
- * Filename: deck.c
- * Last modification : 13/09/06
+/* ENEL428 Assignment #3
+ * Deck Class
+ * Filename: deck.cpp
+ * Last modification : 13/09/07
  * Author: Adrian Gin
  *
- * Description: Deck Abstract Data Type.
+ * Description: Deck class made for use with the Card class
  *	
- *	This source file uses the card_t ADT described in card.h
- *
- *	All the functions associated with the deck_t ADT are
- * implemented in deck.c
  */
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

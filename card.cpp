@@ -1,12 +1,12 @@
-/* ENEL323 Assignment #3
- * BlackJack GGI Program
- * Filename: card.c
- * Last modification : 13/09/06
+/* ENEL428 Assignment #3
+ * Card Class
+ * Filename: card.cpp
+ * Last modification : 13/09/07
  * Author: Adrian Gin
  *
- * Description: Card Abstract Data Type.
+ * Description: Playing Card class
  *	
- *	All the functions associated with the card_t ADT are
+ *	All the functions associated with the Card class
  * implemented in this source file
  */
 
