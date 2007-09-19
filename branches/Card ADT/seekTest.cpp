@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include "card.h"
+#include "deck.h"
+
+
 void seekMainDeckValue(Deck* seekDeck){
 
 	int input;
@@ -8,7 +13,7 @@ void seekMainDeckValue(Deck* seekDeck){
 			 "Where x is the value to find (0 = JOKER, 1 = ACE .. 13 = KING)\n");
 	scanf("%d", &input);	
 	
-	cardIndexArray = seekDeck.FindCardValue(input);
+	cardIndexArray = seekDeck->FindCardValue(input);
 	
 	printf("Cards with value %s are found at: ", card_valueString[input]);
 	while(*cardIndexArray != EOA )
@@ -32,7 +37,7 @@ void seekMainDeckCard(Deck* seekDeck){
 	tempCard.SetSuit(Suit);
 	tempCard.SetValue(Value);	
 	
-	cardIndexArray = seekDeck.FindCard(&tempCard);
+	cardIndexArray = seekDeck->FindCard(&tempCard);
 
 	char buffer[200];
 	tempCard.Card2String(buffer);
@@ -56,7 +61,7 @@ void seekMainDeckSuit(Deck* seekDeck){
 			 "Where x is the suit to find (0 = DIAMOND, 1 = CLUBS, 2 = HEARTS, 3 = SPADES, 4 = JOKER_RED, 5 = JOKER_BLACK)\n");
 	scanf("%d", &input);	
 	
-	cardIndexArray = seekDeck.FindCardSuit(input);
+	cardIndexArray = seekDeck->FindCardSuit(input);
 	
 	printf("Cards with suit %s are found at: ", card_suitString[input]);
 	while(*cardIndexArray != EOA )
@@ -76,7 +81,7 @@ void seekMainDeckColour(Deck* seekDeck){
 			 "Where x is the value to find (0 = RED, 1 = BLACK)\n");
 	scanf("%d", &input);	
 	
-	cardIndexArray = seekDeck.FindCardColour(input);
+	cardIndexArray = seekDeck->FindCardColour(input);
 	
 	printf("Cards with colour %s are found at: ", card_colourString[input]);
 	while(*cardIndexArray != EOA )

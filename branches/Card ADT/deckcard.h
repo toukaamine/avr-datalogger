@@ -3,7 +3,7 @@
 
 #include "card.h"
 
-
+/* Overlays a linked list on the Card class */
 class DeckCard{
 
 public:
