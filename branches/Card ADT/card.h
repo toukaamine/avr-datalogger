@@ -1,14 +1,13 @@
-/* ENEL323 Assignment #3
- * BlackJack GGI Program
- * Filename: card.h
- * Last modification : 20/09/06
+/* ENEL428 Assignment #3
+ * Card Class
+ * Filename: card.c
+ * Last modification : 13/09/07
  * Author: Adrian Gin
  *
- * Description: Card Abstract Data Type.
+ * Description: Playing Card class
  *	
- *	All the functions associated with the card_t ADT are
- * implemented in the card.c source file.
  */
+
 
 #ifndef _CARD_
 #define _CARD_
@@ -33,9 +32,9 @@ public:
 
 
 
-/* card_SetValue:
+/* SetValue:
  * 
- * Parameters : card_value : The passed card's face 'value' is set to this value.
+ * Parameters : newValue : The card value.
  *
  * Returns : Nothing.
  *
@@ -44,9 +43,9 @@ public:
  */	
 	virtual CardStatusCodes SetValue(int newValue);
 	
-/* card_SetSuit:
+/* SetSuit:
  * 
- * Parameters : card_suit : The card's 'suit' is set to this value.
+ * Parameters : suit : The card's 'suit' is set to this value.
  *
  * Returns : Nothing.
  *
@@ -55,7 +54,7 @@ public:
  */	
 	virtual CardStatusCodes SetSuit(int newSuit);
 
-/* card_GetValue:
+/* GetValue:
  * 
  * Parameters : None
  *
@@ -67,7 +66,7 @@ public:
  */
 	virtual int GetValue() {return value;}
 	
-/* card_GetSuit:
+/* GetSuit:
  * 
  * Parameters : None
  *
@@ -79,9 +78,9 @@ public:
  */	
 	virtual int GetSuit() {return suit;}
 
-/* card_GetColour:
+/* GetColour:
  * 
- * Parameters : card: The card whose colour is to be returned.
+ * Parameters : None.
  *					 
  * Returns : An integer either 'RED' or 'BLACK' depending on the colour of the
  *				 passsed card.
@@ -91,7 +90,7 @@ public:
 	virtual card_colour GetColour();
 
 
-/* card_value2string:
+/* Value2string:
  * 
  * Parameters : None.
  *					 
@@ -104,7 +103,7 @@ public:
 	virtual const char* Value2String();
 	
 	
-/* card_suit2string:
+/* Suit2string:
  * 
  * Parameters : None.
  *					 
@@ -117,7 +116,7 @@ public:
 	virtual const char* Suit2String();
 
 
-/* card_Card2String:
+/* Card2String:
  * 
  * Parameters : buffer: The pointer where the C string will be written to.
  *					 
@@ -130,7 +129,7 @@ public:
 	virtual void Card2String(char* buffer);
 
 
-/* card_colour2String:
+/* Colour2String:
  * 
  * Parameters : None
  *					 
@@ -146,7 +145,6 @@ public:
 protected:
 	int	value;
 	int	suit;	
-	
 	virtual void ErrorCheck(char* file, int line);
 	
 };

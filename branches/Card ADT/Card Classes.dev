@@ -1,7 +1,7 @@
 [Project]
 FileName=Card Classes.dev
 Name=Card Classes
-UnitCount=8
+UnitCount=12
 Type=1
 Ver=1
 ObjFiles=
@@ -20,7 +20,7 @@ ObjectOutput=
 OverrideOutput=0
 OverrideOutputName=Card Classes.exe
 HostApplication=
-Folders=Template
+Folders=
 CommandLine=
 UseCustomMakefile=0
 CustomMakefile=makefile
@@ -32,7 +32,7 @@ CompilerSettings=0000000000000001000000
 [Unit2]
 FileName=card.h
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -42,7 +42,7 @@ BuildCmd=
 [Unit3]
 FileName=ClassTest.cpp
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -52,7 +52,7 @@ BuildCmd=
 [Unit4]
 FileName=deck.cpp
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -79,7 +79,7 @@ AutoIncBuildNr=0
 
 [Unit5]
 FileName=deck.h
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -88,9 +88,9 @@ BuildCmd=
 CompileCpp=1
 
 [Unit10]
-FileName=mem.h
+FileName=seekTest.h
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -100,7 +100,7 @@ BuildCmd=
 [Unit6]
 FileName=deckcard.cpp
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -110,7 +110,7 @@ BuildCmd=
 [Unit7]
 FileName=deckcard.h
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -118,9 +118,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=mem.cpp
+FileName=seekTest.cpp
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -128,7 +128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=deckcard.cpp
+FileName=player.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -138,7 +138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=deckcard.h
+FileName=player.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -150,7 +150,7 @@ BuildCmd=
 [Unit1]
 FileName=card.cpp
 CompileCpp=1
-Folder=Card Classes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -159,7 +159,7 @@ BuildCmd=
 
 [Unit8]
 FileName=makefile
-Folder=Card Classes
+Folder=
 Compile=0
 Link=0
 Priority=1000

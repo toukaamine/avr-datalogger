@@ -1,16 +1,13 @@
-/* ENEL323 Assignment #3
- * BlackJack GGI Program
+/* ENEL428 Assignment #3
+ * Player Class
  * Filename: player.h
- * Last modification : 20/09/06
+ * Last modification : 13/09/07
  * Author: Adrian Gin
  *
- * Description: Player ADT.
+ * Description: Implemends a Player class for a card game.
+ * Player class is to be used with the Deck and Card class.
  *	
- * This player ADT is for use with the deck ADT.
- * All functions associated with this player ADT are implemented
- * in player.c
  */
-
 #ifndef	_PLAYER_H_
 #define  _PLAYER_H_
 
