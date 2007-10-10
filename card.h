@@ -36,7 +36,8 @@ public:
  * 
  * Parameters : newValue : The card value.
  *
- * Returns : Nothing.
+ * Returns : Either CARD_ERROR or CARD_SUCCESS depending on whether
+ *  			 the card's value was successfully changed.
  *
  * Purpose: If the value is not valid, then exit with an error.
  *
@@ -47,7 +48,8 @@ public:
  * 
  * Parameters : suit : The card's 'suit' is set to this value.
  *
- * Returns : Nothing.
+ * Returns : Either CARD_ERROR or CARD_SUCCESS depending on whether
+ *  			 the card's suit was successfully changed.
  *
  * Purpose: If the suit is not valid, then exit with an error.
  *
@@ -61,7 +63,7 @@ public:
  * Returns : The face value of the card.
  *
  * Purpose: Returns the face value of the card
- * (see card.h : card_value definition )
+ * (see card.h : card_value definition for face cards )
  *
  */
 	virtual int GetValue() {return value;}

@@ -81,10 +81,11 @@ Card* Deck::GetCard(int index){
 		ErrorCheck(__FILE__, __LINE__);
 	}
 	
-	if( index >= size ){
+	if( index >= size  || index < 0){
 		ErrorCheck(__FILE__, __LINE__);
+		return NULL;
 	}
-	
+		
 	for( int i = 1; i <= index; i++){
 		tempCard = tempCard->GetPrevCard(); 
 		if( tempCard == NULL )
@@ -172,44 +173,47 @@ int Deck::StdFill(bool hasJokers){
 
 void Deck::Shuffle(){
 
-	int random_number[2];
-	int deckSize = this->size;
-	Card*	tempDeck[deckSize];
-	
-	/* Place all the cards into an array */	
-	for( int i = 0; i < deckSize ; i++ ){
-	
-		tempDeck[i] = new Card( this->GetTopCard()->GetValue(), this->GetTopCard()->GetSuit() );
-		this->RemoveCard(this->size);		
-	}
-	
-	/* Randomise the array */
-   /* Set the seed of the random number generator
-    * to the current time */
-   srand( time(NULL) );
+	if( this->size != 0 ){
 
-	/* Exchange two cards in the deck 'RANOM_INTERATIONS'
-	 * times */
-   for( int i = 0; i < RANDOM_ITERATIONS; i++)
-   {
-      /* Generate two random numbers between 0 and decksize */
-      random_number[0] = (rand()%(deckSize));
-      random_number[1] = (rand()%(deckSize));
+		int random_number[2];
+		int deckSize = this->size;
+		Card*	tempDeck[deckSize];
 		
-		Card* temp_card;
+		/* Place all the cards into an array */	
+		for( int i = 0; i < deckSize ; i++ ){
 		
-      /* Swap two cards corresponding to the random
-       * numbers */
-      temp_card = (tempDeck[random_number[0]]);
-
-      tempDeck[random_number[0]] = tempDeck[random_number[1]];
-      tempDeck[random_number[1]] = temp_card;
-   }	
+			tempDeck[i] = new Card( this->GetTopCard()->GetValue(), this->GetTopCard()->GetSuit() );
+			this->RemoveCard(this->size);		
+		}
+		
+		/* Randomise the array */
+	   /* Set the seed of the random number generator
+	    * to the current time */
+	   srand( time(NULL) );
 	
-	/* Place the contents of the array back into the linked list */
-	for( int i = 0 ; i < deckSize ; i++ )
-	{
-		this->AddCard(tempDeck[i]);
+		/* Exchange two cards in the deck 'RANOM_INTERATIONS'
+		 * times */
+	   for( int i = 0; i < RANDOM_ITERATIONS; i++)
+	   {
+	      /* Generate two random numbers between 0 and decksize */
+	      random_number[0] = (rand()%(deckSize));
+	      random_number[1] = (rand()%(deckSize));
+			
+			Card* temp_card;
+			
+	      /* Swap two cards corresponding to the random
+	       * numbers */
+	      temp_card = (tempDeck[random_number[0]]);
+	
+	      tempDeck[random_number[0]] = tempDeck[random_number[1]];
+	      tempDeck[random_number[1]] = temp_card;
+	   }	
+		
+		/* Place the contents of the array back into the linked list */
+		for( int i = 0 ; i < deckSize ; i++ )
+		{
+			this->AddCard(tempDeck[i]);
+		}
 	}
 }
 
