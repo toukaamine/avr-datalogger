@@ -27,19 +27,18 @@ public:
 	Deck();
 	virtual ~Deck();
 	
-/* deck_addCard:
+/* AddCard:
  * 
- * Parameters : deck: Deck Pointer for which the new cards will to place in.
- *					 new_card: Card which is to be added to 'deck'.
+ * Parameters : new_card: Card which is to be added to 'deck'.
  *
  * Returns : The size of the updated deck.
  *
  * Purpose: Adds the passed card to the top of the passed deck,
- * the size of the deck is returned. The deck acts like a stack as in, a LIFO
+ * the size of the deck is returned. The deck acts like a stack as in, a LIFO.
  */
 	virtual int AddCard(Card* new_card);
 	
-/* deck_getSize:
+/* GetSize:
  * 
  * Parameters : None.
  *
@@ -55,7 +54,8 @@ public:
  * 
  * Parameters : None.
  *
- * Returns : Card Pointer to the top card on the passed deck.
+ * Returns : Card Pointer to the top card on the passed deck. Null is returned
+ *				 if there is no top card.
  *
  * Purpose: Returns the card located on the top of the passed deck.
  */
@@ -67,27 +67,30 @@ public:
  *
  * Returns : Deck Status Code
  *
- * Purpose: Deletes the 'n'th card of the deck. The TopCard is card is the size of the deck.
+ * Purpose: Deletes the 'index'th card of the deck. The TopCard is card is the size of the deck.
+ * 			If the index is out of range, then DECK_ERROR is returned.
  */
 	virtual int RemoveCard(int index);	
 
-/* GetTopCard:
+/* GetCard:
  * 
- * Parameters : index: Which card in the linked list to return.
+ * Parameters : index: Which card in the deck to return. Index must be equal to larger
+ * 				 than 0 and be less than the size of the deck.
  *
- * Returns : Card Pointer to the card referred to by 'index'.
+ * Returns : Card Pointer to the card referred to by 'index'. Null is returned if the
+ *				 index is out of range.
  *
- * Purpose: Returns 'n'th card in the deck. An index = 0 is the bottom card
+ * Purpose: Returns 'index'th card in the deck. An index = 0 is the bottom card
  * and an index of 'size - 1' is the top card.
  */	
 	virtual Card* GetCard(int index);
 		
 
-/* deck_stdFill:
+/* StdFill:
  * 
- * Parameters : hasJokers, whether 2 (a red and black) jokers are added to the deck.
+ * Parameters : hasJokers, if TRUE, 2 (a red and black) jokers are added to the deck.
  *
- * Returns : 
+ * Returns : DECK_SUCCESS to signify correct operation.
  *
  * Purpose: Adds a standard deck of 52 cards, which includes
  * ACE, 2, 3.... King of Diamonds, clubs, spades and hearts, to the passed deck.
@@ -96,11 +99,11 @@ public:
 	virtual int StdFill(bool hasJokers);
 
 
-/* deck_shuffle:
+/* Shuffle:
  * 
  * Parameters : deck: The deck to have its card's shuffled
  *
- * Returns : Returns a 0 to signify a successful shuffle.
+ * Returns : Nothing
  *
  * Purpose: Shuffles the cards in the passed deck
  * Uses the time functions to generate the random seed and random shuffle
@@ -108,13 +111,15 @@ public:
  *
  * The deck is shuffled by constantly swapping two
  * random cards of the deck.
+ *
+ * If there are no cards in the deck, this function does nothing.
  */
 virtual void Shuffle();
 
 
-/* deck_findValue:
+/* FindCardValue:
  * 
- * Parameters : pvalue: The face value to search for in 'pdeck'
+ * Parameters : value: The face value to search for in the deck
  *
  * Returns : Returns an array holding the 'indexes' of
  * cards which have the passed face value.
@@ -125,7 +130,7 @@ virtual void Shuffle();
  */
 virtual int* FindCardValue(int value);
 
-/* deck_findSuit:
+/* FindCardSuit:
  * 
  * Parameters : suit: The suit to search for.
  *
@@ -139,9 +144,10 @@ virtual int* FindCardValue(int value);
 virtual int* FindCardSuit(int suit);
 
 
-/* FindColour:
+/* FindCardColour:
  * 
- * Parameters : colour: The colour to search for.
+ * Parameters : colour: The colour to search for 'RED' or 'BLACK' as defined in
+ *					 'card.h'.
  *
  * Returns : Returns an array holding the 'indexes' of
  * cards which have the passed colour.
@@ -155,14 +161,14 @@ virtual int* FindCardColour(int colour);
 
 /* FindCard:
  * 
- * Parameters : Card: The card whose parameters are to be matched
+ * Parameters : card: The card whose parameters are to be matched
  *
  * Returns : An array holding index information where the card may be found.
  * 
- * Purpose: To find the card index where 'card' is found in the deck.
+ * Purpose: To find the card indexes where 'card' is found in the deck.
  *
  * If more than one instance of 'card' is found, the successive elements in the
- * returning array hold the indexes of the other instances of pcard in pdeck.
+ * returning array hold the indexes of the other instances of 'card' in the deck.
  */
 virtual int* FindCard(Card* card);
 	

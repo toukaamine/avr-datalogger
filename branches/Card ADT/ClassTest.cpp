@@ -14,10 +14,11 @@
 #include "deck.h"
 #include "Player.h"
 #include "seekTest.h"
+#include "hand.h"
 
 void CardClassTest(void);
 void DeckClassTest(void);
-void GetCardTest(void);
+void GetCardTest(Deck* deck2Retrieve);
 void RemoveCardfromDeck(Deck* deck2Print);
 void printDeck(Deck* deck2Print);
 
@@ -31,23 +32,26 @@ int main(int argc, int argv[])
 	Player MainPlayer;
 	Deck* MainDeck;
 	
-	MainDeck = MainPlayer.GetDeck();
+	printf("ENEL428 Card Game Assignment 2007\n"
+			 "By Adrian Gin\n\n\n");
+	
+	MainDeck = (MainPlayer.GetDeck());
 	MainDeck->StdFill(HAS_JOKERS);
 	MainDeck->Shuffle();	
 	
 	while(1){
 		char input[4];
 		printf("Please enter which module to test:\n"
-				 "D	- Deck Class Test\n"
-				 "C	- Card Class Test\n"
-				 "G	- GetCard Method Test\n"
-				 "R	- Remove Card Method Test\n"
-				 "P	- Print the player's deck\n"
-				 "V	- Find card with a particular value\n"
-				 "S	- Find card with a particular suit\n"
-				 "c	- Find card with a particular colour\n"
-				 "F	- Find a certain card\n"
-				 "s	- Re-shuffle the player's deck\n");
+				 "D - Deck Class Test - Tests the creation of a standard deck and shuffles it\n"
+				 "C - Card Class Test - Tests the creation of all card types\n"
+				 "G - GetCard Method Test - Returns a card from the Player Deck\n"
+				 "R - Remove Card Method Test - Removes a card from the Player Deck\n"
+				 "P - Print the player's deck\n"
+				 "V - Find card with a particular value - in the Player Deck\n"
+				 "S - Find card with a particular suit - in the Player Deck\n"
+				 "c - Find card with a particular colour - in the Player Deck\n"
+				 "F - Find a certain card - in the Player Deck\n"
+				 "s - Re-shuffle the player's deck\n");
 		scanf("%s", input);
 		
 		switch(input[0]){
@@ -63,13 +67,12 @@ int main(int argc, int argv[])
 			
 			/* Test the GetCard method of the Deck Class */	
 			case 'G':
-				GetCardTest();
+				GetCardTest(MainDeck);
 				break;
 			
 			/* Prompts the user to remove a card from the player deck */
 			case 'R':
 				RemoveCardfromDeck(MainDeck);
-				printDeck(MainDeck);
 				break;	
 			
 			/* Prints the player's deck */	
@@ -98,10 +101,10 @@ int main(int argc, int argv[])
 				break;
 				
 			/* Re-shuffle the player's deck of cards */	
-			case 's':
-				printf("Shuffling deck...\n");			
+			case 's':		
 				MainDeck->Shuffle();
 				printDeck(MainDeck);
+				printf("Deck Shuffled!\n");
 				break;
 				
 			default:
@@ -137,23 +140,18 @@ void RemoveCardfromDeck(Deck* deck2Print){
 
 }
 
-void GetCardTest(void){
+void GetCardTest(Deck* deck2Retrieve){
 
-	Deck newDeck;
+	int input;
 
-	newDeck.StdFill(HAS_JOKERS);
-	newDeck.Shuffle();	
-			
-	printf("Getting all cards\n");
-	
-	/* If there is an attempt to retrieve a card which is 
-	 * outside of the deck size, an error should be reported */
-	for( int i = 0; i < newDeck.GetSize() /* + 1 */; i++ ){
-		Card* tempCard = newDeck.GetCard(i);
-		char buffer[200];
-		tempCard->Card2String(buffer);
-		printf("Card #%d is: %s\n", i+1, buffer);
-	}
+	printf("Which card index to retrieve?\n");
+	scanf("%d", &input);
+
+	char buffer[200];
+	Card* tempCard = deck2Retrieve->GetCard(input-1);	
+	tempCard->Card2String(buffer);
+	printf("Card #%d, is a %s!\n", input, buffer);	
+
 }
 
 void DeckClassTest(void){
